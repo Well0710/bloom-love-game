@@ -1891,12 +1891,196 @@
                 text: '你：「什么新菜？」\n\n陆潇：「秘密。来了就知道。」\n\n神秘的语气，让你更加好奇。',
                 sprite: null,
                 choices: [
-                    { text: '「几点？」', next: 'luxiao_time', affection: { luxiao: 3 } },
-                    { text:
-            'title': { id: 'title', chapter: 0, title: '', bg: '', speaker: '', text: '', sprite: null, choices: [] },
-            
-            // ========== 结局系统 ==========
-            // 林婉清结局
+ '「我现在就过去」', next: 'luxiao_now', affection: { luxiao: 8 } }
+                ]
+            },
+            'luxiao_time': {
+                id: 'luxiao_time', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '「晚上 8 点，打烊后。」\n\n「那时候安静，可以好好尝尝。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「好，准时到」', next: 'luxiao_arrive', affection: { luxiao: 5 } },
+                    { text: '「需要我帮忙吗？」', next: 'luxiao_help', affection: { luxiao: 8 } }
+                ]
+            },
+            'luxiao_now': {
+                id: 'luxiao_now', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '「这么急？」她似乎笑了，「行，过来吧。」\n\n「不过现在人多，可能要等。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「我等得起」', next: 'luxiao_arrive', affection: { luxiao: 8 } }
+                ]
+            },
+            'luxiao_help': {
+                id: 'luxiao_help', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '「帮忙？」她想了想，「那你来试试菜吧。」\n\n「正好缺个试吃的。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「荣幸之至」', next: 'luxiao_arrive', affection: { luxiao: 5 } }
+                ]
+            },
+            'luxiao_arrive': {
+                id: 'luxiao_arrive', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '',
+                text: '晚上 8 点，你准时到达。\n\n店里已经打烊了，但灯还亮着。\n\n陆潇在吧台后，正在摆盘。',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「需要帮忙吗？」', next: 'luxiao_serve', affection: { luxiao: 5 } },
+                    { text: '安静等待', next: 'luxiao_wait', affection: { luxiao: 3 } }
+                ]
+            },
+            'luxiao_serve': {
+                id: 'luxiao_serve', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '「把那个盘子递给我。」她说。\n\n你递过去，她接过，动作流畅自然。\n\n「不错，有当助手的天赋。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「那你雇我？」', next: 'luxiao_job', affection: { luxiao: 8 } },
+                    { text: '「只是临时助手」', next: 'luxiao_dish', affection: { luxiao: 5 } }
+                ]
+            },
+            'luxiao_wait': {
+                id: 'luxiao_wait', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '她专注地摆盘，你没打扰。\n\n完成后，她抬头看你：「等久了？」\n\n「尝尝这个。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '品尝', next: 'luxiao_taste', affection: { luxiao: 5 } }
+                ]
+            },
+            'luxiao_job': {
+                id: 'luxiao_job', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '她笑了：「好啊，包吃住。」\n\n「不过……」她凑近，「工资可能不高。」\n\n距离太近了，你能闻到她身上的香气。',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「我不在乎工资」', next: 'luxiao_close', affection: { luxiao: 15 } },
+                    { text: '后退一步', next: 'luxiao_back', affection: { luxiao: -5 } }
+                ]
+            },
+            'luxiao_dish': {
+                id: 'luxiao_dish', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '「可惜了。」她笑着说。\n\n然后端出一道菜：「尝尝这个，新研发的。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '品尝', next: 'luxiao_taste', affection: { luxiao: 5 } }
+                ]
+            },
+            'luxiao_taste': {
+                id: 'luxiao_taste', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '',
+                text: '你尝了一口。\n\n美味在舌尖绽放。\n\n「怎么样？」她问，眼神里有一丝期待。',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「很好吃」', next: 'luxiao_good', affection: { luxiao: 5 } },
+                    { text: '「不如你」', next: 'luxiao_flirt', affection: { luxiao: 15 } }
+                ]
+            },
+            'luxiao_close': {
+                id: 'luxiao_close', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '她没有退开。\n\n「那你在乎什么？」她轻声问。\n\n空气安静得能听见心跳。',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「在乎你」', next: 'ending_luxiao_he', affection: { luxiao: 20 } },
+                    { text: '沉默', next: 'luxiao_silent', affection: { luxiao: 5 } }
+                ]
+            },
+            'luxiao_back': {
+                id: 'luxiao_back', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '她退后一步，眼神暗了暗。\n\n「开玩笑的。」她说。\n\n气氛突然冷了下来。',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '【好感度不足，进入 BE 路线】', next: 'ending_luxiao_be' }
+                ]
+            },
+            'luxiao_good': {
+                id: 'luxiao_good', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '「就这？」她挑眉，「我还以为你会说点别的。」\n\n「不过……谢谢。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「比上次的好吃」', next: 'luxiao_improve', affection: { luxiao: 5 } },
+                    { text: '「你说实话，我说的也是」', next: 'luxiao_honest', affection: { luxiao: 10 } }
+                ]
+            },
+            'luxiao_flirt': {
+                id: 'luxiao_flirt', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '她愣住了。\n\n然后笑了，笑得很好看。\n\n「你……」她摇摇头，「油嘴滑舌。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「我是认真的」', next: 'ending_luxiao_he', affection: { luxiao: 15 } }
+                ]
+            },
+            'luxiao_improve': {
+                id: 'luxiao_improve', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '「当然，我每天都在进步。」\n\n她自信的样子很迷人。\n\n「以后……常来试菜？」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「好」', next: 'ending_luxiao_he', affection: { luxiao: 15 } },
+                    { text: '「看时间」', next: 'ending_luxiao_be', affection: { luxiao: -10 } }
+                ]
+            },
+            'luxiao_honest': {
+                id: 'luxiao_honest', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '她看着你，很久。\n\n「那……」她说，「以后每天都来做给你吃。」\n\n「你说实话，我做给你吃。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「好，说定了」', next: 'ending_luxiao_he', affection: { luxiao: 20 } }
+                ]
+            },
+            'luxiao_silent': {
+                id: 'luxiao_silent', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '她退后一步。\n\n「算了。」她说。\n\n那一刻，你知道你搞砸了。',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '【好感度不足，进入 BE 路线】', next: 'ending_luxiao_be' }
+                ]
+            },
+            // 陆潇结局
+            'ending_luxiao_he': {
+                id: 'ending_luxiao_he', chapter: 99, title: '结局',
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '',
+                text: '【陆潇 · Happy Ending】\n\n「新菜好吃吗？」她问。\n\n「好吃，」你说，「但比不过你。」\n\n她笑了，那个酷酷的女人，居然脸红了。\n\n咖啡馆里，香气氤氲。\n\n原来，最动人的爱情，藏在日常的一餐一饭里。\n\n—— 完 ——',
+                sprite: null,
+                choices: [{ text: '【返回标题】', next: 'title' }]
+            },
+            'ending_luxiao_be': {
+                id: 'ending_luxiao_be', chapter: 99, title: '结局',
+                bg: 'linear-gradient(135deg, #34495e 0%, #2c3e50 100%)',
+                speaker: '',
+                text: '【陆潇 · Bad Ending】\n\n「抱歉，今天有事。」你说。\n\n「哦，」她顿了顿，「那下次吧。」\n\n但没有下次了。\n\n后来，咖啡馆依然开着，只是你再也没去过。\n\n有些人，一旦错过，就是一辈子。\n\n—— 完 ——',
+                sprite: null,
+                choices: [{ text: '【返回标题】', next: 'title' }]
+            },
+            'title': { id: 'title', chapter: 0, title: '', bg: '', speaker: '', text: '', sprite: null, choices: [] }
+        };
             'ending_linwanqing_he': {
                 id: 'ending_linwanqing_he', chapter: 99, title: '结局',
                 bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
