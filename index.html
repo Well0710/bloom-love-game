@@ -1353,7 +1353,21 @@
                     return `<button class="option-btn ${selected}" onclick="game.selectOption('${opt.type}', ${idx})">${opt.text}</button>`;
                 }).join('');
                 
-                this.updateNavButtons();
+                // 显示导航按钮
+                const prevBtn = document.getElementById('btn-prev-q');
+                const nextBtn = document.getElementById('btn-next-q');
+                
+                if (prevBtn) prevBtn.disabled = (this.mbtiTest.currentQuestion === 0);
+                
+                // 第一次显示时，隐藏下一题按钮
+                if (nextBtn) {
+                    if (this.mbtiTest.answers[this.mbtiTest.currentQuestion] !== null) {
+                        nextBtn.style.display = 'block';
+                        nextBtn.textContent = (this.mbtiTest.currentQuestion >= MBTI_QUESTIONS.length - 1) ? '完成' : '下一题';
+                    } else {
+                        nextBtn.style.display = 'none';
+                    }
+                }
             }
             
             selectOption(type, optionIndex) {
@@ -1376,7 +1390,17 @@
                 });
                 
                 // 显示下一题按钮
-                document.getElementById('btn-next-q').style.display = 'block';
+                const nextBtn = document.getElementById('btn-next-q');
+                if (nextBtn) {
+                    nextBtn.style.display = 'block';
+                    nextBtn.textContent = (this.mbtiTest.currentQuestion >= MBTI_QUESTIONS.length - 1) ? '完成' : '下一题';
+                }
+                
+                // 启用上一题按钮
+                const prevBtn = document.getElementById('btn-prev-q');
+                if (prevBtn) {
+                    prevBtn.disabled = (this.mbtiTest.currentQuestion === 0);
+                }
             }
             
             updateNavButtons() {
