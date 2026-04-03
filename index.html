@@ -253,6 +253,16 @@
             background: #667eea;
             color: #fff;
         }
+        
+        .btn-prev:disabled {
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+        }
+        
+        .btn-next {
+            background: #667eea !important;
+            color: #fff !important;
+        }
 
         .mbti-result {
             background: #fff;
@@ -757,9 +767,9 @@
                 <!-- 选项动态生成 -->
             </div>
 
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-secondary" id="btn-prev-q" onclick="game.prevQuestion()" style="flex: 1;" disabled>上一题</button>
-                <button class="btn btn-secondary" id="btn-next-q" onclick="game.nextQuestion()" style="flex: 1; display: none;">下一题</button>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn btn-prev" id="btn-prev-q" onclick="game.prevQuestion()" style="flex: 1; background: #e0e0e0; color: #333;">上一题</button>
+                <button class="btn btn-next" id="btn-next-q" onclick="game.nextQuestion()" style="flex: 1; background: #667eea; color: #fff; display: none;">下一题</button>
             </div>
         </div>
     </div>
