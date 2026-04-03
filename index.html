@@ -355,6 +355,12 @@
             border-color: #667eea;
             background: #f8f9ff;
         }
+        
+        .option-btn.selected {
+            background: #667eea !important;
+            color: #fff !important;
+            border-color: #667eea !important;
+        }
 
         /* ===== 游戏主界面 ===== */
         #game-page {
@@ -511,6 +517,26 @@
             transform: translateY(-2px);
         }
 
+        .btn-icon-back {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-icon-back:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
         /* ===== 存档页 ===== */
         .save-grid {
             display: grid;
@@ -665,7 +691,9 @@
     <!-- MBTI 测试页 -->
     <div id="test-page" class="page">
         <div class="test-container">
-            <h2 class="page-title">MBTI 人格测试</h2>
+            <button class="btn-icon-back" onclick="game.goToCreate()" style="position: absolute; top: 15px; left: 15px; padding: 8px 15px; font-size: 0.9rem;">← 返回</button>
+            
+            <h2 class="page-title" style="margin-top: 30px;">MBTI 人格测试</h2>
 
             <div class="test-progress">
                 <span id="current-q">1</span> / 10
@@ -682,7 +710,10 @@
                 <!-- 选项动态生成 -->
             </div>
 
-            <button class="btn btn-secondary" onclick="game.goToCreate()" style="width: 100%; margin-top: 20px;">返回</button>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-secondary" id="btn-prev-q" onclick="game.prevQuestion()" style="flex: 1;" disabled>上一题</button>
+                <button class="btn btn-secondary" id="btn-next-q" onclick="game.nextQuestion()" style="flex: 1; display: none;">下一题</button>
+            </div>
         </div>
     </div>
 
@@ -1247,8 +1278,10 @@
             startMBTITest() {
                 this.mbtiTest.currentQuestion = 0;
                 this.mbtiTest.scores = { E: 0, I: 0, N: 0, S: 0, T: 0, F: 0, J: 0, P: 0 };
+                this.mbtiTest.answers = new Array(10).fill(null); // 保存每题答案
                 this.showPage('test-page');
                 this.showTestQuestion();
+                this.updateNavButtons();
             }
 
             showTestQuestion() {
@@ -1258,31 +1291,92 @@
                 document.getElementById('test-question').textContent = q.text;
 
                 const optionsEl = document.getElementById('test-options');
-                optionsEl.innerHTML = q.options.map(opt =>
-                    `<button class="option-btn" onclick="game.answerMBTI('${opt.type}')">${opt.text}</button>`
-                ).join('');
+                optionsEl.innerHTML = q.options.map((opt, idx) => {
+                    const selected = this.mbtiTest.answers[this.mbtiTest.currentQuestion] === opt.type ? 'selected' : '';
+                    return `<button class="option-btn ${selected}" onclick="game.selectOption('${opt.type}', ${idx})">${opt.text}</button>`;
+                }).join('');
+                
+                this.updateNavButtons();
             }
-
-            answerMBTI(type) {
-                this.mbtiTest.scores[type]++;
-                this.mbtiTest.currentQuestion++;
-
-                if (this.mbtiTest.currentQuestion >= MBTI_QUESTIONS.length) {
-                    const result = [
-                        this.mbtiTest.scores.E >= this.mbtiTest.scores.I ? 'E' : 'I',
-                        this.mbtiTest.scores.N >= this.mbtiTest.scores.S ? 'N' : 'S',
-                        this.mbtiTest.scores.T >= this.mbtiTest.scores.F ? 'T' : 'F',
-                        this.mbtiTest.scores.J >= this.mbtiTest.scores.P ? 'J' : 'P'
-                    ].join('');
-
-                    gameState.player.mbti = result;
-                    document.getElementById('mbti-result').innerHTML = `🎉 测试结果：<strong>${result}</strong> - ${MBTI_DESCRIPTIONS[result]}`;
-                    document.getElementById('mbti-result').style.display = 'block';
-                    this.showPage('create-page');
-                    this.checkCreateComplete();
+            
+            selectOption(type, optionIndex) {
+                // 保存当前答案
+                this.mbtiTest.answers[this.mbtiTest.currentQuestion] = type;
+                
+                // 更新 UI 显示选中状态
+                document.querySelectorAll('.option-btn').forEach((btn, idx) => {
+                    if (idx === optionIndex) {
+                        btn.classList.add('selected');
+                        btn.style.background = '#667eea';
+                        btn.style.color = '#fff';
+                        btn.style.borderColor = '#667eea';
+                    } else {
+                        btn.classList.remove('selected');
+                        btn.style.background = '#fff';
+                        btn.style.color = '#333';
+                        btn.style.borderColor = '#e0e0e0';
+                    }
+                });
+                
+                // 显示下一题按钮
+                document.getElementById('btn-next-q').style.display = 'block';
+            }
+            
+            updateNavButtons() {
+                const prevBtn = document.getElementById('btn-prev-q');
+                const nextBtn = document.getElementById('btn-next-q');
+                
+                prevBtn.disabled = (this.mbtiTest.currentQuestion === 0);
+                
+                const hasAnswer = this.mbtiTest.answers[this.mbtiTest.currentQuestion] !== null;
+                if (hasAnswer) {
+                    nextBtn.style.display = 'block';
+                    if (this.mbtiTest.currentQuestion >= MBTI_QUESTIONS.length - 1) {
+                        nextBtn.textContent = '完成';
+                    } else {
+                        nextBtn.textContent = '下一题';
+                    }
                 } else {
+                    nextBtn.style.display = 'none';
+                }
+            }
+            
+            prevQuestion() {
+                if (this.mbtiTest.currentQuestion > 0) {
+                    this.mbtiTest.currentQuestion--;
                     this.showTestQuestion();
                 }
+            }
+            
+            nextQuestion() {
+                if (this.mbtiTest.currentQuestion >= MBTI_QUESTIONS.length - 1) {
+                    // 完成测试
+                    this.finishMBTITest();
+                } else {
+                    this.mbtiTest.currentQuestion++;
+                    this.showTestQuestion();
+                }
+            }
+            
+            finishMBTITest() {
+                // 计算结果
+                const scores = { E: 0, I: 0, N: 0, S: 0, T: 0, F: 0, J: 0, P: 0 };
+                this.mbtiTest.answers.forEach(answer => {
+                    if (answer) scores[answer]++;
+                });
+                
+                const result = [
+                    scores.E >= scores.I ? 'E' : 'I',
+                    scores.N >= scores.S ? 'N' : 'S',
+                    scores.T >= scores.F ? 'T' : 'F',
+                    scores.J >= scores.P ? 'J' : 'P'
+                ].join('');
+
+                gameState.player.mbti = result;
+                document.getElementById('mbti-result').innerHTML = `🎉 测试结果：<strong>${result}</strong> - ${MBTI_DESCRIPTIONS[result]}`;
+                document.getElementById('mbti-result').style.display = 'block';
+                this.showPage('create-page');
+                this.checkCreateComplete();
             }
 
             createCharacter() {
