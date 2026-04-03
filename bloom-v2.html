@@ -45,10 +45,10 @@
             display: none;
             height: 100vh;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             text-align: center;
-            padding: 5px;
+            padding: 20px 10px 80px 10px; /* 底部留 80px 避开 Safari 地址栏 */
         }
 
         #home-page.active {
@@ -56,8 +56,8 @@
         }
 
         .game-logo {
-            font-size: 3rem;
-            margin-bottom: 3px;
+            font-size: 2.5rem;
+            margin: 15px 0 5px 0;
             animation: float 3s ease-in-out infinite;
         }
 
@@ -67,7 +67,7 @@
         }
 
         .game-title {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             color: #fff;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             margin-bottom: 3px;
@@ -75,9 +75,9 @@
         }
 
         .game-subtitle {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: rgba(255,255,255,0.9);
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             line-height: 1.3;
         }
 
@@ -88,13 +88,13 @@
             padding: 10px;
             width: 90%;
             max-width: 280px;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             border: 1px solid rgba(255,255,255,0.2);
         }
 
         .intro-card h3 {
             color: #fff;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             margin-bottom: 8px;
         }
 
@@ -121,13 +121,15 @@
         .menu-buttons {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
             width: 90%;
             max-width: 260px;
+            margin-top: auto; /* 推到底部 */
+            padding-bottom: 20px; /* 额外留白 */
         }
 
         .btn {
-            padding: 12px 25px;
+            padding: 14px 25px;
             font-size: 0.9rem;
             border: none;
             border-radius: 50px;
@@ -165,6 +167,11 @@
         }
 
         /* ===== 角色创建页 ===== */
+        #create-page {
+            padding: 15px 10px 80px 10px;
+            overflow-y: auto;
+        }
+
         .create-container {
             width: 95%;
             max-width: 300px;
@@ -173,8 +180,6 @@
             border-radius: 15px;
             padding: 15px 12px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            overflow-y: auto;
-            max-height: 95vh;
         }
 
         .page-title {
@@ -509,8 +514,8 @@
             display: flex;
             justify-content: center;
             gap: 15px;
-            padding: 20px;
-            margin-top: 20px;
+            padding: 15px 20px 30px 20px; /* 底部留更多空间 */
+            margin-top: 10px;
         }
 
         .btn-icon {
@@ -554,6 +559,11 @@
         }
 
         /* ===== 存档页 ===== */
+        #save-page {
+            padding: 15px 10px 80px 10px;
+            overflow-y: auto;
+        }
+
         .save-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
