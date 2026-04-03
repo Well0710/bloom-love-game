@@ -1279,10 +1279,633 @@
                 choices: [{ text: '【进入第二章】', next: 'chapter2_start' }]
             },
             'chapter2_start': {
-                id: 'chapter2_start', chapter: 2, title: '第二章 开发中',
+                id: 'chapter2_start', chapter: 2, title: '命运的抉择',
                 bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 speaker: '',
-                text: '【第二章 开发中……】\n\n感谢试玩！目前剧情正在持续创作中。\n\n你可以：\n- 读取之前的存档继续探索\n- 重新开始，体验不同的选择\n- 期待后续更新！',
+                text: '一周过去了。\n\n这一周里，你和几位新认识的朋友都有了不同程度的接触。\n\n今天，你收到了好几条消息……',
+                sprite: null,
+                choices: [
+                    { text: '查看消息', next: 'chapter2_messages' }
+                ]
+            },
+            'chapter2_messages': {
+                id: 'chapter2_messages', chapter: 2,
+                bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                speaker: '',
+                text: '📱 手机震动\n\n温雅：「这周末有个艺术展览，要一起来吗？」\n\n夏阳：「这周六学校运动会，来看我跑步吗？」\n\n陆潇：「新研发了一道菜，来尝尝？」\n\n苏静怡：「这周我值班，有空可以来医院找我」\n\n还有一个陌生号码：「我是林婉清，明天来我公司一趟」',
+                sprite: null,
+                choices: [
+                    { text: '回复温雅', next: 'wenya_date_invite', affection: { wenya: 3 } },
+                    { text: '回复夏阳', next: 'xiayang_date_invite', affection: { xiayang: 3 } },
+                    { text: '回复陆潇', next: 'luxiao_date_invite', affection: { luxiao: 3 } },
+                    { text: '回复苏静怡', next: 'sujingyi_date_invite', affection: { sujingyi: 3 } },
+                    { text: '回复林婉清', next: 'linwanqing_date_invite', affection: { linwanqing: 3 } }
+                ]
+            },
+            // ========== 林婉清线 ==========
+            'linwanqing_date_invite': {
+                id: 'linwanqing_date_invite', chapter: 2,
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '',
+                text: '你：「好的，明天几点？」\n\n林婉清：「上午 10 点，别迟到」\n\n简洁有力的回复，很符合她的风格。',
+                sprite: null,
+                choices: [
+                    { text: '准时到达', next: 'linwanqing_office', affection: { linwanqing: 5 } },
+                    { text: '故意迟到 5 分钟', next: 'linwanqing_late', affection: { linwanqing: -3 } }
+                ]
+            },
+            'linwanqing_office': {
+                id: 'linwanqing_office', chapter: 2,
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '林婉清',
+                text: '你准时到达了林氏集团。\n\n「不错，有时间观念。」她抬头看了你一眼，「我找你来，是想谈谈合作的事。」\n\n「合作？」',
+                sprite: 'linwanqing',
+                choices: [
+                    { text: '「我只是个普通人，能合作什么？」', next: 'linwanqing_cooperate_talk', affection: { linwanqing: 2 } },
+                    { text: '「请说」', next: 'linwanqing_cooperate_business', affection: { linwanqing: 3 } }
+                ]
+            },
+            'linwanqing_late': {
+                id: 'linwanqing_late', chapter: 2,
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '林婉清',
+                text: '你迟到了 5 分钟。\n\n林婉清看了看手表：「我不喜欢等人。」\n\n她转身走向办公室：「给你 30 分钟。」',
+                sprite: 'linwanqing',
+                choices: [
+                    { text: '「对不起，我……」', next: 'linwanqing_apologize', affection: { linwanqing: 2 } },
+                    { text: '「30 分钟够了」', next: 'linwanqing_confident', affection: { linwanqing: 5 } }
+                ]
+            },
+            'linwanqing_cooperate_talk': {
+                id: 'linwanqing_cooperate_talk', chapter: 2,
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '林婉清',
+                text: '「我们公司最近要做一个文化项目，需要你这个职业的人提供专业意见。」\n\n她递给你一份文件：「这是项目资料，你看看。」',
+                sprite: 'linwanqing',
+                choices: [
+                    { text: '认真看文件', next: 'linwanqing_meeting', affection: { linwanqing: 3 } },
+                    { text: '「可以，但我有报酬吗？」', next: 'linwanqing_money', affection: { linwanqing: 5 } }
+                ]
+            },
+            'linwanqing_cooperate_business': {
+                id: 'linwanqing_cooperate_business', chapter: 2,
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '林婉清',
+                text: '「林氏集团要进军文化产业，我需要你的专业建议。」\n\n她站起身，走到落地窗前：「当然，我不会让你白干。」',
+                sprite: 'linwanqing',
+                choices: [
+                    { text: '「报酬多少？」', next: 'linwanqing_money', affection: { linwanqing: 3 } },
+                    { text: '「我可以试试」', next: 'linwanqing_meeting', affection: { linwanqing: 5 } }
+                ]
+            },
+            'linwanqing_apologize': {
+                id: 'linwanqing_apologize', chapter: 2,
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '林婉清',
+                text: '「道歉没用。」她头也不抬，「我只看结果。」\n\n「坐下吧，我们谈正事。」',
+                sprite: 'linwanqing',
+                choices: [
+                    { text: '坐下', next: 'linwanqing_meeting', affection: { linwanqing: 2 } }
+                ]
+            },
+            'linwanqing_confident': {
+                id: 'linwanqing_confident', chapter: 2,
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '林婉清',
+                text: '她第一次正眼看你，嘴角微微上扬：「有点意思。」\n\n「好，那我就直说了。」',
+                sprite: 'linwanqing',
+                choices: [
+                    { text: '认真听', next: 'linwanqing_meeting', affection: { linwanqing: 5 } }
+                ]
+            },
+            'linwanqing_money': {
+                id: 'linwanqing_money', chapter: 2,
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '林婉清',
+                text: '她笑了：「直接说钱，我喜欢。」\n\n「报酬你开价，合理我就接受。」',
+                sprite: 'linwanqing',
+                choices: [
+                    { text: '「市场价就可以」', next: 'linwanqing_meeting', affection: { linwanqing: 5 } },
+                    { text: '「那你看着给」', next: 'linwanqing_meeting', affection: { linwanqing: 3 } }
+                ]
+            },
+            'linwanqing_meeting': {
+                id: 'linwanqing_meeting', chapter: 2,
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '林婉清',
+                text: '会议进行了两个小时。\n\n「今天就到这里。」她揉了揉太阳穴，「你比我想象的专业。」\n\n「一起吃个饭？」她突然问。',
+                sprite: 'linwanqing',
+                choices: [
+                    { text: '「好啊」', next: 'linwanqing_dinner', affection: { linwanqing: 5 } },
+                    { text: '「不了，我还有事」', next: 'linwanqing_reject', affection: { linwanqing: -5 } }
+                ]
+            },
+            'linwanqing_dinner': {
+                id: 'linwanqing_dinner', chapter: 2,
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '林婉清',
+                text: '她带你去了一家高级餐厅。\n\n「工作上我是认真的，」她举起酒杯，「但私下……我也可以不那么严肃。」\n\n她看着你的眼神，似乎有些不同。',
+                sprite: 'linwanqing',
+                choices: [
+                    { text: '「你今天很漂亮」', next: 'linwanqing_compliment', affection: { linwanqing: 10 } },
+                    { text: '「工作之外你是什么样？」', next: 'linwanqing_personal', affection: { linwanqing: 8 } }
+                ]
+            },
+            'linwanqing_reject': {
+                id: 'linwanqing_reject', chapter: 2,
+                bg: 'linear-gradient(135deg, #34495e 0%, #2c3e50 100%)',
+                speaker: '',
+                text: '你拒绝了她。\n\n她愣了一下，随即恢复平静：「好，那下次再约。」\n\n但你知道，可能没有下次了。',
+                sprite: 'linwanqing',
+                choices: [
+                    { text: '【好感度不足，进入 BE 路线】', next: 'ending_linwanqing_be' }
+                ]
+            },
+            'linwanqing_compliment': {
+                id: 'linwanqing_compliment', chapter: 2,
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '林婉清',
+                text: '她脸红了。\n\n真的，那个强势的女总裁，居然脸红了。\n\n「你……」她低下头，「油嘴滑舌。」',
+                sprite: 'linwanqing',
+                choices: [
+                    { text: '「我是认真的」', next: 'ending_linwanqing_he', affection: { linwanqing: 15 } }
+                ]
+            },
+            'linwanqing_personal': {
+                id: 'linwanqing_personal', chapter: 2,
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '林婉清',
+                text: '「我？」她想了想，「其实我也喜欢看漫画，追剧，还会打游戏。」\n\n「没想到吧？」',
+                sprite: 'linwanqing',
+                choices: [
+                    { text: '「下次一起打游戏？」', next: 'ending_linwanqing_he', affection: { linwanqing: 15 } }
+                ]
+            },
+            // ========== 夏阳线 ==========
+            'xiayang_date_invite': {
+                id: 'xiayang_date_invite', chapter: 2,
+                bg: 'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)',
+                speaker: '',
+                text: '你：「好啊，我去给你加油！」\n\n夏阳：「太好了！周六上午 9 点，清华操场！」\n\n隔着屏幕都能感受到她的活力。',
+                sprite: null,
+                choices: [
+                    { text: '准时到场', next: 'xiayang_sports', affection: { xiayang: 5 } },
+                    { text: '带礼物去', next: 'xiayang_gift', affection: { xiayang: 8 } }
+                ]
+            },
+            'xiayang_sports': {
+                id: 'xiayang_sports', chapter: 2,
+                bg: 'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)',
+                speaker: '夏阳',
+                text: '你准时到达了清华操场。\n\n夏阳正在热身，看到你，挥挥手：「你来啦！」\n\n她跑过来，一身运动装，马尾辫高高扎起。',
+                sprite: 'xiayang',
+                choices: [
+                    { text: '「加油，我看好你」', next: 'xiayang_race', affection: { xiayang: 5 } },
+                    { text: '「跑完请你吃饭」', next: 'xiayang_food', affection: { xiayang: 8 } }
+                ]
+            },
+            'xiayang_gift': {
+                id: 'xiayang_gift', chapter: 2,
+                bg: 'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)',
+                speaker: '夏阳',
+                text: '你带了运动饮料和毛巾。\n\n「哇，你好贴心！」她眼睛亮晶晶的，「我正需要这个！」',
+                sprite: 'xiayang',
+                choices: [
+                    { text: '「运动后要注意补充水分」', next: 'xiayang_race', affection: { xiayang: 5 } }
+                ]
+            },
+            'xiayang_race': {
+                id: 'xiayang_race', chapter: 2,
+                bg: 'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)',
+                speaker: '',
+                text: '比赛开始了。\n\n夏阳像一阵风，遥遥领先。\n\n冲过终点线时，她回头找你，笑容灿烂。',
+                sprite: 'xiayang',
+                choices: [
+                    { text: '跑过去迎接她', next: 'xiayang_celebrate', affection: { xiayang: 8 } },
+                    { text: '在原地鼓掌', next: 'xiayang_clap', affection: { xiayang: 3 } }
+                ]
+            },
+            'xiayang_food': {
+                id: 'xiayang_food', chapter: 2,
+                bg: 'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)',
+                speaker: '夏阳',
+                text: '「真的吗！我想吃火锅！」\n\n她眼睛一亮：「跑完步吃火锅最爽了！」',
+                sprite: 'xiayang',
+                choices: [
+                    { text: '「好，我请客」', next: 'xiayang_hotpot', affection: { xiayang: 8 } }
+                ]
+            },
+            'xiayang_celebrate': {
+                id: 'xiayang_celebrate', chapter: 2,
+                bg: 'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)',
+                speaker: '夏阳',
+                text: '她冲过来，直接抱住了你。\n\n「我赢了！」她在你耳边说，「你看到了吗！」\n\n心跳加速，不知道是因为运动还是别的什么。',
+                sprite: 'xiayang',
+                choices: [
+                    { text: '回抱她', next: 'ending_xiayang_he', affection: { xiayang: 15 } },
+                    { text: '轻轻推开', next: 'ending_xiayang_be', affection: { xiayang: -5 } }
+                ]
+            },
+            'xiayang_clap': {
+                id: 'xiayang_clap', chapter: 2,
+                bg: 'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)',
+                speaker: '夏阳',
+                text: '她跑过来，有点失望：「你怎么不过来呀？」\n\n「我还以为你会过来庆祝呢……」',
+                sprite: 'xiayang',
+                choices: [
+                    { text: '「我怕打扰你」', next: 'xiayang_next', affection: { xiayang: 5 } }
+                ]
+            },
+            'xiayang_hotpot': {
+                id: 'xiayang_hotpot', chapter: 2,
+                bg: 'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)',
+                speaker: '夏阳',
+                text: '火锅店里。\n\n「你知道吗，」她一边涮肉一边说，「你是第一个来看我比赛的人。」\n\n「所以……我很开心。」',
+                sprite: 'xiayang',
+                choices: [
+                    { text: '「以后我都会来」', next: 'ending_xiayang_he', affection: { xiayang: 15 } },
+                    { text: '「这么容易满足？」', next: 'xiayang_next', affection: { xiayang: 8 } }
+                ]
+            },
+            'xiayang_next': {
+                id: 'xiayang_next', chapter: 2,
+                bg: 'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)',
+                speaker: '夏阳',
+                text: '「说好了哦，拉钩！」\n\n她伸出小拇指，像个小孩子。\n\n你忍不住笑了。',
+                sprite: 'xiayang',
+                choices: [
+                    { text: '和她拉钩', next: 'ending_xiayang_he', affection: { xiayang: 10 } }
+                ]
+            },
+            // ========== 苏静怡线 ==========
+            'sujingyi_date_invite': {
+                id: 'sujingyi_date_invite', chapter: 2,
+                bg: 'linear-gradient(135deg, #3498db 0%, #5dade2 100%)',
+                speaker: '',
+                text: '你：「好的，我下午过去」\n\n苏静怡：「嗯，我下午 2 点到 6 点在」\n\n「路上小心」\n\n简短但温暖的关心。',
+                sprite: null,
+                choices: [
+                    { text: '带水果去', next: 'sujingyi_fruit', affection: { sujingyi: 5 } },
+                    { text: '直接去', next: 'sujingyi_hospital', affection: { sujingyi: 3 } }
+                ]
+            },
+            'sujingyi_fruit': {
+                id: 'sujingyi_fruit', chapter: 2,
+                bg: 'linear-gradient(135deg, #3498db 0%, #5dade2 100%)',
+                speaker: '苏静怡',
+                text: '你带了水果去医院。\n\n「太客气了。」她接过水果，「其实不用带东西的。」\n\n但她嘴角的笑意说明她很开心。',
+                sprite: 'sujingyi',
+                choices: [
+                    { text: '「一点心意」', next: 'sujingyi_work', affection: { sujingyi: 5 } }
+                ]
+            },
+            'sujingyi_hospital': {
+                id: 'sujingyi_hospital', chapter: 2,
+                bg: 'linear-gradient(135deg, #3498db 0%, #5dade2 100%)',
+                speaker: '苏静怡',
+                text: '你直接到了医院。\n\n她穿着白大褂，从诊室出来：「你来了。」\n\n「等我一下，马上看完这个病人。」',
+                sprite: 'sujingyi',
+                choices: [
+                    { text: '安静等待', next: 'sujingyi_work', affection: { sujingyi: 5 } },
+                    { text: '「需要帮忙吗？」', next: 'sujingyi_help', affection: { sujingyi: 8 } }
+                ]
+            },
+            'sujingyi_work': {
+                id: 'sujingyi_work', chapter: 2,
+                bg: 'linear-gradient(135deg, #3498db 0%, #5dade2 100%)',
+                speaker: '苏静怡',
+                text: '她工作的时候很专注。\n\n温柔的语气，专业的态度，病人和家属都很信任她。\n\n你在一旁看着，不知不觉入了神。',
+                sprite: 'sujingyi',
+                choices: [
+                    { text: '继续看', next: 'sujingyi_admire', affection: { sujingyi: 8 } },
+                    { text: '去外面等', next: 'sujingyi_wait', affection: { sujingyi: 3 } }
+                ]
+            },
+            'sujingyi_help': {
+                id: 'sujingyi_help', chapter: 2,
+                bg: 'linear-gradient(135deg, #3498db 0%, #5dade2 100%)',
+                speaker: '苏静怡',
+                text: '她笑了：「不用，你在外面等我就好。」\n\n「不过……谢谢你的好意。」',
+                sprite: 'sujingyi',
+                choices: [
+                    { text: '「好，我等你」', next: 'sujingyi_work', affection: { sujingyi: 5 } }
+                ]
+            },
+            'sujingyi_admire': {
+                id: 'sujingyi_admire', chapter: 2,
+                bg: 'linear-gradient(135deg, #3498db 0%, #5dade2 100%)',
+                speaker: '苏静怡',
+                text: '她结束后，走到你身边：「看什么呢？」\n\n「没，」你移开视线，「觉得你很厉害。」\n\n她脸红了。',
+                sprite: 'sujingyi',
+                choices: [
+                    { text: '「我是认真的」', next: 'ending_sujingyi_he', affection: { sujingyi: 15 } }
+                ]
+            },
+            'sujingyi_wait': {
+                id: 'sujingyi_wait', chapter: 2,
+                bg: 'linear-gradient(135deg, #3498db 0%, #5dade2 100%)',
+                speaker: '苏静怡',
+                text: '你在外面等了一个小时。\n\n她终于出来了：「抱歉，让你久等了。」\n\n「走吧，我请你喝咖啡。」',
+                sprite: 'sujingyi',
+                choices: [
+                    { text: '「好」', next: 'sujingyi_coffee', affection: { sujingyi: 5 } },
+                    { text: '「我请你吧」', next: 'sujingyi_treat', affection: { sujingyi: 8 } }
+                ]
+            },
+            'sujingyi_coffee': {
+                id: 'sujingyi_coffee', chapter: 2,
+                bg: 'linear-gradient(135deg, #3498db 0%, #5dade2 100%)',
+                speaker: '苏静怡',
+                text: '医院附近的咖啡店。\n\n「今天谢谢你来看我。」她说，「其实……一个人值班挺孤单的。」',
+                sprite: 'sujingyi',
+                choices: [
+                    { text: '「以后我经常来」', next: 'ending_sujingyi_he', affection: { sujingyi: 15 } },
+                    { text: '「工作辛苦吗」', next: 'ending_sujingyi_ne', affection: { sujingyi: 5 } }
+                ]
+            },
+            'sujingyi_treat': {
+                id: 'sujingyi_treat', chapter: 2,
+                bg: 'linear-gradient(135deg, #3498db 0%, #5dade2 100%)',
+                speaker: '苏静怡',
+                text: '「那怎么行，」她坚持，「是我约你来的。」\n\n最后她付的钱。\n\n「下次你请我吧。」她笑着说。',
+                sprite: 'sujingyi',
+                choices: [
+                    { text: '「好，说定了」', next: 'ending_sujingyi_he', affection: { sujingyi: 15 } }
+                ]
+            },
+            // ========== 温雅线 ==========
+            'wenya_date_invite': {
+                id: 'wenya_date_invite', chapter: 2,
+                bg: 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)',
+                speaker: '',
+                text: '你：「好啊，什么展览？」\n\n温雅：「市美术馆有个当代艺术展，我一直想去看。」\n\n「周六下午 2 点，美术馆门口见？」',
+                sprite: null,
+                choices: [
+                    { text: '「好，不见不散」', next: 'wenya_museum', affection: { wenya: 5 } },
+                    { text: '「我去接你」', next: 'wenya_pickup', affection: { wenya: 8 } }
+                ]
+            },
+            'wenya_museum': {
+                id: 'wenya_museum', chapter: 2,
+                bg: 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)',
+                speaker: '温雅',
+                text: '美术馆门口。\n\n温雅已经在了，穿了一条淡粉色的裙子，长发披肩。\n\n「你来了。」她看到你，露出温柔的笑容。',
+                sprite: 'wenya',
+                choices: [
+                    { text: '「等很久了吗？」', next: 'wenya_wait', affection: { wenya: 3 } },
+                    { text: '「你今天很漂亮」', next: 'wenya_beautiful', affection: { wenya: 8 } }
+                ]
+            },
+            'wenya_pickup': {
+                id: 'wenya_pickup', chapter: 2,
+                bg: 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)',
+                speaker: '温雅',
+                text: '你去她家楼下接她。\n\n「麻烦你了。」她小跑着过来，「不好意思让你等我。」\n\n其实她提前了，是你早到了。',
+                sprite: 'wenya',
+                choices: [
+                    { text: '「是我早到了」', next: 'wenya_exhibition', affection: { wenya: 5 } },
+                    { text: '「走吧」', next: 'wenya_exhibition', affection: { wenya: 3 } }
+                ]
+            },
+            'wenya_wait': {
+                id: 'wenya_wait', chapter: 2,
+                bg: 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)',
+                speaker: '温雅',
+                text: '「没有，我也刚到。」\n\n但你看她手里的咖啡，已经喝了一半。\n\n她不想让你有压力。',
+                sprite: 'wenya',
+                choices: [
+                    { text: '「下次别等了」', next: 'wenya_exhibition', affection: { wenya: 5 } },
+                    { text: '「下次一起喝咖啡」', next: 'wenya_exhibition', affection: { wenya: 10 } }
+                ]
+            },
+            'wenya_beautiful': {
+                id: 'wenya_beautiful', chapter: 2,
+                bg: 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)',
+                speaker: '温雅',
+                text: '她脸红了：「谢谢……」\n\n「你……也很漂亮。」她小声说。\n\n心跳漏了一拍。',
+                sprite: 'wenya',
+                choices: [
+                    { text: '「谢谢」', next: 'wenya_exhibition', affection: { wenya: 5 } },
+                    { text: '牵她的手', next: 'ending_wenya_he', affection: { wenya: 15 } }
+                ]
+            },
+            'wenya_exhibition': {
+                id: 'wenya_exhibition', chapter: 2,
+                bg: 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)',
+                speaker: '温雅',
+                text: '展览很美。\n\n温雅在一幅画前驻足很久。\n\n「这幅画……」她轻声说，「让我想到了你。」',
+                sprite: 'wenya',
+                choices: [
+                    { text: '「为什么？」', next: 'wenya_why', affection: { wenya: 8 } },
+                    { text: '「我也想到了你」', next: 'wenya_think', affection: { wenya: 10 } }
+                ]
+            },
+            'wenya_why': {
+                id: 'wenya_why', chapter: 2,
+                bg: 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)',
+                speaker: '温雅',
+                text: '「很温暖，很柔和。」她说，「就像……你给我的感觉。」\n\n她转过头，认真地看着你。',
+                sprite: 'wenya',
+                choices: [
+                    { text: '「我也是」', next: 'ending_wenya_he', affection: { wenya: 15 } }
+                ]
+            },
+            'wenya_think': {
+                id: 'wenya_think', chapter: 2,
+                bg: 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)',
+                speaker: '温雅',
+                text: '她笑了，笑容像花一样绽放。\n\n「我们……」她顿了顿，「以后可以经常一起看展吗？」',
+                sprite: 'wenya',
+                choices: [
+                    { text: '「好」', next: 'ending_wenya_he', affection: { wenya: 15 } },
+                    { text: '「看时间」', next: 'ending_wenya_ne', affection: { wenya: -5 } }
+                ]
+            },
+            // ========== 陆潇线 ==========
+            'luxiao_date_invite': {
+                id: 'luxiao_date_invite', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '',
+                text: '你：「什么新菜？」\n\n陆潇：「秘密。来了就知道。」\n\n神秘的语气，让你更加好奇。',
+                sprite: null,
+                choices: [
+                    { text: '「几点？」', next: 'luxiao_time', affection: { luxiao: 3 } },
+                    { text: '「我现在就过去」', next: 'luxiao_now', affection: { luxiao: 8 } }
+                ]
+            },
+            'luxiao_time': {
+                id: 'luxiao_time', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '「晚上 8 点，打烊后。」\n\n「那时候安静，可以好好尝尝。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「好，准时到」', next: 'luxiao_arrive', affection: { luxiao: 5 } },
+                    { text: '「需要我帮忙吗？」', next: 'luxiao_help', affection: { luxiao: 8 } }
+                ]
+            },
+            'luxiao_now': {
+                id: 'luxiao_now', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '「这么急？」她似乎笑了，「行，过来吧。」\n\n「不过现在人多，可能要等。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「我等得起」', next: 'luxiao_arrive', affection: { luxiao: 8 } }
+                ]
+            },
+            'luxiao_help': {
+                id: 'luxiao_help', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '「帮忙？」她想了想，「那你来试试菜吧。」\n\n「正好缺个试吃的。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「荣幸之至」', next: 'luxiao_arrive', affection: { luxiao: 5 } }
+                ]
+            },
+            'luxiao_arrive': {
+                id: 'luxiao_arrive', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '',
+                text: '晚上 8 点，你准时到达。\n\n店里已经打烊了，但灯还亮着。\n\n陆潇在吧台后，正在摆盘。',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「需要帮忙吗？」', next: 'luxiao_serve', affection: { luxiao: 5 } },
+                    { text: '安静等待', next: 'luxiao_wait', affection: { luxiao: 3 } }
+                ]
+            },
+            'luxiao_serve': {
+                id: 'luxiao_serve', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '「把那个盘子递给我。」她说。\n\n你递过去，她接过，动作流畅自然。\n\n「不错，有当助手的天赋。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「那你雇我？」', next: 'luxiao_job', affection: { luxiao: 8 } },
+                    { text: '「只是临时助手」', next: 'luxiao_dish', affection: { luxiao: 5 } }
+                ]
+            },
+            'luxiao_wait': {
+                id: 'luxiao_wait', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '她专注地摆盘，你没打扰。\n\n完成后，她抬头看你：「等久了？」\n\n「尝尝这个。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '品尝', next: 'luxiao_taste', affection: { luxiao: 5 } }
+                ]
+            },
+            'luxiao_job': {
+                id: 'luxiao_job', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '她笑了：「好啊，包吃住。」\n\n「不过……」她凑近，「工资可能不高。」\n\n距离太近了，你能闻到她身上的香气。',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「我不在乎工资」', next: 'ending_luxiao_he', affection: { luxiao: 15 } },
+                    { text: '后退一步', next: 'ending_luxiao_be', affection: { luxiao: -5 } }
+                ]
+            },
+            'luxiao_dish': {
+                id: 'luxiao_dish', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '陆潇',
+                text: '「可惜了。」她笑着说。\n\n然后端出一道菜：「尝尝这个，新研发的。」',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '品尝', next: 'luxiao_taste', affection: { luxiao: 5 } }
+                ]
+            },
+            'luxiao_taste': {
+                id: 'luxiao_taste', chapter: 2,
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '',
+                text: '你尝了一口。\n\n美味在舌尖绽放。\n\n「怎么样？」她问，眼神里有一丝期待。',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「很好吃」', next: 'ending_luxiao_he', affection: { luxiao: 10 } },
+                    { text: '「不如你」', next: 'ending_luxiao_he', affection: { luxiao: 15 } }
+                ]
+            },
+            // ========== 结局系统 ==========
+            'ending_linwanqing_he': {
+                id: 'ending_linwanqing_he', chapter: 99, title: '结局',
+                bg: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',
+                speaker: '',
+                text: '【林婉清 · Happy Ending】\n\n从那以后，她依然强势，依然雷厉风行。\n\n但在你面前，她会卸下所有防备。\n\n「今晚一起吃饭？」她发来消息。\n\n「还是老地方？」你回复。\n\n「嗯，我等你。」\n\n原来，爱情不是改变对方，而是让彼此成为更好的自己。\n\n—— 完 ——',
+                sprite: null,
+                choices: [{ text: '【返回标题】', next: 'title' }]
+            },
+            'ending_linwanqing_be': {
+                id: 'ending_linwanqing_be', chapter: 99, title: '结局',
+                bg: 'linear-gradient(135deg, #34495e 0%, #2c3e50 100%)',
+                speaker: '',
+                text: '【林婉清 · Bad Ending】\n\n后来，你们再也没有联系。\n\n偶尔在新闻上看到她，依然是那个强势的女总裁。\n\n只是不知道，她会不会偶尔想起你。\n\n有些缘分，错过了就是错过了。\n\n—— 完 ——',
+                sprite: null,
+                choices: [{ text: '【返回标题】', next: 'title' }]
+            },
+            'ending_xiayang_he': {
+                id: 'ending_xiayang_he', chapter: 99, title: '结局',
+                bg: 'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)',
+                speaker: '',
+                text: '【夏阳 · Happy Ending】\n\n「下周还有比赛，你还来吗？」\n\n「来，每场都来。」\n\n「那……说好了哦！」她伸出小拇指。\n\n你和她拉钩。\n\n阳光洒在她脸上，笑容灿烂。\n\n原来，喜欢一个人，就是想看她一直这样笑下去。\n\n—— 完 ——',
+                sprite: null,
+                choices: [{ text: '【返回标题】', next: 'title' }]
+            },
+            'ending_xiayang_be': {
+                id: 'ending_xiayang_be', chapter: 99, title: '结局',
+                bg: 'linear-gradient(135deg, #34495e 0%, #2c3e50 100%)',
+                speaker: '',
+                text: '【夏阳 · Bad Ending】\n\n她松开了手。\n\n「对不起……」你说。\n\n「没事，」她勉强笑了笑，「是我太冲动了。」\n\n后来，她依然会在操场跑步，只是再也没对你笑过。\n\n有些距离，一旦拉开，就再也回不去了。\n\n—— 完 ——',
+                sprite: null,
+                choices: [{ text: '【返回标题】', next: 'title' }]
+            },
+            'ending_sujingyi_he': {
+                id: 'ending_sujingyi_he', chapter: 99, title: '结局',
+                bg: 'linear-gradient(135deg, #3498db 0%, #5dade2 100%)',
+                speaker: '',
+                text: '【苏静怡 · Happy Ending】\n\n「以后我经常来。」你说。\n\n「嗯，」她轻声说，「我等你。」\n\n医院走廊里，她的白大褂被风吹起。\n\n温柔的笑容，是你见过最美的风景。\n\n原来，陪伴是最长情的告白。\n\n—— 完 ——',
+                sprite: null,
+                choices: [{ text: '【返回标题】', next: 'title' }]
+            },
+            'ending_sujingyi_ne': {
+                id: 'ending_sujingyi_ne', chapter: 99, title: '结局',
+                bg: 'linear-gradient(135deg, #95a5a6 0%, #bdc3c7 100%)',
+                speaker: '',
+                text: '【苏静怡 · Normal Ending】\n\n「看时间吧。」你说。\n\n她愣了一下，随即笑笑：「好，工作忙，理解。」\n\n后来，你们偶尔会发个消息，但也仅此而已。\n\n有些关系，止于朋友，或许是最好的结局。\n\n—— 完 ——',
+                sprite: null,
+                choices: [{ text: '【返回标题】', next: 'title' }]
+            },
+            'ending_wenya_he': {
+                id: 'ending_wenya_he', chapter: 99, title: '结局',
+                bg: 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)',
+                speaker: '',
+                text: '【温雅 · Happy Ending】\n\n「好，以后经常一起看展。」\n\n她笑了，笑容像花一样绽放。\n\n美术馆里，你们的手依然牵着。\n\n十指相扣的温度，是爱情最美的模样。\n\n原来，温柔的人值得被温柔以待。\n\n—— 完 ——',
+                sprite: null,
+                choices: [{ text: '【返回标题】', next: 'title' }]
+            },
+            'ending_wenya_ne': {
+                id: 'ending_wenya_ne', chapter: 99, title: '结局',
+                bg: 'linear-gradient(135deg, #95a5a6 0%, #bdc3c7 100%)',
+                speaker: '',
+                text: '【温雅 · Normal Ending】\n\n「看时间吧。」你说。\n\n她低下头：「嗯……理解。」\n\n后来，你们在楼道里遇到，还是会打招呼。\n\n但也只是邻居而已了。\n\n有些温柔，错过了就再也遇不到。\n\n—— 完 ——',
+                sprite: null,
+                choices: [{ text: '【返回标题】', next: 'title' }]
+            },
+            'ending_luxiao_he': {
+                id: 'ending_luxiao_he', chapter: 99, title: '结局',
+                bg: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)',
+                speaker: '',
+                text: '【陆潇 · Happy Ending】\n\n「新菜好吃吗？」她问。\n\n「好吃，」你说，「但比不过你。」\n\n她笑了，那个酷酷的女人，居然脸红了。\n\n咖啡馆里，香气氤氲。\n\n原来，最动人的爱情，藏在日常的一餐一饭里。\n\n—— 完 ——',
+                sprite: null,
+                choices: [{ text: '【返回标题】', next: 'title' }]
+            },
+            'ending_luxiao_be': {
+                id: 'ending_luxiao_be', chapter: 99, title: '结局',
+                bg: 'linear-gradient(135deg, #34495e 0%, #2c3e50 100%)',
+                speaker: '',
+                text: '【陆潇 · Bad Ending】\n\n「抱歉，今天有事。」你说。\n\n「哦，」她顿了顿，「那下次吧。」\n\n但没有下次了。\n\n后来，咖啡馆依然开着，只是你再也没去过。\n\n有些人，一旦错过，就是一辈子。\n\n—— 完 ——',
                 sprite: null,
                 choices: [{ text: '【返回标题】', next: 'title' }]
             },
