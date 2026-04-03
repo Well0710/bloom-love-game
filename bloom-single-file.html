@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloom - 百合恋爱互动游戏</title>
+    <style>
+/* Bloom - 手绘风格恋爱游戏样式 */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:linear-gradient(135deg,#ffecd2 0%,#fcb69f 100%);min-height:100vh;overflow:hidden}
+#game-container{width:100vw;height:100vh;position:relative}
+.screen{display:none;width:100%;height:100%;position:absolute;top:0;left:0;flex-direction:column;justify-content:center;align-items:center;padding:20px}
+.screen.active{display:flex}
+#start-screen{background:linear-gradient(135deg,#ffeaa7 0%,#fdcb6e 50%,#e17055 100%)}
+.game-title{font-size:5rem;color:#fff;text-shadow:3px 3px 6px rgba(0,0,0,0.3);margin-bottom:10px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.subtitle{font-size:1.5rem;color:#fff;margin-bottom:40px;text-shadow:1px 1px 3px rgba(0,0,0,0.2)}
+.menu-buttons{display:flex;flex-direction:column;gap:15px}
+.menu-btn{padding:15px 40px;font-size:1.2rem;border:3px solid #fff;border-radius:50px;background:rgba(255,255,255,0.3);color:#fff;cursor:pointer;transition:all 0.3s;font-family:inherit;backdrop-filter:blur(5px)}
+.menu-btn:hover:not(:disabled){background:rgba(255,255,255,0.5);transform:scale(1.05)}
+.menu-btn:disabled{opacity:0.5;cursor:not-allowed}
+#create-screen{background:linear-gradient(135deg,#a8edea 0%,#fed6e3 100%)}
+#create-screen h2{font-size:2.5rem;color:#2d3436;margin-bottom:30px}
+.form-group{margin-bottom:20px;width:100%;max-width:400px}
+.form-group label{display:block;font-size:1.1rem;color:#2d3436;margin-bottom:8px}
+.form-group input{width:100%;padding:12px 20px;font-size:1rem;border:2px solid #ddd;border-radius:25px;background:rgba(255,255,255,0.8);font-family:inherit}
+.form-group input:focus{outline:none;border-color:#fd79a8}
+.mbti-select{display:flex;gap:10px;margin-top:10px}
+.sub-btn{padding:10px 20px;font-size:0.95rem;border:2px solid #2d3436;border-radius:20px;background:#fff;color:#2d3436;cursor:pointer;transition:all 0.3s;font-family:inherit}
+.sub-btn:hover{background:#2d3436;color:#fff}
+.mbti-result{margin-top:15px;padding:15px;background:rgba(255,255,255,0.6);border-radius:15px;font-size:1.1rem;color:#2d3436}
+#mbti-test-screen{background:linear-gradient(135deg,#d299c2 0%,#fef9d7 100%)}
+#mbti-test-screen h2{font-size:2rem;color:#2d3436;margin-bottom:20px}
+#test-progress{font-size:1.1rem;color:#636e72;margin-bottom:20px}
+.question-box{max-width:600px;padding:30px;background:rgba(255,255,255,0.9);border-radius:20px;font-size:1.3rem;color:#2d3436;margin-bottom:30px;text-align:center;line-height:1.6}
+.test-options{display:flex;flex-direction:column;gap:15px;max-width:500px}
+.test-options button{padding:15px 30px;font-size:1rem;border:2px solid #2d3436;border-radius:25px;background:#fff;color:#2d3436;cursor:pointer;transition:all 0.3s;font-family:inherit}
+.test-options button:hover{background:#2d3436;color:#fff}
+#game-screen{justify-content:flex-start}
+#background{width:100%;height:100%;position:absolute;top:0;left:0;background:linear-gradient(135deg,#74b9ff 0%,#a29bfe 100%);transition:background 0.5s}
+#character-sprite{position:absolute;bottom:0;right:10%;width:300px;height:500px;background-size:contain;background-repeat:no-repeat;background-position:bottom}
+#ui-overlay{width:100%;height:100%;position:relative;z-index:10}
+#top-bar{display:flex;justify-content:space-between;align-items:center;padding:15px 30px;background:rgba(255,255,255,0.8);border-radius:0 0 20px 20px}
+#chapter-title{font-size:1.2rem;color:#2d3436;font-weight:bold}
+#affection-display{display:flex;gap:10px}
+.affection-heart{display:flex;align-items:center;gap:5px;font-size:0.9rem;padding:5px 10px;background:rgba(255,255,255,0.7);border-radius:15px}
+#dialogue-box{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);width:80%;max-width:900px;padding:25px 35px;background:rgba(255,255,255,0.95);border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,0.2)}
+#speaker-name{font-size:1.3rem;font-weight:bold;color:#fd79a8;margin-bottom:10px}
+#dialogue-text{font-size:1.15rem;color:#2d3436;line-height:1.8;min-height:60px}
+#choices-container{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.choice-btn{padding:15px 25px;font-size:1rem;border:2px solid #fd79a8;border-radius:15px;background:#fff;color:#2d3436;cursor:pointer;transition:all 0.3s;font-family:inherit;text-align:left}
+.choice-btn:hover{background:#fd79a8;color:#fff}
+#save-load-bar{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:10px}
+.small-btn{padding:8px 20px;font-size:0.9rem;border:2px solid #2d3436;border-radius:20px;background:rgba(255,255,255,0.9);color:#2d3436;cursor:pointer;transition:all 0.3s;font-family:inherit}
+.small-btn:hover{background:#2d3436;color:#fff}
+#save-screen{background:linear-gradient(135deg,#74b9ff 0%,#a29bfe 100%)}
+#save-screen h2{font-size:2rem;color:#fff;margin-bottom:30px}
+#save-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:30px}
+.save-slot{width:280px;padding:20px;background:rgba(255,255,255,0.9);border-radius:15px;cursor:pointer;transition:all 0.3s;border:3px solid transparent}
+.save-slot:hover{transform:scale(1.05);border-color:#fd79a8}
+.save-slot.empty{opacity:0.7}
+.save-slot .slot-title{font-size:1.1rem;color:#2d3436;margin-bottom:10px}
+.save-slot .slot-info{font-size:0.9rem;color:#636e72}
+#ending-screen{background:linear-gradient(135deg,#fd79a8 0%,#e84393 100%)}
+#ending-screen h1{font-size:3rem;color:#fff;margin-bottom:30px;text-shadow:2px 2px 4px rgba(0,0,0,0.3)}
+#ending-image{width:300px;height:400px;background:rgba(255,255,255,0.3);border-radius:20px;margin-bottom:30px}
+#ending-text{font-size:1.2rem;color:#fff;max-width:600px;text-align:center;line-height:1.8;margin-bottom:40px}
+@media(max-width:768px){.game-title{font-size:3rem}#save-slots{grid-template-columns:1fr}.save-slot{width:100%}#dialogue-box{width:90%;bottom:70px}}
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="start-screen" class="screen active">
+            <h1 class="game-title">🌸 Bloom</h1>
+            <p class="subtitle">一段关于爱与成长的故事</p>
+            <div class="menu-buttons">
+                <button id="btn-new-game" class="menu-btn">✨ 新的故事</button>
+                <button id="btn-continue" class="menu-btn" disabled>📖 继续游戏</button>
+                <button id="btn-load" class="menu-btn">📂 读取存档</button>
+            </div>
+        </div>
+        <div id="create-screen" class="screen">
+            <h2>创建你的角色</h2>
+            <div class="form-group">
+                <label>你的名字：</label>
+                <input type="text" id="player-name" placeholder="请输入名字" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label>年龄：</label>
+                <input type="number" id="player-age" placeholder="20-40" min="20" max="40">
+            </div>
+            <div class="form-group">
+                <label>职业：</label>
+                <input type="text" id="player-job" placeholder="例如：设计师、程序员、作家..." maxlength="20">
+            </div>
+            <div class="form-group">
+                <label>MBTI 人格：</label>
+                <div class="mbti-select">
+                    <button id="btn-mbti-direct" class="sub-btn">直接选择</button>
+                    <button id="btn-mbti-test" class="sub-btn">10 题测试</button>
+                </div>
+                <div id="mbti-result" class="mbti-result"></div>
+            </div>
+            <button id="btn-start-game" class="menu-btn" disabled>开始故事</button>
+        </div>
+        <div id="mbti-test-screen" class="screen">
+            <h2>MBTI 人格测试</h2>
+            <div id="test-progress">问题 <span id="current-q">1</span> / 10</div>
+            <div id="test-question" class="question-box"></div>
+            <div id="test-options" class="test-options"></div>
+        </div>
+        <div id="game-screen" class="screen">
+            <div id="background"></div>
+            <div id="character-sprite"></div>
+            <div id="ui-overlay">
+                <div id="top-bar">
+                    <span id="chapter-title">第 1 章</span>
+                    <div id="affection-display"></div>
+                </div>
+                <div id="dialogue-box">
+                    <div id="speaker-name"></div>
+                    <div id="dialogue-text"></div>
+                    <div id="choices-container"></div>
+                </div>
+                <div id="save-load-bar">
+                    <button id="btn-save" class="small-btn">💾 保存</button>
+                    <button id="btn-load-ingame" class="small-btn">📂 读取</button>
+                    <button id="btn-title" class="small-btn">🏠 标题</button>
+                </div>
+            </div>
+        </div>
+        <div id="save-screen" class="screen">
+            <h2>存档槽位</h2>
+            <div id="save-slots"></div>
+            <button id="btn-back-save" class="menu-btn">返回</button>
+        </div>
+        <div id="ending-screen" class="screen">
+            <h1 id="ending-title"></h1>
+            <div id="ending-image"></div>
+            <p id="ending-text"></p>
+            <button id="btn-back-title" class="menu-btn">返回标题</button>
+        </div>
+    </div>
+    <audio id="bgm" loop></audio>
+    <script>
+const CHARACTERS={player:{name:'',age:0,job:'',mbti:''},linwanqing:{id:'linwanqing',name:'林婉清',age:32,height:178,mbti:'ENTJ',job:'林氏集团总裁',description:'多金长发御姐，斯文败类气质',keywords:['强势','掌控欲','外冷内热'],color:'#8e44ad',affection:0,maxAffection:100,sprite:'assets/characters/linwanqing.png'},xiayang:{id:'xiayang',name:'夏阳',age:24,height:175,mbti:'ENTP',job:'清华大学研二学生',description:'阳光爱运动的校园学霸妹',keywords:['活泼','聪明','直球'],color:'#e67e22',affection:0,maxAffection:100,sprite:'assets/characters/xiayang.png'},sujingyi:{id:'sujingyi',name:'苏静怡',age:28,height:168,mbti:'ISTJ',job:'医院主治医师',description:'哈佛医学博士，气质美女医生',keywords:['温柔','专业','慢热'],color:'#3498db',affection:0,maxAffection:100,sprite:'assets/characters/sujingyi.png'},wenya:{id:'wenya',name:'温雅',age:26,height:172,mbti:'INFP',job:'中学美术老师',description:'温柔长卷发邻居姐姐',keywords:['文艺','敏感','治愈'],color:'#fd79a8',affection:0,maxAffection:100,sprite:'assets/characters/wenya.png'},luxiao:{id:'luxiao',name:'陆潇',age:29,height:177,mbti:'ENFJ',job:'法餐主理人',description:'短发盐系，雌雄莫辨',keywords:['成熟','体贴','神秘'],color:'#2d3436',affection:0,maxAffection:100,sprite:'assets/characters/luxiao.png'}};
+const MBTI_COMPATIBILITY={'ENTJ':{best:['INTP','ENFP'],worst:['ESFJ','ISFP']},'ENTP':{best:['INFJ','INTJ'],worst:['ESFJ','ISTJ']},'ISTJ':{best:['ESFP','ESTP'],worst:['ENTP','ENFP']},'INFP':{best:['ENFJ','ENTJ'],worst:['ESTJ','ISTJ']},'ENFJ':{best:['INFP','ISFP'],worst:['ISTP','ESTP']}};
+function resetCharacterAffection(){Object.keys(CHARACTERS).forEach(key=>{if(key!=='player'){CHARACTERS[key].affection=0}})}
+function getCharacter(id){return CHARACTERS[id]}
+function getAllCharacters(){return Object.keys(CHARACTERS).filter(key=>key!=='player').map(key=>CHARACTERS[key])}
+function changeAffection(characterId,amount){if(CHARACTERS[characterId]){CHARACTERS[characterId].affection+=amount;CHARACTERS[characterId].affection=Math.max(0,Math.min(100,CHARACTERS[characterId].affection));return CHARACTERS[characterId].affection}return 0}
+function getAffection(characterId){return CHARACTERS[characterId]?CHARACTERS[characterId].affection:0}
+function getAffectionLevel(affection){if(affection>=80)return'love';if(affection>=60)return'like';if(affection>=40)return'friend';if(affection>=20)return'acquaint';return'stranger'}
+
+const MBTI_QUESTIONS=[{text:"在社交聚会上，你通常会？",options:[{text:"主动认识很多人，享受热闹",type:'E'},{text:"和熟悉的人聊天，或在一旁观察",type:'I'}]},{text:"做决定时，你更倾向于？",options:[{text:"相信直觉和灵感",type:'N'},{text:"依据事实和经验",type:'S'}]},{text:"面对问题时，你习惯？",options:[{text:"先分析逻辑，再下结论",type:'T'},{text:"先考虑感受，再决定",type:'F'}]},{text:"你的生活方式更接近？",options:[{text:"有计划有条理，喜欢确定性",type:'J'},{text:"灵活随性，保持开放性",type:'P'}]},{text:"周末你更愿意？",options:[{text:"和朋友出去玩或参加活动",type:'E'},{text:"宅在家里做自己喜欢的事",type:'I'}]},{text:"学习新东西时，你更关注？",options:[{text:"整体概念和可能性",type:'N'},{text:"具体细节和实际应用",type:'S'}]},{text:"朋友向你倾诉烦恼，你会？",options:[{text:"帮 ta 分析问题，给出建议",type:'T'},{text:"先安慰 ta，理解 ta 的感受",type:'F'}]},{text:"旅行前你会？",options:[{text:"做好详细攻略和计划",type:'J'},{text:"只定大致方向，随遇而安",type:'P'}]},{text:"工作中你更喜欢？",options:[{text:"团队合作，集思广益",type:'E'},{text:"独立工作，深度专注",type:'I'}]},{text:"你更欣赏哪种人？",options:[{text:"有创意、想法独特的人",type:'N'},{text:"踏实可靠、执行力强的人",type:'S'}]}];
+const MBTI_TYPES=['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
+class MBTITest{constructor(){this.currentQuestion=0;this.scores={E:0,I:0,N:0,S:0,T:0,F:0,J:0,P:0};this.onComplete=null}start(onComplete){this.currentQuestion=0;this.scores={E:0,I:0,N:0,S:0,T:0,F:0,J:0,P:0};this.onComplete=onComplete;this.showQuestion()}showQuestion(){const q=MBTI_QUESTIONS[this.currentQuestion];const questionEl=document.getElementById('test-question');const optionsEl=document.getElementById('test-options');const progressEl=document.getElementById('current-q');progressEl.textContent=this.currentQuestion+1;questionEl.textContent=q.text;optionsEl.innerHTML='';q.options.forEach(opt=>{const btn=document.createElement('button');btn.textContent=opt.text;btn.onclick=()=>this.answer(opt.type);optionsEl.appendChild(btn)})}answer(type){this.scores[type]++;this.currentQuestion++;if(this.currentQuestion>=MBTI_QUESTIONS.length){this.calculateResult()}else{this.showQuestion()}}calculateResult(){const result=[this.scores.E>=this.scores.I?'E':'I',this.scores.N>=this.scores.S?'N':'S',this.scores.T>=this.scores.F?'T':'F',this.scores.J>=this.scores.P?'J':'P'].join('');if(this.onComplete){this.onComplete(result)}return result}setDirect(type){if(MBTI_TYPES.includes(type)){if(this.onComplete){this.onComplete(type)}return type}return null}}
+const MBTI_DESCRIPTIONS={'INTJ':'建筑师 - 富有想象力和战略性的思想家','INTP':'逻辑学家 - 具有创造力的发明家','ENTJ':'指挥官 - 大胆、富有想象力的强大领导者','ENTP':'辩论家 - 聪明好奇的思想者','INFJ':'提倡者 - 安静而神秘的理想主义者','INFP':'调停者 - 诗意、善良的利他主义者','ENFJ':'主人公 - 富有魅力、鼓舞人心的领导者','ENFP':'竞选者 - 热情、有创造力的社交者','ISTJ':'物流师 - 实用、注重事实的可靠者','ISFJ':'守卫者 - 非常专注而温暖的守护者','ESTJ':'总经理 - 出色的管理者','ESFJ':'执政官 - 极有同情心、受欢迎的人','ISTP':'鉴赏家 - 大胆而实际的实验家','ISFP':'探险家 - 灵活有魅力的艺术家','ESTP':'企业家 - 聪明、精力充沛的人','ESFP':'表演者 - 自发的、充满活力的表演者'};
+function getMBTIDescription(type){return MBTI_DESCRIPTIONS[type]||''}
+
+const SAVE_VERSION='1.0';const MAX_SAVE_SLOTS=6;
+class SaveSystem{constructor(){this.storageKey='bloom_love_saves';this.saves=this.loadSaves()}loadSaves(){try{const data=localStorage.getItem(this.storageKey);return data?JSON.parse(data):[]}catch(e){console.error('加载存档失败:',e);return[]}}save(slotIndex,gameState){if(slotIndex<0||slotIndex>=MAX_SAVE_SLOTS){return false}const saveData={version:SAVE_VERSION,timestamp:Date.now(),chapter:gameState.currentChapter,playerName:gameState.player.name,playerMbti:gameState.player.mbti,storyProgress:gameState.currentStoryId,characters:{}};Object.keys(CHARACTERS).forEach(key=>{if(key!=='player'){saveData.characters[key]={affection:CHARACTERS[key].affection,met:gameState.metCharacters?.includes(key)||false}}});this.saves[slotIndex]=saveData;this.persist();return true}load(slotIndex){if(slotIndex<0||slotIndex>=MAX_SAVE_SLOTS){return null}const saveData=this.saves[slotIndex];if(!saveData){return null}resetCharacterAffection();Object.keys(saveData.characters).forEach(key=>{if(CHARACTERS[key]){CHARACTERS[key].affection=saveData.characters[key].affection||0}});return{currentChapter:saveData.chapter,currentStoryId:saveData.storyProgress,player:{name:saveData.playerName,mbti:saveData.playerMbti},metCharacters:Object.keys(saveData.characters).filter(key=>saveData.characters[key].met)}}getSaveInfo(slotIndex){if(slotIndex<0||slotIndex>=MAX_SAVE_SLOTS){return null}const saveData=this.saves[slotIndex];if(!saveData){return null}return{exists:true,timestamp:saveData.timestamp,chapter:saveData.chapter,playerName:saveData.playerName,playerMbti:saveData.playerMbti,formattedTime:this.formatTime(saveData.timestamp)}}hasSaves(){return this.saves.some(save=>save!==null&&save!==undefined)}delete(slotIndex){if(slotIndex>=0&&slotIndex<MAX_SAVE_SLOTS){this.saves[slotIndex]=null;this.persist();return true}return false}persist(){try{localStorage.setItem(this.storageKey,JSON.stringify(this.saves))}catch(e){console.error('保存存档失败:',e)}}formatTime(timestamp){const date=new Date(timestamp);const now=new Date();const diff=now-date;if(diff<24*60*60*1000&&date.getDate()===now.getDate()){return`今天 ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`}if(diff<48*60*60*1000){return`昨天 ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`}return`${date.getMonth()+1}/${date.getDate()} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`}getAllSlots(){const slots=[];for(let i=0;i<MAX_SAVE_SLOTS;i++){slots.push({index:i,info:this.getSaveInfo(i)})}return slots}}
+const saveSystem=new SaveSystem();
+class GameState{constructor(){this.player={...CHARACTERS.player};this.currentChapter=1;this.currentStoryId='start';this.metCharacters=[];this.flags={};this.history=[]}reset(){this.player={...CHARACTERS.player};this.currentChapter=1;this.currentStoryId='start';this.metCharacters=[];this.flags={};this.history=[];resetCharacterAffection()}setPlayer(name,age,job,mbti){this.player.name=name;this.player.age=age;this.player.job=job;this.player.mbti=mbti}markMet(characterId){if(!this.metCharacters.includes(characterId)){this.metCharacters.push(characterId)}}setFlag(flagName,value){this.flags[flagName]=value}getFlag(flagName,defaultValue=false){return this.flags[flagName]!==undefined?this.flags[flagName]:defaultValue}addToHistory(speaker,text){this.history.push({speaker,text,timestamp:Date.now()})}export(){return{player:this.player,currentChapter:this.currentChapter,currentStoryId:this.currentStoryId,metCharacters:this.metCharacters,flags:this.flags}}import(state){this.player={...this.player,...state.player};this.currentChapter=state.currentChapter;this.currentStoryId=state.currentStoryId;this.metCharacters=state.metCharacters||[];this.flags=state.flags||{}}}
+const gameState=new GameState();
+
+const STORIES={'start':{id:'start',chapter:1,title:'新的开始',bg:'linear-gradient(135deg,#74b9ff 0%,#a29bfe 100%)',speaker:'',text:'这是一个全新的开始。\n\n你拖着行李箱，站在陌生的城市街头，深吸了一口气。\n\n为了追求更好的职业发展，你决定离开熟悉的地方，来到这座充满机遇的城市。\n\n新的环境，新的人，新的故事……即将展开。',sprite:null,choices:[{text:'鼓起勇气，向前走去',next:'apartment_intro'}]},'apartment_intro':{id:'apartment_intro',chapter:1,title:'新居',bg:'linear-gradient(135deg,#fdcb6e 0%,#e17055 100%)',speaker:'',text:'你来到了租住的公寓楼下。这是一栋有些年头的建筑，但外墙爬满了绿植，看起来很有生活气息。\n\n房东说这栋楼里住着各行各业的人，都很友善。',sprite:null,choices:[{text:'进入大楼',next:'meet_wenya'}]},'meet_wenya':{id:'meet_wenya',chapter:1,title:'邻居姐姐',bg:'linear-gradient(135deg,#fd79a8 0%,#e84393 100%)',speaker:'？？？',text:'「哎呀，你是新搬来的邻居吗？」\n\n一个温柔的声音从身后传来。你转身，看到一位长发披肩的女子，手里拿着画板和颜料。',sprite:'wenya',choices:[{text:'「是的，请多关照！」微笑着打招呼',next:'wenya_intro_friendly',affection:{wenya:5}},{text:'「嗯。」点点头，有些拘谨',next:'wenya_intro_shy',affection:{wenya:2}},{text:'「对，刚搬来。你是？」好奇地问',next:'wenya_intro_curious',affection:{wenya:3}}]},'wenya_intro_friendly':{id:'wenya_intro_friendly',chapter:1,bg:'linear-gradient(135deg,#fd79a8 0%,#e84393 100%)',speaker:'温雅',text:'「我叫温雅，住在你对门。」她温柔地笑着，「是附近中学的美术老师。」\n\n「欢迎搬来这里！有什么需要帮忙的，随时敲我的门哦。」',sprite:'wenya',choices:[{text:'「太好了，谢谢温雅姐！」',next:'explore_city',affection:{wenya:3}}]},'wenya_intro_shy':{id:'wenya_intro_shy',chapter:1,bg:'linear-gradient(135deg,#fd79a8 0%,#e84393 100%)',speaker:'温雅',text:'「我叫温雅，住在你对门。」她温和地笑着，似乎看出了你的拘谨。\n\n「不用紧张，这栋楼的大家都很好相处的。我是中学美术老师，平时都在家画画。」',sprite:'wenya',choices:[{text:'「谢谢……我会记住的。」',next:'explore_city',affection:{wenya:2}}]},'wenya_intro_curious':{id:'wenya_intro_curious',chapter:1,bg:'linear-gradient(135deg,#fd79a8 0%,#e84393 100%)',speaker:'温雅',text:'「我叫温雅，住在你对门。」她的笑容很温暖，「是附近中学的美术老师。」\n\n「看你对这里很好奇的样子，要我带你熟悉一下周边环境吗？」',sprite:'wenya',choices:[{text:'「真的可以吗？那太感谢了！」',next:'explore_city',affection:{wenya:5}}]},'explore_city':{id:'explore_city',chapter:1,title:'城市初探',bg:'linear-gradient(135deg,#55efc4 0%,#81ecec 100%)',speaker:'',text:'安顿好之后，你决定出去探索一下这座新城市。\n\n阳光明媚，街道两旁是各式各样的小店。你漫无目的地走着，期待着会有什么有趣的相遇。',sprite:null,choices:[{text:'去咖啡馆坐坐',next:'meet_luxiao'},{text:'去公园散步',next:'meet_xiayang'},{text:'随便逛逛',next:'meet_sujingyi'}]},'meet_luxiao':{id:'meet_luxiao',chapter:1,title:'咖啡馆的邂逅',bg:'linear-gradient(135deg,#6c5ce7 0%,#a29bfe 100%)',speaker:'',text:'你走进一家装修精致的咖啡馆，空气中弥漫着咖啡和烘焙的香气。\n\n吧台后站着一位短发的女子，正在专注地制作咖啡。她的动作优雅流畅，像是在进行一场表演。',sprite:'luxiao',choices:[{text:'「请给我一杯拿铁。」',next:'luxiao_intro_normal',affection:{luxiao:2}},{text:'「这里的咖啡很香，是你做的吗？」',next:'luxiao_intro_curious',affection:{luxiao:5}},{text:'安静地点单，观察周围',next:'luxiao_intro_quiet',affection:{luxiao:3}}]},'luxiao_intro_normal':{id:'luxiao_intro_normal',chapter:1,bg:'linear-gradient(135deg,#6c5ce7 0%,#a29bfe 100%)',speaker:'陆潇',text:'「好的，请稍等。」\n\n她的声音低沉而有磁性。很快，一杯拉花精美的拿铁放在你面前。\n\n「我是陆潇，这家店的主理人。欢迎常来。」她淡淡地笑了笑。',sprite:'luxiao',choices:[{text:'「谢谢，咖啡很好喝。」',next:'chapter1_end',affection:{luxiao:2}}]},'luxiao_intro_curious':{id:'luxiao_intro_curious',chapter:1,bg:'linear-gradient(135deg,#6c5ce7 0%,#a29bfe 100%)',speaker:'陆潇',text:'她的眼睛亮了一下：「是的，这家店是我开的。」\n\n「之前在欧洲学过法餐和咖啡，回国后就想做一家自己理想中的咖啡馆。」\n\n她递给你一杯咖啡：「这杯请你尝尝，给我点反馈？」',sprite:'luxiao',choices:[{text:'「太荣幸了！我会认真品尝的。」',next:'chapter1_end',affection:{luxiao:5}}]},'luxiao_intro_quiet':{id:'luxiao_intro_quiet',chapter:1,bg:'linear-gradient(135deg,#6c5ce7 0%,#a29bfe 100%)',speaker:'陆潇',text:'你安静地等着，她似乎注意到了你的观察。\n\n「喜欢这里的氛围吗？」她一边制作咖啡一边问，声音温和。\n\n「我是陆潇，这家店的主理人。看你的样子，应该是新搬来这附近的吧？」',sprite:'luxiao',choices:[{text:'「嗯，刚搬来。这里很舒服。」',next:'chapter1_end',affection:{luxiao:3}}]},'meet_xiayang':{id:'meet_xiayang',chapter:1,title:'公园的偶遇',bg:'linear-gradient(135deg,#00b894 0%,#55efc4 100%)',speaker:'',text:'公园里，一个穿着运动装的女生正在跑步。她看到你，停下脚步，露出灿烂的笑容。',sprite:'xiayang',choices:[{text:'「你好！」挥手打招呼',next:'xiayang_intro_friendly',affection:{xiayang:5}},{text:'微笑点头，继续走',next:'xiayang_intro_polite',affection:{xiayang:2}},{text:'「你也经常来这里运动吗？」',next:'xiayang_intro_sport',affection:{xiayang:4}}]},'xiayang_intro_friendly':{id:'xiayang_intro_friendly',chapter:1,bg:'linear-gradient(135deg,#00b894 0%,#55efc4 100%)',speaker:'夏阳',text:'「你好呀！我是夏阳，在清华读研二。」她擦擦汗，「你是新面孔诶，刚搬来这附近吗？」\n\n她的笑容像阳光一样灿烂，让人忍不住也想笑起来。',sprite:'xiayang',choices:[{text:'「对，刚搬来。请多关照！」',next:'chapter1_end',affection:{xiayang:3}}]},'xiayang_intro_polite':{id:'xiayang_intro_polite',chapter:1,bg:'linear-gradient(135deg,#00b894 0%,#55efc4 100%)',speaker:'夏阳',text:'她主动跑过来：「你好！我是夏阳，经常在这个公园跑步。」\n\n「你是新搬来的吧？这附近我熟，有什么想知道的可以问我！」',sprite:'xiayang',choices:[{text:'「谢谢，有需要一定问你。」',next:'chapter1_end',affection:{xiayang:2}}]},'xiayang_intro_sport':{id:'xiayang_intro_sport',chapter:1,bg:'linear-gradient(135deg,#00b894 0%,#55efc4 100%)',speaker:'夏阳',text:'「对啊！我每天都要跑几圈。」她眼睛一亮，「你也喜欢运动吗？」\n\n「我是夏阳，在清华读研。学累了就来跑步，特别解压！」',sprite:'xiayang',choices:[{text:'「我也喜欢运动，有机会一起？」',next:'chapter1_end',affection:{xiayang:5}},{text:'「我运动细胞不太好……」',next:'chapter1_end',affection:{xiayang:1}}]},'meet_sujingyi':{id:'meet_sujingyi',chapter:1,title:'意外的相遇',bg:'linear-gradient(135deg,#0984e3 0%,#74b9ff 100%)',speaker:'',text:'走着走着，你不小心撞到了一个人。文件散落一地。\n\n「抱歉抱歉！」你连忙蹲下帮忙捡。',sprite:'sujingyi',choices:[{text:'「真的对不起，我没注意看路。」',next:'sujingyi_intro_apologetic',affection:{sujingyi:5}},{text:'「你没事吧？有没有受伤？」',next:'sujingyi_intro_concerned',affection:{sujingyi:4}},{text:'默默帮忙捡文件',next:'sujingyi_intro_quiet',affection:{sujingyi:3}}]},'sujingyi_intro_apologetic':{id:'sujingyi_intro_apologetic',chapter:1,bg:'linear-gradient(135deg,#0984e3 0%,#74b9ff 100%)',speaker:'苏静怡',text:'「没关系，是我走得太急了。」她的声音温柔而有礼貌。\n\n她接过文件：「我是苏静怡，在市医院工作。刚下班，想着买点东西回家。」\n\n「你没事吧？刚才撞得挺重的。」她关切地看着你。',sprite:'sujingyi',choices:[{text:'「我没事，谢谢你关心。」',next:'chapter1_end',affection:{sujingyi:3}}]},'sujingyi_intro_concerned':{id:'sujingyi_intro_concerned',chapter:1,bg:'linear-gradient(135deg,#0984e3 0%,#74b9ff 100%)',speaker:'苏静怡',text:'她愣了一下，随即露出温和的笑容：「我没事，倒是你，没受伤吧？」\n\n「我是医生，让我看看。」她仔细检查了一下你的手，「还好，没有擦伤。」\n\n「我叫苏静怡，在市医院工作。」',sprite:'sujingyi',choices:[{text:'「你是医生啊，好厉害！」',next:'chapter1_end',affection:{sujingyi:4}}]},'sujingyi_intro_quiet':{id:'sujingyi_intro_quiet',chapter:1,bg:'linear-gradient(135deg,#0984e3 0%,#74b9ff 100%)',speaker:'苏静怡',text:'你们一起把文件捡起来。她整理好后，温和地说：「谢谢你的帮忙。」\n\n「我是苏静怡，在市医院工作。刚才在想事情，没注意看路。」\n\n「你是这附近的新住户吗？之前没见过你。」',sprite:'sujingyi',choices:[{text:'「嗯，刚搬来。请多关照。」',next:'chapter1_end',affection:{sujingyi:2}}]},'chapter1_end':{id:'chapter1_end',chapter:1,title:'第一章 完',bg:'linear-gradient(135deg,#fd79a8 0%,#e84393 100%)',speaker:'',text:'第一天就这样过去了。\n\n你遇到了几位有趣的邻居和朋友。这座城市，似乎没有想象中那么陌生。\n\n新的故事，才刚刚开始……',sprite:null,choices:[{text:'【进入第二章】',next:'chapter2_start'}]},'chapter2_start':{id:'chapter2_start',chapter:2,title:'第二章 加深了解',bg:'linear-gradient(135deg,#a29bfe 0%,#6c5ce7 100%)',speaker:'',text:'【第二章 开发中……】\n\n感谢试玩！目前剧情正在持续创作中。\n\n你可以：\n- 读取之前的存档继续探索\n- 重新开始，体验不同的选择\n- 期待后续更新！',sprite:null,choices:[{text:'【返回标题】',next:'title'}]},'title':{id:'title',chapter:0,title:'',bg:'',speaker:'',text:'',sprite:null,choices:[]}};
+const ENDINGS={'linwanqing_he':{title:'【林婉清】Happy Ending - 携手同行',text:'在经历了种种波折后，你们终于走到了一起。她依然是那个强势的总裁，但在你面前，她会卸下所有防备，展现最柔软的一面。'},'linwanqing_be':{title:'【林婉清】Bad Ending - 错过的缘分',text:'或许时机不对，或许彼此还不够成熟。你们最终擦肩而过，但那段时光，依然值得铭记。'}};
+function getStory(storyId){return STORIES[storyId]||null}
+function hasStory(storyId){return STORIES.hasOwnProperty(storyId)}
+
+class GameEngine{constructor(){this.currentStory=null;this.isTyping=false;this.typingTimer=null;this.fullText='';this.displayedText='';this.init()}init(){this.bindEvents();this.checkSaves();this.showScreen('start-screen')}bindEvents(){document.getElementById('btn-new-game').onclick=()=>this.startNewGame();document.getElementById('btn-continue').onclick=()=>this.continueGame();document.getElementById('btn-load').onclick=()=>this.showSaveScreen('load');document.getElementById('btn-mbti-direct').onclick=()=>this.showMBTIDirect();document.getElementById('btn-mbti-test').onclick=()=>this.startMBTITest();document.getElementById('btn-start-game').onclick=()=>this.createCharacter();this.mbtiTest=new MBTITest();document.getElementById('btn-save').onclick=()=>this.showSaveScreen('save');document.getElementById('btn-load-ingame').onclick=()=>this.showSaveScreen('load');document.getElementById('btn-title').onclick=()=>this.showTitle();document.getElementById('btn-back-save').onclick=()=>this.showScreen('game-screen');document.getElementById('btn-back-title').onclick=()=>this.showTitle();document.getElementById('dialogue-box').onclick=(e)=>{if(e.target.id!=='choices-container'&&!e.target.classList.contains('choice-btn')){this.completeTyping()}}}checkSaves(){const continueBtn=document.getElementById('btn-continue');continueBtn.disabled=!saveSystem.hasSaves()}showScreen(screenId){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(screenId).classList.add('active')}startNewGame(){gameState.reset();this.showScreen('create-screen');this.checkCreateComplete()}continueGame(){const slots=saveSystem.getAllSlots();const latestSlot=slots.filter(s=>s.info).sort((a,b)=>b.info.timestamp-a.info.timestamp)[0];if(latestSlot){this.loadGame(latestSlot.index)}}showMBTIDirect(){const mbtiTypes=['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];const resultEl=document.getElementById('mbti-result');resultEl.innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;">${mbtiTypes.map(type=>`<button class="sub-btn" onclick="game.selectMBTI('${type}')">${type}</button>`).join('')}</div>`}selectMBTI(type){gameState.player.mbti=type;document.getElementById('mbti-result').innerHTML=`<div style="color:#fd79a8;font-weight:bold;">已选择：${type} - ${getMBTIDescription(type)}</div>`;this.checkCreateComplete()}startMBTITest(){this.showScreen('mbti-test-screen');this.mbtiTest.start((result)=>{gameState.player.mbti=result;document.getElementById('mbti-result').innerHTML=`<div style="color:#fd79a8;font-weight:bold;">测试结果：${result} - ${getMBTIDescription(result)}</div>`;this.showScreen('create-screen');this.checkCreateComplete()})}checkCreateComplete(){const name=document.getElementById('player-name').value.trim();const age=document.getElementById('player-age').value;const job=document.getElementById('player-job').value.trim();const mbti=gameState.player.mbti;const startBtn=document.getElementById('btn-start-game');startBtn.disabled=!(name&&age&&job&&mbti)}setupCreateListeners(){['player-name','player-age','player-job'].forEach(id=>{document.getElementById(id).addEventListener('input',()=>{this.checkCreateComplete()})})}createCharacter(){const name=document.getElementById('player-name').value.trim();const age=parseInt(document.getElementById('player-age').value);const job=document.getElementById('player-job').value.trim();const mbti=gameState.player.mbti;gameState.setPlayer(name,age,job,mbti);this.startStory('start')}startStory(storyId){const story=getStory(storyId);if(!story){console.error('剧情不存在:',storyId);return}this.currentStory=story;gameState.currentStoryId=storyId;gameState.currentChapter=story.chapter;this.showScreen('game-screen');this.renderStory(story)}renderStory(story){const bg=document.getElementById('background');if(story.bg){bg.style.background=story.bg}const sprite=document.getElementById('character-sprite');if(story.sprite&&CHARACTERS[story.sprite]){sprite.style.background=`linear-gradient(180deg,${CHARACTERS[story.sprite].color} 0%, transparent 100%)`;sprite.style.display='block'}else{sprite.style.display='none'}document.getElementById('chapter-title').textContent=story.chapter>0?`第${story.chapter}章 ${story.title||''}`:story.title||'';this.updateAffectionDisplay();const speakerEl=document.getElementById('speaker-name');const textEl=document.getElementById('dialogue-text');if(story.speaker){speakerEl.textContent=story.speaker;speakerEl.style.display='block'}else{speakerEl.style.display='none'}this.fullText=story.text;this.displayedText='';this.isTyping=true;textEl.textContent='';this.typeText(story.text,textEl);this.renderChoices(story.choices)}typeText(text,element){if(!this.isTyping)return;const chars=text.split('');let index=0;const type=()=>{if(index<chars.length&&this.isTyping){this.displayedText+=chars[index];element.textContent=this.displayedText;index++;this.typingTimer=setTimeout(type,30)}else{this.isTyping=false}};type()}completeTyping(){if(this.isTyping){this.isTyping=false;clearTimeout(this.typingTimer);document.getElementById('dialogue-text').textContent=this.fullText}}renderChoices(choices){const container=document.getElementById('choices-container');container.innerHTML='';if(!choices||choices.length===0){return}choices.forEach(choice=>{const btn=document.createElement('button');btn.className='choice-btn';btn.textContent=choice.text;btn.onclick=(e)=>{e.stopPropagation();this.makeChoice(choice)};container.appendChild(btn)})}makeChoice(choice){if(choice.affection){Object.keys(choice.affection).forEach(charId=>{changeAffection(charId,choice.affection[charId])});this.updateAffectionDisplay()}if(choice.affection){Object.keys(choice.affection).forEach(charId=>{gameState.markMet(charId)})}if(choice.next){this.startStory(choice.next)}}updateAffectionDisplay(){const container=document.getElementById('affection-display');container.innerHTML='';getAllCharacters().forEach(char=>{if(gameState.metCharacters.includes(char.id)||char.affection>0){const heart=document.createElement('div');heart.className='affection-heart';heart.innerHTML=`<span style="color:${char.color}">❤️</span><span>${char.name.split('')[0]}</span><span>${'★'.repeat(Math.floor(char.affection/20))}${'☆'.repeat(5-Math.floor(char.affection/20))}</span>`;container.appendChild(heart)}})}showSaveScreen(mode){this.saveMode=mode;this.showScreen('save-screen');this.renderSaveSlots()}renderSaveSlots(){const container=document.getElementById('save-slots');const slots=saveSystem.getAllSlots();container.innerHTML=slots.map(slot=>{if(slot.info){return`<div class="save-slot" onclick="game.handleSaveSlotClick(${slot.index})"><div class="slot-title">💾 存档 ${slot.index+1}</div><div class="slot-info">${slot.info.formattedTime}</div><div class="slot-info">第${slot.info.chapter}章</div><div class="slot-info">${slot.info.playerName} (${slot.info.playerMbti})</div></div>`}else{return`<div class="save-slot empty" onclick="game.handleSaveSlotClick(${slot.index})"><div class="slot-title">📭 空槽位 ${slot.index+1}</div><div class="slot-info">点击${this.saveMode==='save'?'保存':'读取'}</div></div>`}}).join('');document.querySelector('#save-screen h2').textContent=this.saveMode==='save'?'💾 保存进度':'📂 读取存档'}handleSaveSlotClick(slotIndex){if(this.saveMode==='save'){saveSystem.save(slotIndex,gameState.export());alert('存档成功！');this.showScreen('game-screen')}else{const success=this.loadGame(slotIndex);if(success){this.showScreen('game-screen')}else{alert('该槽位没有存档')}}}loadGame(slotIndex){const state=saveSystem.load(slotIndex);if(state){gameState.import(state);this.startStory(state.currentStoryId);this.checkSaves();return true}return false}showTitle(){this.checkSaves();this.showScreen('start-screen')}showEnding(endingId){const ending=ENDINGS[endingId];if(!ending)return;document.getElementById('ending-title').textContent=ending.title;document.getElementById('ending-text').textContent=ending.text;this.showScreen('ending-screen')}}
+
+document.addEventListener('DOMContentLoaded',()=>{window.game=new GameEngine();game.setupCreateListeners()});
+    </script>
+</body>
+</html>

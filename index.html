@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloom - 百合恋爱互动游戏</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 开始界面 -->
+        <div id="start-screen" class="screen active">
+            <h1 class="game-title">🌸 Bloom</h1>
+            <p class="subtitle">一段关于爱与成长的故事</p>
+            <div class="menu-buttons">
+                <button id="btn-new-game" class="menu-btn">✨ 新的故事</button>
+                <button id="btn-continue" class="menu-btn" disabled>📖 继续游戏</button>
+                <button id="btn-load" class="menu-btn">📂 读取存档</button>
+            </div>
+        </div>
+
+        <!-- 角色创建界面 -->
+        <div id="create-screen" class="screen">
+            <h2>创建你的角色</h2>
+            <div class="form-group">
+                <label>你的名字：</label>
+                <input type="text" id="player-name" placeholder="请输入名字" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label>年龄：</label>
+                <input type="number" id="player-age" placeholder="20-40" min="20" max="40">
+            </div>
+            <div class="form-group">
+                <label>职业：</label>
+                <input type="text" id="player-job" placeholder="例如：设计师、程序员、作家..." maxlength="20">
+            </div>
+            <div class="form-group">
+                <label>MBTI 人格：</label>
+                <div class="mbti-select">
+                    <button id="btn-mbti-direct" class="sub-btn">直接选择</button>
+                    <button id="btn-mbti-test" class="sub-btn">10 题测试</button>
+                </div>
+                <div id="mbti-result" class="mbti-result"></div>
+            </div>
+            <button id="btn-start-game" class="menu-btn" disabled>开始故事</button>
+        </div>
+
+        <!-- MBTI 测试界面 -->
+        <div id="mbti-test-screen" class="screen">
+            <h2>MBTI 人格测试</h2>
+            <div id="test-progress">问题 <span id="current-q">1</span> / 10</div>
+            <div id="test-question" class="question-box"></div>
+            <div id="test-options" class="test-options"></div>
+        </div>
+
+        <!-- 游戏主界面 -->
+        <div id="game-screen" class="screen">
+            <div id="background"></div>
+            <div id="character-sprite"></div>
+            <div id="ui-overlay">
+                <div id="top-bar">
+                    <span id="chapter-title">第 1 章</span>
+                    <div id="affection-display"></div>
+                </div>
+                <div id="dialogue-box">
+                    <div id="speaker-name"></div>
+                    <div id="dialogue-text"></div>
+                    <div id="choices-container"></div>
+                </div>
+                <div id="save-load-bar">
+                    <button id="btn-save" class="small-btn">💾 保存</button>
+                    <button id="btn-load-ingame" class="small-btn">📂 读取</button>
+                    <button id="btn-title" class="small-btn">🏠 标题</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 存档界面 -->
+        <div id="save-screen" class="screen">
+            <h2>存档槽位</h2>
+            <div id="save-slots"></div>
+            <button id="btn-back-save" class="menu-btn">返回</button>
+        </div>
+
+        <!-- 结局界面 -->
+        <div id="ending-screen" class="screen">
+            <h1 id="ending-title"></h1>
+            <div id="ending-image"></div>
+            <p id="ending-text"></p>
+            <button id="btn-back-title" class="menu-btn">返回标题</button>
+        </div>
+    </div>
+
+    <!-- Audio -->
+    <audio id="bgm" loop></audio>
+
+    <!-- Scripts -->
+    <script src="js/characters.js"></script>
+    <script src="js/mbti.js"></script>
+    <script src="js/save.js"></script>
+    <script src="js/story.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
