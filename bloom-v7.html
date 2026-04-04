@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Bloom - 上海生活记录</title>
+    <style>
+        /* ===== 全局样式 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            padding-top: calc(45px + env(safe-area-inset-top));
+            padding-bottom: calc(60px + env(safe-area-inset-bottom));
+        }
+
+        /* ===== 顶部状态栏 ===== */
+        .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 45px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
+
+        .energy-bar {
+            width: 50px;
+            height: 5px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+            transition: width 0.3s;
+        }
+
+        .energy-low .energy-fill {
+            background: linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%);
+        }
+
+        /* ===== 页面容器 ===== */
+        .page {
+            display: none;
+            height: 100vh;
+            padding: 10px;
+        }
+
+        .page.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== 首页 ===== */
+        #home-page {
+            justify-content: center;
+            align-items: center;
+        }
+
+        .home-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-logo {
+            font-size: 3rem;
+            margin-bottom: 5px;
+        }
+
+        .game-title {
+            font-size: 2rem;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+
+        .game-subtitle {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .home-content {
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .feature-card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .feature-card h3 {
+            color: #fff;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .feature-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 6px;
+            border-radius: 10px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .feature-item .icon {
+            font-size: 1.2rem;
+            margin-bottom: 3px;
+        }
+
+        .feature-item .text {
+            font-size: 0.65rem;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        /* ===== 游戏页面 ===== */
+        #game-page {
+            justify-content: flex-start;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-top: 5px;
+        }
+
+        .page-header h2 {
+            color: #fff;
+            font-size: 1.3rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* ===== 角色卡片 ===== */
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .character-card {
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            padding: 8px 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .character-card.locked {
+            opacity: 0.5;
+        }
+
+        .character-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin: 0 auto 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .character-name {
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .character-affection {
+            height: 3px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 3px;
+        }
+
+        .character-affection-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        /* ===== 行动菜单 ===== */
+        .action-section {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .action-menu {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .action-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 12px;
+            padding: 8px 4px;
+            color: #fff;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        .action-icon {
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        /* ===== 联系界面 ===== */
+        #contact-page {
+            justify-content: flex-start;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .contact-btn {
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            padding: 8px 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .contact-btn:disabled {
+            opacity: 0.5;
+        }
+
+        .contact-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin: 0 auto 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .contact-name {
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        /* ===== 对话遮罩 ===== */
+        .dialogue-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .dialogue-overlay.active {
+            display: flex;
+        }
+
+        .dialogue-box {
+            background: rgba(255,255,255,0.98);
+            border-radius: 20px 20px 0 0;
+            padding: 20px 15px;
+            width: 100%;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .dialogue-character {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .dialogue-text {
+            font-size: 0.85rem;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+        }
+
+        .dialogue-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .dialogue-choice {
+            padding: 12px;
+            font-size: 0.8rem;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            background: #fff;
+            color: #333;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .dialogue-choice:hover {
+            background: #667eea;
+            color: #fff;
+        }
+
+        /* ===== 底部导航 ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px calc(5px + env(safe-area-inset-bottom));
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 12px;
+            padding: 8px 15px;
+            color: #fff;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        /* ===== 警告提示 ===== */
+        .warning-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,65,108,0.95);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        /* ===== 成就通知 ===== */
+        .achievement-toast {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(102,126,234,0.95);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部状态栏 -->
+    <div class="status-bar">
+        <div class="status-item">
+            <span>📅</span>
+            <span>Day <span id="day-display">1</span></span>
+        </div>
+        <div class="status-item">
+            <span>⚡</span>
+            <div class="energy-bar"><div class="energy-fill" id="energy-fill" style="width: 100%;"></div></div>
+        </div>
+        <div class="status-item">
+            <span>💼</span>
+            <span id="work-display">0%</span>
+        </div>
+    </div>
+
+    <!-- 首页 -->
+    <div id="home-page" class="page active">
+        <div class="home-logo">
+            <div class="game-logo">🌸</div>
+            <h1 class="game-title">Bloom</h1>
+            <p class="game-subtitle">365 天恋爱故事</p>
+        </div>
+
+        <div class="home-content">
+            <div class="feature-card">
+                <h3>✨ 特色</h3>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="icon">📅</div>
+                        <div class="text">365 天</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="icon">⚡</div>
+                        <div class="text">精力</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="icon">💕</div>
+                        <div class="text">5 角色</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="icon">🏆</div>
+                        <div class="text">75 成就</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-buttons">
+                <button class="btn btn-primary" onclick="game.startNewGame()">✨ 新故事</button>
+                <button class="btn btn-secondary" id="btn-continue" onclick="game.continueGame()" disabled>📖 继续</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏页面 -->
+    <div id="game-page" class="page">
+        <div class="page-header">
+            <h2>第 <span id="current-day">1</span> 天</h2>
+        </div>
+
+        <!-- 角色状态 -->
+        <div class="character-grid" id="character-grid"></div>
+
+        <!-- 行动菜单 -->
+        <div class="action-section">
+            <div class="action-menu">
+                <button class="action-btn" onclick="game.work()">
+                    <div class="action-icon">💼</div>
+                    <div>工作</div>
+                </button>
+                <button class="action-btn" onclick="game.rest()">
+                    <div class="action-icon">🏠</div>
+                    <div>休息</div>
+                </button>
+                <button class="action-btn" onclick="game.fitness()">
+                    <div class="action-icon">💪</div>
+                    <div>健身</div>
+                </button>
+                <button class="action-btn" onclick="game.explore()">
+                    <div class="action-icon">🗺️</div>
+                    <div>探索</div>
+                </button>
+                <button class="action-btn" onclick="game.contact()">
+                    <div class="action-icon">💬</div>
+                    <div>联系</div>
+                </button>
+                <button class="action-btn" onclick="game.sleep()">
+                    <div class="action-icon">🌙</div>
+                    <div>睡觉</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 联系界面 -->
+    <div id="contact-page" class="page">
+        <div class="page-header">
+            <h2>联系角色</h2>
+        </div>
+        <div class="contact-grid" id="contact-grid"></div>
+    </div>
+
+    <!-- 对话遮罩 -->
+    <div class="dialogue-overlay" id="dialogue-overlay">
+        <div class="dialogue-box">
+            <div class="dialogue-character" id="dialogue-character"></div>
+            <div class="dialogue-text" id="dialogue-text"></div>
+            <div class="dialogue-choices" id="dialogue-choices"></div>
+        </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+        <button class="nav-btn" onclick="game.showPage('home-page')">
+            <div class="nav-icon">🏠</div>
+            <div>首页</div>
+        </button>
+        <button class="nav-btn" onclick="game.showPage('game-page')">
+            <div class="nav-icon">🎮</div>
+            <div>游戏</div>
+        </button>
+        <button class="nav-btn" onclick="game.saveGame()">
+            <div class="nav-icon">💾</div>
+            <div>保存</div>
+        </button>
+    </div>
+
+    <!-- 提示 -->
+    <div class="warning-toast" id="warning-toast"></div>
+    <div class="achievement-toast" id="achievement-toast"></div>
+
+    <script>
+        const MAX_DAY = 365, MAX_ENERGY = 100;
+        const ENERGY_COSTS = { work: 40, rest: -20, fitness: 15, explore: 20, sleep: -50, message: 2, call: 5 };
+
+        const CHARACTERS = {
+            wenya: { id: 'wenya', name: '温雅', avatar: '🎨', color: '#fd79a8', affection: 0, maxAffection: 150, relation: 'stranger', lastContact: 0, unlocked: false },
+            xiayang: { id: 'xiayang', name: '夏阳', avatar: '🏃', color: '#e67e22', affection: 0, maxAffection: 150, relation: 'stranger', lastContact: 0, unlocked: false },
+            sujingyi: { id: 'sujingyi', name: '苏静怡', avatar: '🩺', color: '#3498db', affection: 0, maxAffection: 150, relation: 'stranger', lastContact: 0, unlocked: false },
+            luxiao: { id: 'luxiao', name: '陆潇', avatar: '🍷', color: '#2d3436', affection: 0, maxAffection: 150, relation: 'stranger', lastContact: 0, unlocked: false },
+            linwanqing: { id: 'linwanqing', name: '林婉清', avatar: '💼', color: '#8e44ad', affection: 0, maxAffection: 150, relation: 'stranger', lastContact: 0, unlocked: false }
+        };
+
+        const RELATION_STAGES = {
+            stranger: '陌生人', acquaintance: '认识', friend: '朋友', ambiguous: '暧昧',
+            lover: '恋人', hotlove: '热恋', partner: '伴侣', spouse: '夫妻'
+        };
+
+        const CONTACT_THRESHOLDS = { stranger: 999, acquaintance: 30, friend: 14, ambiguous: 7, lover: 3, hotlove: 2, partner: 2, spouse: 1 };
+
+        class GameState {
+            constructor() { this.reset(); }
+            reset() {
+                this.day = 1; this.energy = MAX_ENERGY; this.workProgress = 0; this.achievements = [];
+                Object.keys(CHARACTERS).forEach(k => {
+                    CHARACTERS[k].affection = 0; CHARACTERS[k].relation = 'stranger';
+                    CHARACTERS[k].lastContact = 0; CHARACTERS[k].unlocked = false;
+                });
+            }
+            save() {
+                localStorage.setItem('bloom_save', JSON.stringify({
+                    day: this.day, energy: this.energy, workProgress: this.workProgress,
+                    achievements: this.achievements, characters: Object.keys(CHARACTERS).reduce((a,k) => {
+                        a[k] = { affection: CHARACTERS[k].affection, relation: CHARACTERS[k].relation, lastContact: CHARACTERS[k].lastContact, unlocked: CHARACTERS[k].unlocked };
+                        return a;
+                    }, {})
+                }));
+                game.showWarning('✅ 已保存');
+            }
+            load() {
+                const d = localStorage.getItem('bloom_save');
+                if (!d) return false;
+                const data = JSON.parse(d);
+                this.day = data.day; this.energy = data.energy; this.workProgress = data.workProgress;
+                this.achievements = data.achievements || [];
+                if (data.characters) Object.keys(data.characters).forEach(k => {
+                    if (CHARACTERS[k]) {
+                        CHARACTERS[k].affection = data.characters[k].affection;
+                        CHARACTERS[k].relation = data.characters[k].relation;
+                        CHARACTERS[k].lastContact = data.characters[k].lastContact;
+                        CHARACTERS[k].unlocked = data.characters[k].unlocked;
+                    }
+                });
+                return true;
+            }
+            hasSave() { return !!localStorage.getItem('bloom_save'); }
+        }
+
+        const gameState = new GameState();
+
+        class GameEngine {
+            constructor() { this.init(); }
+            init() { this.updateStatusBar(); this.checkContinue(); this.renderChars(); }
+            updateStatusBar() {
+                document.getElementById('day-display').textContent = gameState.day;
+                document.getElementById('current-day').textContent = gameState.day;
+                document.getElementById('energy-fill').style.width = gameState.energy + '%';
+                document.getElementById('work-display').textContent = gameState.workProgress + '%';
+                document.getElementById('energy-bar').classList.toggle('energy-low', gameState.energy < 30);
+            }
+            checkContinue() { const b = document.getElementById('btn-continue'); if (b) b.disabled = !gameState.hasSave(); }
+            showPage(id) {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+                if (id === 'contact-page') this.renderContact();
+            }
+            renderChars() { const grid = document.getElementById('character-grid'); if (!grid) return;
+                document.getElementById('character-grid').innerHTML = Object.keys(CHARACTERS).map(k => {
+                    const c = CHARACTERS[k], days = c.lastContact > 0 ? gameState.day - c.lastContact : 0;
+                    return `<div class="character-card ${c.unlocked ? '' : 'locked'}">
+                        <div class="character-avatar">${c.avatar}</div>
+                        <div class="character-name">${c.name}</div>
+                        <div class="character-affection"><div class="character-affection-fill" style="width:${(c.affection/c.maxAffection)*100}%;background:${c.color}"></div></div>
+                    </div>`;
+                }).join('');
+            }
+            renderContact() {
+                const unlocked = Object.keys(CHARACTERS).filter(k => CHARACTERS[k].unlocked);
+                document.getElementById('contact-grid').innerHTML = unlocked.length ? unlocked.map(k => {
+                    const c = CHARACTERS[k];
+                    return `<div class="contact-btn" onclick="game.showMessage('${k}')"><div class="contact-avatar">${c.avatar}</div><div class="contact-name">${c.name}</div></div>
+                    <div class="contact-btn" onclick="game.showCall('${k}')"><div class="contact-avatar">${c.avatar}</div><div class="contact-name">电话</div></div>`;
+                }).join('') : '<div style="grid-column:1/-1;text-align:center;color:#fff;padding:20px;">未解锁角色<br>去探索或健身！</div>';
+            }
+            startNewGame() {
+                if (confirm('开始新游戏？当前进度将丢失。')) {
+                    gameState.reset(); this.updateStatusBar(); this.renderChars();
+                    this.showWarning('🌸 游戏开始！365 天恋爱故事！'); this.showPage('game-page');
+                }
+            }
+            continueGame() {
+                if (gameState.load()) { this.updateStatusBar(); this.renderChars(); this.showWarning('📖 游戏继续！'); this.showPage('game-page'); }
+            }
+            saveGame() { gameState.save(); }
+            work() {
+                if (gameState.energy < 40) { this.showWarning('⚠️ 精力不足！'); return; }
+                gameState.energy -= 40; gameState.workProgress = Math.min(100, gameState.workProgress + 20);
+                this.updateStatusBar(); this.renderChars(); this.showWarning('💼 工作 -40 精力 +20% 进度'); gameState.save();
+            }
+            rest() { gameState.energy = Math.min(100, gameState.energy + 20); this.updateStatusBar(); this.showWarning('🏠 休息 +20 精力'); gameState.save(); }
+            fitness() {
+                if (gameState.energy < 15) { this.showWarning('⚠️ 精力不足！'); return; }
+                gameState.energy -= 15; this.updateStatusBar(); this.showWarning('💪 健身 -15 精力');
+                if (!CHARACTERS.xiayang.unlocked && Math.random() < 0.7) {
+                    CHARACTERS.xiayang.unlocked = true; this.changeAffection('xiayang', 10); this.renderChars();
+                    this.showWarning('🏃 遇到夏阳！');
+                }
+                gameState.save();
+            }
+            explore() {
+                if (gameState.energy < 20) { this.showWarning('⚠️ 精力不足！'); return; }
+                gameState.energy -= 20; this.updateStatusBar(); this.showWarning('🗺️ 探索 -20 精力');
+                const r = Math.random();
+                if (!CHARACTERS.wenya.unlocked && r < 0.5) {
+                    CHARACTERS.wenya.unlocked = true; this.changeAffection('wenya', 8); this.renderChars(); this.showWarning('🎨 遇到温雅！');
+                } else if (!CHARACTERS.luxiao.unlocked && r > 0.8) {
+                    CHARACTERS.luxiao.unlocked = true; this.changeAffection('luxiao', 8); this.renderChars(); this.showWarning('🍷 遇到陆潇！');
+                }
+                gameState.save();
+            }
+            sleep() { if (confirm('睡觉？进入第二天。')) this.nextDay(); }
+            contact() { this.showPage('contact-page'); }
+            showMessage(id) {
+                if (gameState.energy < 2) { this.showWarning('⚠️ 精力不足！'); return; }
+                const c = CHARACTERS[id]; gameState.energy -= 2; c.lastContact = gameState.day;
+                this.changeAffection(id, 1); this.updateStatusBar(); this.renderChars();
+                this.showWarning(`💬 给${c.name}发消息 -2 精力 +1 好感`); gameState.save();
+            }
+            showCall(id) {
+                if (gameState.energy < 5) { this.showWarning('⚠️ 精力不足！'); return; }
+                const c = CHARACTERS[id]; gameState.energy -= 5; c.lastContact = gameState.day;
+                this.changeAffection(id, 3); this.updateStatusBar(); this.renderChars();
+                this.showWarning(`📞 给${c.name}打电话 -5 精力 +3 好感`); gameState.save();
+            }
+            changeAffection(id, amount) {
+                const c = CHARACTERS[id]; if (!c) return;
+                const old = c.affection; c.affection = Math.max(0, Math.min(150, c.affection + amount));
+                const newR = this.getRelation(c.affection);
+                if (newR !== c.relation) {
+                    c.relation = newR;
+                    this.showWarning(`${c.name} 关系升级为：${RELATION_STAGES[newR]}`);
+                    if (newR === 'lover') this.showAchievement(`【${c.name}·恋人】`);
+                }
+                if (old < 20 && c.affection >= 20 && !c.unlocked) { c.unlocked = true; this.showWarning(`${c.name} 已解锁！`); }
+            }
+            getRelation(a) { if (a >= 141) return 'spouse'; if (a >= 121) return 'partner'; if (a >= 101) return 'hotlove'; if (a >= 86) return 'lover'; if (a >= 60) return 'ambiguous'; if (a >= 40) return 'friend'; if (a >= 20) return 'acquaintance'; return 'stranger'; }
+            nextDay() {
+                gameState.day++; gameState.energy = Math.min(100, gameState.energy + 50); gameState.workProgress = 0;
+                if (gameState.day > 365) { alert('🎬 365 天结束！结局开发中'); return; }
+                this.checkContact(); this.updateStatusBar(); this.renderChars();
+                this.showWarning(`🌅 第${gameState.day}天！精力${gameState.energy}`); gameState.save();
+            }
+            checkContact() {
+                Object.keys(CHARACTERS).forEach(k => {
+                    const c = CHARACTERS[k]; if (!c.unlocked || c.relation === 'stranger') return;
+                    const days = gameState.day - c.lastContact, t = CONTACT_THRESHOLDS[c.relation];
+                    if (days > t && days <= t + 1) { this.changeAffection(k, -5); this.showWarning(`${c.name}${days}天没联系，生气了...`); }
+                    if (days > t * 2 && c.relation === 'lover') this.showWarning(`${c.name} 提出分手...`);
+                });
+            }
+            showWarning(msg) {
+                const t = document.getElementById('warning-toast'); t.textContent = msg; t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 2500);
+            }
+            showAchievement(name) {
+                const t = document.getElementById('achievement-toast'); t.innerHTML = '🏆 成就<br><strong>' + name + '</strong>'; t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 2500);
+                if (!gameState.achievements.includes(name)) gameState.achievements.push(name);
+            }
+        }
+
+        const game = new GameEngine();
+    </script>
+</body>
+</html>

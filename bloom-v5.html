@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Bloom - 上海生活记录</title>
+    <style>
+        /* ===== 全局样式 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* ===== 顶部状态栏 ===== */
+        .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            z-index: 1000;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-icon {
+            font-size: 1rem;
+        }
+
+        .energy-bar {
+            width: 80px;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+            transition: width 0.3s;
+        }
+
+        .energy-low .energy-fill {
+            background: linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%);
+        }
+
+        /* ===== 页面容器 ===== */
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding: calc(60px + env(safe-area-inset-top)) 15px calc(10px + env(safe-area-inset-bottom));
+            animation: fadeIn 0.4s ease;
+        }
+
+        .page.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== 首页 ===== */
+        #home-page {
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .home-top {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .game-logo {
+            font-size: 4rem;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            color: #fff;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+
+        .game-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.9);
+            margin-top: 5px;
+        }
+
+        .home-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 100%;
+            max-width: 340px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .feature-card h3 {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .feature-item {
+            background: rgba(255,255,255,0.25);
+            padding: 12px 8px;
+            border-radius: 12px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .feature-item .icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .feature-item .text {
+            font-size: 0.7rem;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .btn {
+            padding: 16px 30px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255,255,255,0.35);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ===== 角色卡片 ===== */
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .character-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .character-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .character-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .character-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .character-name {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .character-relation {
+            font-size: 0.7rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .character-affection {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .character-affection-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+            transition: width 0.3s;
+        }
+
+        .character-days {
+            font-size: 0.65rem;
+            color: #999;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        /* ===== 行动菜单 ===== */
+        .action-menu {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .action-btn {
+            background: rgba(255,255,255,0.25);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 15px;
+            padding: 15px 10px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.35);
+            transform: translateY(-2px);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        /* ===== 警告提示 ===== */
+        .warning-toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,65,108,0.95);
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 2000;
+            display: none;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== 成就通知 ===== */
+        .achievement-toast {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(102,126,234,0.95);
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 2000;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== 对话界面 ===== */
+        .dialogue-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .dialogue-overlay.active {
+            display: flex;
+        }
+
+        .dialogue-box {
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 25px 25px 0 0;
+            padding: 25px 20px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 -4px 40px rgba(0,0,0,0.3);
+        }
+
+        .dialogue-character {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .dialogue-text {
+            font-size: 0.95rem;
+            color: #333;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .dialogue-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .dialogue-choice {
+            padding: 14px 18px;
+            font-size: 0.9rem;
+            border: 2px solid #667eea;
+            border-radius: 15px;
+            background: #fff;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            text-align: left;
+        }
+
+        .dialogue-choice:hover {
+            background: #667eea;
+            color: #fff;
+        }
+
+        /* ===== 联系界面 ===== */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .contact-btn {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .contact-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border-color: #667eea;
+        }
+
+        .contact-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .contact-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .contact-name {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .contact-action {
+            font-size: 0.7rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .contact-cost {
+            font-size: 0.65rem;
+            color: #999;
+            text-align: center;
+            margin-top: 3px;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 380px) {
+            .game-title {
+                font-size: 2rem;
+            }
+            .game-logo {
+                font-size: 3.5rem;
+            }
+            .character-grid {
+                grid-template-columns: 1fr;
+            }
+            .action-menu {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部状态栏 -->
+    <div class="status-bar">
+        <div class="status-item">
+            <span class="status-icon">📅</span>
+            <span>Day <span id="day-display">1</span>/365</span>
+        </div>
+        <div class="status-item">
+            <span class="status-icon">⚡</span>
+            <div class="energy-bar" id="energy-bar">
+                <div class="energy-fill" id="energy-fill" style="width: 100%;"></div>
+            </div>
+            <span id="energy-display">100</span>
+        </div>
+        <div class="status-item">
+            <span class="status-icon">💼</span>
+            <span id="work-display">0%</span>
+        </div>
+    </div>
+
+    <!-- 首页 -->
+    <div id="home-page" class="page active">
+        <div class="home-top">
+            <div class="game-logo">🌸</div>
+            <h1 class="game-title">Bloom</h1>
+            <p class="game-subtitle">上海生活记录 · 365 天的恋爱故事</p>
+        </div>
+
+        <div class="home-content">
+            <div class="feature-card">
+                <h3>✨ 游戏特色</h3>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="icon">📅</div>
+                        <div class="text">365 天轮回</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="icon">⚡</div>
+                        <div class="text">精力管理</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="icon">💕</div>
+                        <div class="text">5 位可攻略</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="icon">🏆</div>
+                        <div class="text">75 个成就</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-buttons">
+                <button class="btn btn-primary" onclick="game.startNewGame()">✨ 新的故事</button>
+                <button class="btn btn-secondary" id="btn-continue" onclick="game.continueGame()" disabled>📖 继续游戏</button>
+                <button class="btn btn-secondary" onclick="game.showAchievements()">🏆 成就</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主游戏页面 -->
+    <div id="game-page" class="page">
+        <h2 style="color: #fff; text-align: center; margin-bottom: 20px;">第 <span id="current-day">1</span> 天</h2>
+
+        <!-- 角色状态 -->
+        <div class="character-grid" id="character-grid"></div>
+
+        <!-- 行动菜单 -->
+        <div class="action-menu">
+            <button class="action-btn" onclick="game.work()">
+                <div class="action-icon">💼</div>
+                <div>工作</div>
+            </button>
+            <button class="action-btn" onclick="game.rest()">
+                <div class="action-icon">🏠</div>
+                <div>休息</div>
+            </button>
+            <button class="action-btn" onclick="game.fitness()">
+                <div class="action-icon">💪</div>
+                <div>健身</div>
+            </button>
+            <button class="action-btn" onclick="game.explore()">
+                <div class="action-icon">🗺️</div>
+                <div>探索</div>
+            </button>
+            <button class="action-btn" onclick="game.contact()">
+                <div class="action-icon">💬</div>
+                <div>联系</div>
+            </button>
+            <button class="action-btn" onclick="game.sleep()">
+                <div class="action-icon">🌙</div>
+                <div>睡觉</div>
+            </button>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn btn-secondary" onclick="game.nextDay()" style="padding: 14px 40px;">
+                ⏭️ 跳过今天
+            </button>
+        </div>
+    </div>
+
+    <!-- 联系界面 -->
+    <div id="contact-page" class="page">
+        <h2 style="color: #fff; text-align: center; margin-bottom: 20px;">联系角色</h2>
+
+        <div class="contact-grid" id="contact-grid"></div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn btn-secondary" onclick="game.backToHome()" style="padding: 14px 40px;">
+                ← 返回
+            </button>
+        </div>
+    </div>
+
+    <!-- 对话遮罩 -->
+    <div class="dialogue-overlay" id="dialogue-overlay">
+        <div class="dialogue-box">
+            <div class="dialogue-character" id="dialogue-character"></div>
+            <div class="dialogue-text" id="dialogue-text"></div>
+            <div class="dialogue-choices" id="dialogue-choices"></div>
+        </div>
+    </div>
+
+    <!-- 警告提示 -->
+    <div class="warning-toast" id="warning-toast"></div>
+
+    <!-- 成就通知 -->
+    <div class="achievement-toast" id="achievement-toast"></div>
+
+    <script>
+        // ===== 游戏常量 =====
+        const MAX_DAY = 365;
+        const MAX_ENERGY = 100;
+        const WORK_HOURS_PER_DAY = 8;
+
+        // ===== 精力消耗配置 =====
+        const ENERGY_COSTS = {
+            work: 40,
+            rest: -20,
+            fitness: 15,
+            explore: 20,
+            sleep: -50,
+            message: 2,
+            call: 5,
+            video: 8,
+            date: 20,
+            gift: 10,
+            surprise: 30
+        };
+
+        // ===== 角色数据 =====
+        const CHARACTERS = {
+            wenya: {
+                id: 'wenya',
+                name: '温雅',
+                avatar: '🎨',
+                color: '#fd79a8',
+                affection: 0,
+                maxAffection: 150,
+                relation: 'stranger',
+                lastContact: 0,
+                unlocked: false,
+                scenes: []
+            },
+            xiayang: {
+                id: 'xiayang',
+                name: '夏阳',
+                avatar: '🏃',
+                color: '#e67e22',
+                affection: 0,
+                maxAffection: 150,
+                relation: 'stranger',
+                lastContact: 0,
+                unlocked: false
+            },
+            sujingyi: {
+                id: 'sujingyi',
+                name: '苏静怡',
+                avatar: '🩺',
+                color: '#3498db',
+                affection: 0,
+                maxAffection: 150,
+                relation: 'stranger',
+                lastContact: 0,
+                unlocked: false
+            },
+            luxiao: {
+                id: 'luxiao',
+                name: '陆潇',
+                avatar: '🍷',
+                color: '#2d3436',
+                affection: 0,
+                maxAffection: 150,
+                relation: 'stranger',
+                lastContact: 0,
+                unlocked: false
+            },
+            linwanqing: {
+                id: 'linwanqing',
+                name: '林婉清',
+                avatar: '💼',
+                color: '#8e44ad',
+                affection: 0,
+                maxAffection: 150,
+                relation: 'stranger',
+                lastContact: 0,
+                unlocked: false
+            }
+        };
+
+        // ===== 关系阶段定义 =====
+        const RELATION_STAGES = {
+            stranger: { name: '陌生人', minAffection: 0 },
+            acquaintance: { name: '认识', minAffection: 20 },
+            friend: { name: '朋友', minAffection: 40 },
+            ambiguous: { name: '暧昧', minAffection: 60 },
+            lover: { name: '恋人', minAffection: 86 },
+            hotlove: { name: '热恋', minAffection: 101 },
+            partner: { name: '伴侣', minAffection: 121 },
+            spouse: { name: '夫妻', minAffection: 141 }
+        };
+
+        // ===== 联系频率阈值（天） =====
+        const CONTACT_THRESHOLDS = {
+            stranger: 999,
+            acquaintance: 30,
+            friend: 14,
+            ambiguous: 7,
+            lover: 3,
+            hotlove: 2,
+            partner: 2,
+            spouse: 1
+        };
+
+        // ===== 温雅线场景数据 =====
+        const WENYA_SCENES = [
+            {
+                id: 1,
+                trigger: 'unlock',
+                text: '晚上 9 点，你点了外卖。\n\n门铃响了，你打开门。\n\n温雅：「你好，你的外卖……」\n\n她愣了一下。\n\n温雅：「你是……新搬来的邻居？」',
+                choices: [
+                    { text: '「嗯。」', affection: 3, energy: 0, next: 2 },
+                    { text: '「你记得我？」', affection: 5, energy: 0, next: 2 },
+                    { text: '「这么晚还送外卖？」', affection: 8, energy: 0, next: 2 }
+                ]
+            },
+            {
+                id: 2,
+                trigger: 'day_3',
+                text: '三天后，你收到消息。\n\n温雅：「你好，我是温雅，住你对门。」\n「这周末有空吗？有个艺术展览，要不要一起看？」',
+                choices: [
+                    { text: '「好啊，几点？」', affection: 10, energy: 0, next: 3, unlock: 'date' },
+                    { text: '「这周有事，下次吧。」', affection: 3, energy: 0, next: null },
+                    { text: '「不了，谢谢。」', affection: -5, energy: 0, next: null }
+                ]
+            },
+            {
+                id: 3,
+                trigger: 'date',
+                text: '周六下午 2 点，美术馆门口。\n\n温雅：「你来了！」\n（她穿了条淡粉色的裙子，长发披肩）\n「我还怕你不来……」',
+                choices: [
+                    { text: '「走吧，进去。」', affection: 5, energy: 20, next: 4 },
+                    { text: '「你今天很漂亮。」', affection: 15, energy: 20, next: 4 },
+                    { text: '「等很久了吗？」', affection: 10, energy: 20, next: 4 }
+                ]
+            },
+            {
+                id: 4,
+                trigger: 'scene_4',
+                text: '你们站在一幅画前。\n\n温雅：「这幅画……让我想到了你。」',
+                choices: [
+                    { text: '「为什么？」', affection: 8, energy: 0, next: 5 },
+                    { text: '「我也想到了你。」', affection: 15, energy: 0, next: 5 },
+                    { text: '「（安静看画）」', affection: 10, energy: 0, next: 5 }
+                ]
+            },
+            {
+                id: 5,
+                trigger: 'scene_5',
+                text: '温雅：「我最近……画了一幅画。」\n「但是不太满意……」\n「你能来看看吗？」',
+                choices: [
+                    { text: '「好，现在就去。」', affection: 10, energy: 20, next: 6 },
+                    { text: '「你一直都很棒。」', affection: 15, energy: 0, next: 6 },
+                    { text: '「我不懂画，帮不了你。」', affection: -10, energy: 0, next: null }
+                ]
+            },
+            {
+                id: 6,
+                trigger: 'scene_6',
+                text: '你来到温雅家。\n\n她拿出一幅画。\n\n温雅：「就是这幅……」\n（画的是你，在美术馆的样子）\n「我……画得不好吗？」',
+                choices: [
+                    { text: '「很好，很像。」', affection: 10, energy: 0, next: 7 },
+                    { text: '「你画了我？」', affection: 15, energy: 0, next: 7 },
+                    { text: '「我不懂画，但我觉得很好。」', affection: 15, energy: 0, next: 7 }
+                ]
+            },
+            {
+                id: 7,
+                trigger: 'scene_7',
+                text: '温雅：「其实……我一直想办个人展。」\n「但是我不敢……」\n「我怕没人来看……」',
+                choices: [
+                    { text: '「我帮你。」', affection: 20, energy: 30, next: 8 },
+                    { text: '「你可以的。」', affection: 15, energy: 0, next: 8 },
+                    { text: '「办展很贵的。」', affection: -15, energy: 0, next: null }
+                ]
+            },
+            {
+                id: 8,
+                trigger: 'affection_80',
+                text: '（一个月后，温雅的个人展）\n\n温雅：「我……有话想对你说。」\n\n你：「……」\n\n温雅：「我喜欢你。」\n「不是邻居，不是朋友，是……恋人那种喜欢。」',
+                choices: [
+                    { text: '「我也喜欢你。」', affection: 10, energy: 0, ending: 'he' },
+                    { text: '「我……需要时间。」', affection: 5, energy: 0, ending: 'ne' },
+                    { text: '「对不起。」', affection: -20, energy: 0, ending: 'alone' }
+                ]
+            }
+        ];
+
+        // ===== 游戏状态 =====
+        class GameState {
+            constructor() {
+                this.day = 1;
+                this.energy = MAX_ENERGY;
+                this.workProgress = 0;
+                this.achievements = [];
+                this.flags = {};
+                this.currentScene = null;
+            }
+
+            reset() {
+                this.day = 1;
+                this.energy = MAX_ENERGY;
+                this.workProgress = 0;
+                this.flags = {};
+                this.currentScene = null;
+                
+                Object.keys(CHARACTERS).forEach(key => {
+                    CHARACTERS[key].affection = 0;
+                    CHARACTERS[key].relation = 'stranger';
+                    CHARACTERS[key].lastContact = 0;
+                    CHARACTERS[key].unlocked = false;
+                    CHARACTERS[key].scenes = [];
+                });
+            }
+
+            save() {
+                const saveData = {
+                    day: this.day,
+                    energy: this.energy,
+                    workProgress: this.workProgress,
+                    achievements: this.achievements,
+                    flags: this.flags,
+                    currentScene: this.currentScene,
+                    characters: {}
+                };
+
+                Object.keys(CHARACTERS).forEach(key => {
+                    saveData.characters[key] = {
+                        affection: CHARACTERS[key].affection,
+                        relation: CHARACTERS[key].relation,
+                        lastContact: CHARACTERS[key].lastContact,
+                        unlocked: CHARACTERS[key].unlocked,
+                        scenes: CHARACTERS[key].scenes
+                    };
+                });
+
+                localStorage.setItem('bloom_save', JSON.stringify(saveData));
+            }
+
+            load() {
+                const saveData = localStorage.getItem('bloom_save');
+                if (!saveData) return false;
+
+                const data = JSON.parse(saveData);
+                this.day = data.day;
+                this.energy = data.energy;
+                this.workProgress = data.workProgress;
+                this.achievements = data.achievements || [];
+                this.flags = data.flags || {};
+                this.currentScene = data.currentScene;
+
+                if (data.characters) {
+                    Object.keys(data.characters).forEach(key => {
+                        if (CHARACTERS[key]) {
+                            CHARACTERS[key].affection = data.characters[key].affection;
+                            CHARACTERS[key].relation = data.characters[key].relation;
+                            CHARACTERS[key].lastContact = data.characters[key].lastContact;
+                            CHARACTERS[key].unlocked = data.characters[key].unlocked;
+                            CHARACTERS[key].scenes = data.characters[key].scenes || [];
+                        }
+                    });
+                }
+
+                return true;
+            }
+
+            hasSave() {
+                return localStorage.getItem('bloom_save') !== null;
+            }
+        }
+
+        const gameState = new GameState();
+
+        // ===== 游戏引擎 =====
+        class GameEngine {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.updateStatusBar();
+                this.checkContinueButton();
+                this.renderCharacterGrid();
+            }
+
+            updateStatusBar() {
+                document.getElementById('day-display').textContent = gameState.day;
+                document.getElementById('current-day').textContent = gameState.day;
+                document.getElementById('energy-display').textContent = gameState.energy;
+                document.getElementById('energy-fill').style.width = gameState.energy + '%';
+                document.getElementById('work-display').textContent = gameState.workProgress + '%';
+
+                const energyBar = document.getElementById('energy-bar');
+                if (gameState.energy < 30) {
+                    energyBar.classList.add('energy-low');
+                } else {
+                    energyBar.classList.remove('energy-low');
+                }
+            }
+
+            checkContinueButton() {
+                const btn = document.getElementById('btn-continue');
+                if (btn) {
+                    btn.disabled = !gameState.hasSave();
+                }
+            }
+
+            renderCharacterGrid() {
+                const grid = document.getElementById('character-grid');
+                if (!grid) return;
+
+                grid.innerHTML = Object.keys(CHARACTERS).map(key => {
+                    const char = CHARACTERS[key];
+                    const stage = RELATION_STAGES[char.relation];
+                    const affectionPercent = (char.affection / char.maxAffection) * 100;
+                    const daysSince = char.lastContact > 0 ? gameState.day - char.lastContact : 0;
+
+                    return `
+                        <div class="character-card ${char.unlocked ? '' : 'locked'}">
+                            <div class="character-avatar">${char.avatar}</div>
+                            <div class="character-name">${char.name}</div>
+                            <div class="character-relation">${char.unlocked ? stage.name : '???'}</div>
+                            <div class="character-affection">
+                                <div class="character-affection-fill" style="width: ${affectionPercent}%; background: ${char.color};"></div>
+                            </div>
+                            <div class="character-days">${char.unlocked ? (daysSince > 0 ? daysSince + '天没联系' : '今天联系过') : '未解锁'}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            renderContactGrid() {
+                const grid = document.getElementById('contact-grid');
+                if (!grid) return;
+
+                grid.innerHTML = Object.keys(CHARACTERS).map(key => {
+                    const char = CHARACTERS[key];
+                    if (!char.unlocked) return '';
+
+                    const canContact = char.relation !== 'stranger';
+
+                    return `
+                        <div class="contact-btn" onclick="game.showMessage('${key}')" ${!canContact ? 'disabled' : ''}>
+                            <div class="contact-avatar">${char.avatar}</div>
+                            <div class="contact-name">${char.name}</div>
+                            <div class="contact-action">发消息</div>
+                            <div class="contact-cost">-2</div>
+                        </div>
+                        <div class="contact-btn" onclick="game.showCall('${key}')" ${!canContact ? 'disabled' : ''}>
+                            <div class="contact-avatar">${char.avatar}</div>
+                            <div class="contact-name">${char.name}</div>
+                            <div class="contact-action">打电话</div>
+                            <div class="contact-cost">⚡-5</div>
+                        </div>
+                    `;
+                }).filter(html => html).join('');
+            }
+
+            startNewGame() {
+                if (confirm('确定要开始新游戏吗？当前进度将会丢失。')) {
+                    gameState.reset();
+                    this.updateStatusBar();
+                    this.renderCharacterGrid();
+                    this.showWarning('游戏开始！你来到了上海，外派期 365 天。\n\n好好把握这段时间吧！');
+                    this.showPage('game-page');
+                }
+            }
+
+            continueGame() {
+                if (gameState.load()) {
+                    this.updateStatusBar();
+                    this.renderCharacterGrid();
+                    this.showWarning('游戏继续！今天是第 ' + gameState.day + ' 天。');
+                    this.showPage('game-page');
+                }
+            }
+
+            showPage(pageId) {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+                
+                if (pageId === 'contact-page') {
+                    this.renderContactGrid();
+                }
+            }
+
+            backToHome() {
+                this.showPage('game-page');
+            }
+
+            showAchievements() {
+                alert('成就系统开发中...\n\n当前解锁：' + gameState.achievements.length + '/75');
+            }
+
+            // ===== 行动系统 =====
+            work() {
+                if (gameState.energy < ENERGY_COSTS.work) {
+                    this.showWarning('⚠️ 精力不足！需要休息。');
+                    return;
+                }
+
+                gameState.energy -= ENERGY_COSTS.work;
+                gameState.workProgress = Math.min(100, gameState.workProgress + 20);
+                
+                this.updateStatusBar();
+                this.renderCharacterGrid();
+                this.showWarning('💼 工作了 8 小时，精力 -40，工作进度 +20%');
+                gameState.save();
+            }
+
+            rest() {
+                gameState.energy = Math.min(MAX_ENERGY, gameState.energy + ENERGY_COSTS.rest);
+                this.updateStatusBar();
+                this.showWarning('🏠 休息了一会儿，精力 +20');
+                gameState.save();
+            }
+
+            fitness() {
+                if (gameState.energy < ENERGY_COSTS.fitness) {
+                    this.showWarning('⚠️ 精力不足！');
+                    return;
+                }
+
+                gameState.energy -= ENERGY_COSTS.fitness;
+                this.updateStatusBar();
+                this.showWarning('💪 健身 1 小时，精力 -15，健康 +10');
+                
+                // 健身可能遇到夏阳
+                if (!CHARACTERS.xiayang.unlocked && Math.random() < 0.7) {
+                    setTimeout(() => {
+                        this.showWarning('🏃 在健身房遇到了夏阳！');
+                        CHARACTERS.xiayang.unlocked = true;
+                        this.changeAffection('xiayang', 10);
+                        this.renderCharacterGrid();
+                    }, 1000);
+                }
+                
+                gameState.save();
+            }
+
+            explore() {
+                if (gameState.energy < ENERGY_COSTS.explore) {
+                    this.showWarning('⚠️ 精力不足！');
+                    return;
+                }
+
+                gameState.energy -= ENERGY_COSTS.explore;
+                this.updateStatusBar();
+                this.showWarning('🗺️ 探索上海，精力 -20');
+                
+                // 探索可能解锁角色
+                const rand = Math.random();
+                if (!CHARACTERS.wenya.unlocked && rand < 0.5) {
+                    setTimeout(() => {
+                        this.showWarning('🎨 在美术馆遇到了温雅！');
+                        CHARACTERS.wenya.unlocked = true;
+                        this.changeAffection('wenya', 8);
+                        this.renderCharacterGrid();
+                    }, 1000);
+                } else if (!CHARACTERS.luxiao.unlocked && rand > 0.8) {
+                    setTimeout(() => {
+                        this.showWarning('🍷 在餐厅遇到了陆潇！');
+                        CHARACTERS.luxiao.unlocked = true;
+                        this.changeAffection('luxiao', 8);
+                        this.renderCharacterGrid();
+                    }, 1000);
+                }
+                
+                gameState.save();
+            }
+
+            sleep() {
+                if (confirm('确定要睡觉吗？会直接进入第二天。')) {
+                    this.nextDay();
+                }
+            }
+
+            contact() {
+                this.showPage('contact-page');
+            }
+
+            // ===== 联系系统 =====
+            showMessage(characterId) {
+                if (gameState.energy < ENERGY_COSTS.message) {
+                    this.showWarning('⚠️ 精力不足！');
+                    return;
+                }
+
+                const char = CHARACTERS[characterId];
+                gameState.energy -= ENERGY_COSTS.message;
+                char.lastContact = gameState.day;
+                
+                this.changeAffection(characterId, 1);
+                this.updateStatusBar();
+                this.renderCharacterGrid();
+                this.showWarning(`💬 给${char.name}发了消息，精力 -2，好感 +1`);
+                gameState.save();
+            }
+
+            showCall(characterId) {
+                if (gameState.energy < ENERGY_COSTS.call) {
+                    this.showWarning('⚠️ 精力不足！');
+                    return;
+                }
+
+                const char = CHARACTERS[characterId];
+                gameState.energy -= ENERGY_COSTS.call;
+                char.lastContact = gameState.day;
+                
+                this.changeAffection(characterId, 3);
+                this.updateStatusBar();
+                this.renderCharacterGrid();
+                this.showWarning(`📞 给${char.name}打了电话，精力 -5，好感 +3`);
+                gameState.save();
+            }
+
+            // ===== 好感度系统 =====
+            changeAffection(characterId, amount) {
+                if (!CHARACTERS[characterId]) return;
+
+                const char = CHARACTERS[characterId];
+                const oldAffection = char.affection;
+                char.affection = Math.max(0, Math.min(char.maxAffection, char.affection + amount));
+
+                // 检查关系阶段变化
+                const newRelation = this.getRelationStage(char.affection);
+                if (newRelation !== char.relation) {
+                    const oldStage = RELATION_STAGES[char.relation].name;
+                    const newStage = RELATION_STAGES[newRelation].name;
+                    char.relation = newRelation;
+                    this.showWarning(`${char.name} 和你们关系升级为：${newStage}`);
+                    
+                    // 成就检测
+                    if (newRelation === 'lover') {
+                        this.showAchievement(`【${char.name}·恋人未满】`);
+                    }
+                    if (newRelation === 'spouse') {
+                        this.showAchievement(`【${char.name}·真爱无敌】`);
+                    }
+                }
+
+                // 解锁检测
+                if (oldAffection < 20 && char.affection >= 20 && !char.unlocked) {
+                    char.unlocked = true;
+                    this.showWarning(`${char.name} 已解锁！`);
+                }
+            }
+
+            getRelationStage(affection) {
+                if (affection >= 141) return 'spouse';
+                if (affection >= 121) return 'partner';
+                if (affection >= 101) return 'hotlove';
+                if (affection >= 86) return 'lover';
+                if (affection >= 60) return 'ambiguous';
+                if (affection >= 40) return 'friend';
+                if (affection >= 20) return 'acquaintance';
+                return 'stranger';
+            }
+
+            // ===== 天数系统 =====
+            nextDay() {
+                gameState.day++;
+                gameState.energy = Math.min(MAX_ENERGY, gameState.energy + 50);
+                gameState.workProgress = 0;
+
+                if (gameState.day > MAX_DAY) {
+                    this.triggerEnding();
+                    return;
+                }
+
+                this.checkContactOverdue();
+                this.updateStatusBar();
+                this.renderCharacterGrid();
+                this.showWarning(`第 ${gameState.day} 天开始了！精力恢复到 ${gameState.energy}`);
+                gameState.save();
+            }
+
+            checkContactOverdue() {
+                Object.keys(CHARACTERS).forEach(key => {
+                    const char = CHARACTERS[key];
+                    if (!char.unlocked || char.relation === 'stranger') return;
+
+                    const daysSinceContact = gameState.day - char.lastContact;
+                    const threshold = CONTACT_THRESHOLDS[char.relation];
+
+                    if (daysSinceContact > threshold && daysSinceContact <= threshold + 1) {
+                        this.changeAffection(key, -5);
+                        this.showWarning(`${char.name} 已经${daysSinceContact}天没联系了，她有点生气...`);
+                    }
+
+                    if (daysSinceContact > threshold * 2 && char.relation === 'lover') {
+                        this.showWarning(`${char.name} 向你提出了分手...`);
+                    }
+                });
+            }
+
+            triggerEnding() {
+                alert('365 天外派期结束了！\n\n根据你的选择，将触发不同的结局。\n\n（结局系统开发中）');
+            }
+
+            // ===== 温雅线场景系统 =====
+            triggerWenyaScene(sceneId) {
+                const scene = WENYA_SCENES.find(s => s.id === sceneId);
+                if (!scene) return;
+
+                this.showDialogue('温雅', scene.text, scene.choices);
+            }
+
+            showDialogue(character, text, choices) {
+                document.getElementById('dialogue-character').textContent = character;
+                document.getElementById('dialogue-text').textContent = text;
+                
+                const choicesContainer = document.getElementById('dialogue-choices');
+                choicesContainer.innerHTML = choices.map((choice, index) => `
+                    <button class="dialogue-choice" onclick="game.handleChoice(${index})">
+                        ${choice.text}
+                    </button>
+                `).join('');
+
+                document.getElementById('dialogue-overlay').classList.add('active');
+                this.currentChoice = choices;
+            }
+
+            handleChoice(index) {
+                const choice = this.currentChoice[index];
+                
+                if (choice.affection) {
+                    this.changeAffection('wenya', choice.affection);
+                }
+                if (choice.energy) {
+                    gameState.energy -= choice.energy;
+                    this.updateStatusBar();
+                }
+                if (choice.ending) {
+                    this.showWenyaEnding(choice.ending);
+                }
+                
+                document.getElementById('dialogue-overlay').classList.remove('active');
+                gameState.save();
+            }
+
+            showWenyaEnding(endingType) {
+                const endings = {
+                    he: '【温雅·执子之手】\n\n你们在一起了。\n她画了你，画里有光。\n\n成就解锁：【艺术家的缪斯】',
+                    ne: '【温雅·画友】\n\n你们还是朋友。\n偶尔一起看展，但也仅此而已。\n\n成就解锁：【艺术知己】',
+                    alone: '【温雅·错过的勇气】\n\n她等过你。\n但你选择了自由。\n\n成就解锁：【她等过你】'
+                };
+                
+                alert(endings[endingType]);
+                this.showAchievement('【温雅线·' + endingType.toUpperCase() + '】');
+            }
+
+            // ===== 工具函数 =====
+            showWarning(message) {
+                const toast = document.getElementById('warning-toast');
+                toast.textContent = message;
+                toast.style.display = 'block';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 3000);
+            }
+
+            showAchievement(name) {
+                const toast = document.getElementById('achievement-toast');
+                toast.innerHTML = '🏆 成就解锁<br><strong>' + name + '</strong>';
+                toast.style.display = 'block';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 3000);
+                
+                if (!gameState.achievements.includes(name)) {
+                    gameState.achievements.push(name);
+                }
+            }
+        }
+
+        // 初始化游戏
+        const game = new GameEngine();
+    </script>
+</body>
+</html>

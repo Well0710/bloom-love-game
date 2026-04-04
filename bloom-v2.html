@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloom - 百合恋爱互动游戏</title>
+    <meta name="version" content="v3-fixed">
+    <style>
+        /* ===== 全局样式 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* ===== 页面容器 ===== */
+        .page {
+            display: none;
+            height: 100vh;
+            width: 100vw;
+            padding: 10px;
+            animation: fadeIn 0.5s ease;
+            overflow: hidden;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== 首页 ===== */
+        #home-page {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            text-align: center;
+            padding: 20px 10px 80px 10px; /* 底部留 80px 避开 Safari 地址栏 */
+        }
+
+        #home-page.active {
+            display: flex;
+        }
+
+        .game-logo {
+            font-size: 2.5rem;
+            margin: 15px 0 5px 0;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .game-title {
+            font-size: 1.6rem;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+
+        .game-subtitle {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .intro-card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 10px;
+            width: 90%;
+            max-width: 280px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .intro-card h3 {
+            color: #fff;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .feature-item {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 5px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.75rem;
+        }
+
+        .feature-item .icon {
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 260px;
+            margin-top: auto; /* 推到底部 */
+            padding-bottom: 20px; /* 额外留白 */
+        }
+
+        .btn {
+            padding: 14px 25px;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255,255,255,0.35);
+            transform: translateY(-3px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ===== 角色创建页 ===== */
+        #create-page {
+            padding: 15px 10px 80px 10px;
+            overflow-y: auto;
+        }
+
+        .create-container {
+            width: 95%;
+            max-width: 300px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 15px 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .page-title {
+            font-size: 1.2rem;
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 8px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: #333;
+            margin-bottom: 3px;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .mbti-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+
+        .mbti-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            background: #fff;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            flex: 1;
+        }
+
+        .btn-small:hover {
+            background: #667eea;
+            color: #fff;
+        }
+
+        .btn-small.active {
+            background: #667eea;
+            color: #fff;
+        }
+        
+        .btn-prev:disabled {
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+        }
+        
+        .btn-next {
+            background: #667eea !important;
+            color: #fff !important;
+        }
+
+        .mbti-result {
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 8px;
+            color: #333;
+            font-size: 0.85rem;
+        }
+
+        .mbti-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .mbti-type-btn {
+            padding: 6px 3px;
+            font-size: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fff;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .mbti-type-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .mbti-type-btn.selected {
+            background: #667eea;
+            color: #fff;
+            border-color: #667eea;
+        }
+
+        /* ===== MBTI 测试页 ===== */
+        #test-page {
+            position: relative !important;
+        }
+        
+        .test-container {
+            width: 95%;
+            max-width: 300px;
+            margin: 20px auto 0;
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 15px 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            position: relative !important;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+
+        .test-progress {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .question-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: #333;
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .test-options {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .option-btn {
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fff;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .option-btn.selected {
+            background: #667eea !important;
+            color: #fff !important;
+            border-color: #667eea !important;
+        }
+
+        /* ===== 游戏主界面 ===== */
+        #game-page {
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            transition: background 0.5s;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .chapter-title {
+            font-size: 1.2rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .affection-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .affection-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .affection-item .heart {
+            font-size: 1rem;
+        }
+
+        .game-content {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .character-sprite {
+            width: 200px;
+            height: 350px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
+            border-radius: 20px 20px 0 0;
+            margin-right: 30px;
+        }
+
+        .dialogue-box {
+            flex: 1;
+            max-width: 100%;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 12px 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            overflow-y: auto;
+            max-height: 50vh;
+        }
+
+        .speaker-name {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #e84393;
+            margin-bottom: 8px;
+        }
+
+        .dialogue-text {
+            font-size: 0.9rem;
+            color: #333;
+            line-height: 1.6;
+            min-height: 50px;
+            margin-bottom: 10px;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .choice-btn {
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            border: 2px solid #e84393;
+            border-radius: 10px;
+            background: #fff;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            text-align: left;
+        }
+
+        .choice-btn:hover {
+            background: #e84393;
+            color: #fff;
+            transform: translateX(5px);
+        }
+
+        .game-footer {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 15px 20px 30px 20px; /* 底部留更多空间 */
+            margin-top: 10px;
+        }
+
+        .btn-icon {
+            padding: 12px 25px;
+            font-size: 0.95rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-icon:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-icon-back {
+            position: absolute !important;
+            top: 10px !important;
+            left: 10px !important;
+            padding: 6px 12px !important;
+            font-size: 0.8rem !important;
+            border: 2px solid rgba(255,255,255,0.3) !important;
+            border-radius: 20px !important;
+            background: rgba(255,255,255,0.25) !important;
+            color: #fff !important;
+            cursor: pointer !important;
+            transition: all 0.3s !important;
+            font-family: inherit !important;
+            backdrop-filter: blur(5px) !important;
+            z-index: 100 !important;
+            display: inline-block !important;
+        }
+
+        .btn-icon-back:hover {
+            background: rgba(255,255,255,0.35) !important;
+        }
+
+        /* ===== 存档页 ===== */
+        #save-page {
+            padding: 15px 10px 80px 10px;
+            overflow-y: auto;
+        }
+
+        .save-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .save-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .save-card:hover {
+            transform: translateY(-2px);
+            border-color: #667eea;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .save-card.empty {
+            opacity: 0.7;
+        }
+
+        .save-title {
+            font-size: 0.85rem;
+            color: #333;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        .save-info {
+            font-size: 0.7rem;
+            color: #666;
+            margin: 2px 0;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 1.8rem;
+            }
+
+            .game-logo {
+                font-size: 3rem;
+            }
+
+            .feature-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .create-container,
+            .test-container {
+                padding: 12px 10px;
+            }
+
+            .mbti-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .game-content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .character-sprite {
+                display: none;
+            }
+
+            .dialogue-box {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.85rem;
+            }
+            
+            .btn-icon {
+                padding: 8px 15px;
+                font-size: 0.8rem;
+            }
+            
+            .btn-small {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+            
+            .mbti-type-btn {
+                font-size: 0.7rem;
+                padding: 5px 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 首页 -->
+    <div id="home-page" class="page active">
+        <div class="game-logo">🌸</div>
+        <h1 class="game-title">Bloom</h1>
+        <p class="game-subtitle">一段关于爱与成长的故事</p>
+
+        <div class="intro-card">
+            <h3>✨ 游戏特色</h3>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="icon">💕</div>
+                    <div>5 位可攻略角色</div>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">🎭</div>
+                    <div>MBTI 人格测试</div>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">📖</div>
+                    <div>多分支剧情</div>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">🌈</div>
+                    <div>10+ 种结局</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-buttons">
+            <button class="btn btn-primary" onclick="game.goToCreate()">✨ 新的故事</button>
+            <button class="btn btn-secondary" id="btn-continue-home" onclick="game.continueGame()" disabled>📖 继续游戏</button>
+            <button class="btn btn-secondary" onclick="game.goToSave('load')">📂 读取存档</button>
+        </div>
+    </div>
+
+    <!-- 角色创建页 -->
+    <div id="create-page" class="page">
+        <div class="create-container">
+            <h2 class="page-title">创建你的角色</h2>
+
+            <div class="form-group">
+                <label>你的名字</label>
+                <input type="text" id="player-name" placeholder="请输入名字" maxlength="10" oninput="game.checkCreateComplete()">
+            </div>
+
+            <div class="form-group">
+                <label>年龄</label>
+                <input type="number" id="player-age" placeholder="20-40" min="20" max="40" oninput="game.checkCreateComplete()">
+            </div>
+
+            <div class="form-group">
+                <label>职业</label>
+                <input type="text" id="player-job" placeholder="例如：设计师、程序员、作家..." maxlength="20" oninput="game.checkCreateComplete()">
+            </div>
+
+            <div class="form-group">
+                <label>MBTI 人格</label>
+                <div class="mbti-section">
+                    <div class="mbti-buttons">
+                        <button class="btn-small" id="btn-mbti-direct" onclick="game.showMBTIDirect()">直接选择</button>
+                        <button class="btn-small" id="btn-mbti-test" onclick="game.startMBTITest()">10 题测试</button>
+                    </div>
+                    <div id="mbti-result" class="mbti-result" style="display: none;"></div>
+                    <div id="mbti-grid" class="mbti-grid" style="display: none;"></div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="btn-start-game" onclick="game.createCharacter()" style="width: 100%; margin-top: 20px;" disabled>开始故事</button>
+            <button class="btn btn-secondary" onclick="game.goHome()" style="width: 100%; margin-top: 10px;">返回标题</button>
+        </div>
+    </div>
+
+    <!-- MBTI 测试页 -->
+    <div id="test-page" class="page">
+        <div class="test-container">
+            <button class="btn-icon-back" onclick="game.goToCreate()" style="position: absolute; top: 15px; left: 15px; padding: 8px 15px; font-size: 0.9rem;">← 返回</button>
+            
+            <h2 class="page-title" style="margin-top: 30px;">MBTI 人格测试</h2>
+
+            <div class="test-progress">
+                <span id="current-q">1</span> / 10
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 10%;"></div>
+                </div>
+            </div>
+
+            <div class="question-box" id="test-question">
+                加载中...
+            </div>
+
+            <div class="test-options" id="test-options">
+                <!-- 选项动态生成 -->
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn btn-prev" id="btn-prev-q" onclick="game.prevQuestion()" style="flex: 1; background: #e0e0e0; color: #333;">上一题</button>
+                <button class="btn btn-next" id="btn-next-q" onclick="game.nextQuestion()" style="flex: 1; background: #667eea; color: #fff; display: none;">下一题</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏主界面 -->
+    <div id="game-page" class="page">
+        <div class="game-background" id="game-background"></div>
+
+        <div class="game-container">
+            <div class="game-header">
+                <span class="chapter-title" id="chapter-title">第 1 章</span>
+                <div class="affection-bar" id="affection-display"></div>
+            </div>
+
+            <div class="game-content">
+                <div class="character-sprite" id="character-sprite"></div>
+                <div class="dialogue-box">
+                    <div class="speaker-name" id="speaker-name"></div>
+                    <div class="dialogue-text" id="dialogue-text"></div>
+                    <div class="choices-container" id="choices-container"></div>
+                </div>
+            </div>
+
+            <div class="game-footer">
+                <button class="btn-icon" onclick="game.showSave('save')">💾 保存</button>
+                <button class="btn-icon" onclick="game.showSave('load')">📂 读取</button>
+                <button class="btn-icon" onclick="game.goHome()">🏠 标题</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 存档页 -->
+    <div id="save-page" class="page">
+        <div class="create-container">
+            <h2 class="page-title" id="save-title">💾 保存进度</h2>
+
+            <div class="save-grid" id="save-slots"></div>
+
+            <button class="btn btn-secondary" onclick="game.backToGame()" style="width: 100%;">返回</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== 角色数据 =====
+        const CHARACTERS = {
+            player: { name: '', age: 0, job: '', mbti: '' },
+            linwanqing: { id: 'linwanqing', name: '林婉清', age: 32, height: 178, mbti: 'ENTJ', job: '林氏集团总裁', color: '#8e44ad', affection: 0 },
+            xiayang: { id: 'xiayang', name: '夏阳', age: 24, height: 175, mbti: 'ENTP', job: '清华大学研二学生', color: '#e67e22', affection: 0 },
+            sujingyi: { id: 'sujingyi', name: '苏静怡', age: 28, height: 168, mbti: 'ISTJ', job: '医院主治医师', color: '#3498db', affection: 0 },
+            wenya: { id: 'wenya', name: '温雅', age: 26, height: 172, mbti: 'INFP', job: '中学美术老师', color: '#fd79a8', affection: 0 },
+            luxiao: { id: 'luxiao', name: '陆潇', age: 29, height: 177, mbti: 'ENFJ', job: '法餐主理人', color: '#2d3436', affection: 0 }
+        };
+
+        function resetCharacterAffection() {
+            Object.keys(CHARACTERS).forEach(key => {
+                if (key !== 'player') CHARACTERS[key].affection = 0;
+            });
+        }
+
+        function getAllCharacters() {
+            return Object.keys(CHARACTERS).filter(key => key !== 'player').map(key => CHARACTERS[key]);
+        }
+
+        function changeAffection(characterId, amount) {
+            if (CHARACTERS[characterId]) {
+                CHARACTERS[characterId].affection += amount;
+                CHARACTERS[characterId].affection = Math.max(0, Math.min(100, CHARACTERS[characterId].affection));
+            }
+        }
+
+        // ===== MBTI 测试 =====
+        const MBTI_QUESTIONS = [
+            { text: "在社交聚会上，你通常会？", options: [{ text: "主动认识很多人，享受热闹", type: 'E' }, { text: "和熟悉的人聊天，或在一旁观察", type: 'I' }] },
+            { text: "做决定时，你更倾向于？", options: [{ text: "相信直觉和灵感", type: 'N' }, { text: "依据事实和经验", type: 'S' }] },
+            { text: "面对问题时，你习惯？", options: [{ text: "先分析逻辑，再下结论", type: 'T' }, { text: "先考虑感受，再决定", type: 'F' }] },
+            { text: "你的生活方式更接近？", options: [{ text: "有计划有条理，喜欢确定性", type: 'J' }, { text: "灵活随性，保持开放性", type: 'P' }] },
+            { text: "周末你更愿意？", options: [{ text: "和朋友出去玩或参加活动", type: 'E' }, { text: "宅在家里做自己喜欢的事", type: 'I' }] },
+            { text: "学习新东西时，你更关注？", options: [{ text: "整体概念和可能性", type: 'N' }, { text: "具体细节和实际应用", type: 'S' }] },
+            { text: "朋友向你倾诉烦恼，你会？", options: [{ text: "帮 ta 分析问题，给出建议", type: 'T' }, { text: "先安慰 ta，理解 ta 的感受", type: 'F' }] },
+            { text: "旅行前你会？", options: [{ text: "做好详细攻略和计划", type: 'J' }, { text: "只定大致方向，随遇而安", type: 'P' }] },
+            { text: "工作中你更喜欢？", options: [{ text: "团队合作，集思广益", type: 'E' }, { text: "独立工作，深度专注", type: 'I' }] },
+            { text: "你更欣赏哪种人？", options: [{ text: "有创意、想法独特的人", type: 'N' }, { text: "踏实可靠、执行力强的人", type: 'S' }] }
+        ];
+
+        const MBTI_TYPES = ['INTJ', 'INTP', 'ENTJ', 'ENTP', 'INFJ', 'INFP', 'ENFJ', 'ENFP', 'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ', 'ISTP', 'ISFP', 'ESTP', 'ESFP'];
+
+        const MBTI_DESCRIPTIONS = {
+            'INTJ': '建筑师 - 富有想象力和战略性的思想家',
+            'INTP': '逻辑学家 - 具有创造力的发明家',
+            'ENTJ': '指挥官 - 大胆、富有想象力的强大领导者',
+            'ENTP': '辩论家 - 聪明好奇的思想者',
+            'INFJ': '提倡者 - 安静而神秘的理想主义者',
+            'INFP': '调停者 - 诗意、善良的利他主义者',
+            'ENFJ': '主人公 - 富有魅力、鼓舞人心的领导者',
+            'ENFP': '竞选者 - 热情、有创造力的社交者',
+            'ISTJ': '物流师 - 实用、注重事实的可靠者',
+            'ISFJ': '守卫者 - 非常专注而温暖的守护者',
+            'ESTJ': '总经理 - 出色的管理者',
+            'ESFJ': '执政官 - 极有同情心、受欢迎的人',
+            'ISTP': '鉴赏家 - 大胆而实际的实验家',
+            'ISFP': '探险家 - 灵活有魅力的艺术家',
+            'ESTP': '企业家 - 聪明、精力充沛的人',
+            'ESFP': '表演者 - 自发的、充满活力的表演者'
+        };
+
+        // ===== 存档系统 =====
+        const SAVE_VERSION = '1.0';
+        const MAX_SAVE_SLOTS = 6;
+
+        class SaveSystem {
+            constructor() {
+                this.storageKey = 'bloom_love_saves';
+                this.saves = this.loadSaves();
+            }
+
+            loadSaves() {
+                try {
+                    const data = localStorage.getItem(this.storageKey);
+                    return data ? JSON.parse(data) : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            save(slotIndex, gameState) {
+                const saveData = {
+                    version: SAVE_VERSION,
+                    timestamp: Date.now(),
+                    chapter: gameState.currentChapter,
+                    playerName: gameState.player.name,
+                    playerMbti: gameState.player.mbti,
+                    storyProgress: gameState.currentStoryId,
+                    characters: {}
+                };
+                Object.keys(CHARACTERS).forEach(key => {
+                    if (key !== 'player') {
+                        saveData.characters[key] = {
+                            affection: CHARACTERS[key].affection,
+                            met: gameState.metCharacters?.includes(key) || false
+                        };
+                    }
+                });
+                this.saves[slotIndex] = saveData;
+                this.persist();
+                return true;
+            }
+
+            load(slotIndex) {
+                const saveData = this.saves[slotIndex];
+                if (!saveData) return null;
+
+                resetCharacterAffection();
+                Object.keys(saveData.characters).forEach(key => {
+                    if (CHARACTERS[key]) {
+                        CHARACTERS[key].affection = saveData.characters[key].affection || 0;
+                    }
+                });
+
+                return {
+                    currentChapter: saveData.chapter,
+                    currentStoryId: saveData.storyProgress,
+                    player: { name: saveData.playerName, mbti: saveData.playerMbti },
+                    metCharacters: Object.keys(saveData.characters).filter(key => saveData.characters[key].met)
+                };
+            }
+
+            getSaveInfo(slotIndex) {
+                const saveData = this.saves[slotIndex];
+                if (!saveData) return null;
+
+                const date = new Date(saveData.timestamp);
+                const now = new Date();
+                const diff = now - date;
+                let formattedTime;
+                if (diff < 24 * 60 * 60 * 1000 && date.getDate() === now.getDate()) {
+                    formattedTime = `今天 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                } else if (diff < 48 * 60 * 60 * 1000) {
+                    formattedTime = `昨天 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                } else {
+                    formattedTime = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                }
+
+                return {
+                    exists: true,
+                    timestamp: saveData.timestamp,
+                    chapter: saveData.chapter,
+                    playerName: saveData.playerName,
+                    playerMbti: saveData.playerMbti,
+                    formattedTime: formattedTime
+                };
+            }
+
+            hasSaves() {
+                return this.saves.some(save => save !== null && save !== undefined);
+            }
+
+            persist() {
+                try {
+                    localStorage.setItem(this.storageKey, JSON.stringify(this.saves));
+                } catch (e) {}
+            }
+
+            getAllSlots() {
+                const slots = [];
+                for (let i = 0; i < MAX_SAVE_SLOTS; i++) {
+                    slots.push({ index: i, info: this.getSaveInfo(i) });
+                }
+                return slots;
+            }
+        }
+
+        const saveSystem = new SaveSystem();
+
+        // ===== 游戏状态 =====
+        class GameState {
+            constructor() {
+                this.player = { ...CHARACTERS.player };
+                this.currentChapter = 1;
+                this.currentStoryId = 'start';
+                this.metCharacters = [];
+                this.flags = {};
+            }
+
+            reset() {
+                this.player = { ...CHARACTERS.player };
+                this.currentChapter = 1;
+                this.currentStoryId = 'start';
+                this.metCharacters = [];
+                this.flags = {};
+                resetCharacterAffection();
+            }
+
+            setPlayer(name, age, job, mbti) {
+                this.player.name = name;
+                this.player.age = age;
+                this.player.job = job;
+                this.player.mbti = mbti;
+            }
+
+            markMet(characterId) {
+                if (!this.metCharacters.includes(characterId)) {
+                    this.metCharacters.push(characterId);
+                }
+            }
+
+            export() {
+                return {
+                    player: this.player,
+                    currentChapter: this.currentChapter,
+                    currentStoryId: this.currentStoryId,
+                    metCharacters: this.metCharacters,
+                    flags: this.flags
+                };
+            }
+
+            import(state) {
+                this.player = { ...this.player, ...state.player };
+                this.currentChapter = state.currentChapter;
+                this.currentStoryId = state.currentStoryId;
+                this.metCharacters = state.metCharacters || [];
+                this.flags = state.flags || {};
+            }
+        }
+
+        const gameState = new GameState();
+
+        // ===== 剧情数据 =====
+        const STORIES = {
+            'start': {
+                id: 'start', chapter: 1, title: '新的开始',
+                bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                speaker: '',
+                text: '这是一个全新的开始。\n\n你拖着行李箱，站在陌生的城市街头，深吸了一口气。\n\n为了追求更好的职业发展，你决定离开熟悉的地方，来到这座充满机遇的城市。\n\n新的环境，新的人，新的故事……即将展开。',
+                sprite: null,
+                choices: [{ text: '鼓起勇气，向前走去', next: 'apartment_intro' }]
+            },
+            'apartment_intro': {
+                id: 'apartment_intro', chapter: 1, title: '新居',
+                bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                speaker: '',
+                text: '你来到了租住的公寓楼下。这是一栋有些年头的建筑，但外墙爬满了绿植，看起来很有生活气息。\n\n房东说这栋楼里住着各行各业的人，都很友善。',
+                sprite: null,
+                choices: [{ text: '进入大楼', next: 'meet_wenya' }]
+            },
+            'meet_wenya': {
+                id: 'meet_wenya', chapter: 1, title: '邻居姐姐',
+                bg: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+                speaker: '？？？',
+                text: '「哎呀，你是新搬来的邻居吗？」\n\n一个温柔的声音从身后传来。你转身，看到一位长发披肩的女子，手里拿着画板和颜料。',
+                sprite: 'wenya',
+                choices: [
+                    { text: '「是的，请多关照！」微笑着打招呼', next: 'wenya_intro_friendly', affection: { wenya: 5 } },
+                    { text: '「嗯。」点点头，有些拘谨', next: 'wenya_intro_shy', affection: { wenya: 2 } },
+                    { text: '「对，刚搬来。你是？」好奇地问', next: 'wenya_intro_curious', affection: { wenya: 3 } }
+                ]
+            },
+            'wenya_intro_friendly': {
+                id: 'wenya_intro_friendly', chapter: 1,
+                bg: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+                speaker: '温雅',
+                text: '「我叫温雅，住在你对门。」她温柔地笑着，「是附近中学的美术老师。」\n\n「欢迎搬来这里！有什么需要帮忙的，随时敲我的门哦。」',
+                sprite: 'wenya',
+                choices: [{ text: '「太好了，谢谢温雅姐！」', next: 'explore_city', affection: { wenya: 3 } }]
+            },
+            'wenya_intro_shy': {
+                id: 'wenya_intro_shy', chapter: 1,
+                bg: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+                speaker: '温雅',
+                text: '「我叫温雅，住在你对门。」她温和地笑着，似乎看出了你的拘谨。\n\n「不用紧张，这栋楼的大家都很好相处的。我是中学美术老师，平时都在家画画。」',
+                sprite: 'wenya',
+                choices: [{ text: '「谢谢……我会记住的。」', next: 'explore_city', affection: { wenya: 2 } }]
+            },
+            'wenya_intro_curious': {
+                id: 'wenya_intro_curious', chapter: 1,
+                bg: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+                speaker: '温雅',
+                text: '「我叫温雅，住在你对门。」她的笑容很温暖，「是附近中学的美术老师。」\n\n「看你对这里很好奇的样子，要我带你熟悉一下周边环境吗？」',
+                sprite: 'wenya',
+                choices: [{ text: '「真的可以吗？那太感谢了！」', next: 'explore_city', affection: { wenya: 5 } }]
+            },
+            'explore_city': {
+                id: 'explore_city', chapter: 1, title: '城市初探',
+                bg: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+                speaker: '',
+                text: '安顿好之后，你决定出去探索一下这座新城市。\n\n阳光明媚，街道两旁是各式各样的小店。你漫无目的地走着，期待着会有什么有趣的相遇。',
+                sprite: null,
+                choices: [
+                    { text: '去咖啡馆坐坐', next: 'meet_luxiao' },
+                    { text: '去公园散步', next: 'meet_xiayang' },
+                    { text: '随便逛逛', next: 'meet_sujingyi' }
+                ]
+            },
+            'meet_luxiao': {
+                id: 'meet_luxiao', chapter: 1, title: '咖啡馆的邂逅',
+                bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                speaker: '',
+                text: '你走进一家装修精致的咖啡馆，空气中弥漫着咖啡和烘焙的香气。\n\n吧台后站着一位短发的女子，正在专注地制作咖啡。',
+                sprite: 'luxiao',
+                choices: [
+                    { text: '「请给我一杯拿铁。」', next: 'luxiao_intro_normal', affection: { luxiao: 2 } },
+                    { text: '「这里的咖啡很香，是你做的吗？」', next: 'luxiao_intro_curious', affection: { luxiao: 5 } },
+                    { text: '安静地点单，观察周围', next: 'luxiao_intro_quiet', affection: { luxiao: 3 } }
+                ]
+            },
+            'luxiao_intro_normal': {
+                id: 'luxiao_intro_normal', chapter: 1,
+                bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                speaker: '陆潇',
+                text: '「好的，请稍等。」\n\n她的声音低沉而有磁性。很快，一杯拉花精美的拿铁放在你面前。\n\n「我是陆潇，这家店的主理人。欢迎常来。」',
+                sprite: 'luxiao',
+                choices: [{ text: '「谢谢，咖啡很好喝。」', next: 'chapter1_end', affection: { luxiao: 2 } }]
+            },
+            'luxiao_intro_curious': {
+                id: 'luxiao_intro_curious', chapter: 1,
+                bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                speaker: '陆潇',
+                text: '她的眼睛亮了一下：「是的，这家店是我开的。」\n\n「之前在欧洲学过法餐和咖啡，回国后就想做一家自己理想中的咖啡馆。」\n\n她递给你一杯咖啡：「这杯请你尝尝，给我点反馈？」',
+                sprite: 'luxiao',
+                choices: [{ text: '「太荣幸了！我会认真品尝的。」', next: 'chapter1_end', affection: { luxiao: 5 } }]
+            },
+            'luxiao_intro_quiet': {
+                id: 'luxiao_intro_quiet', chapter: 1,
+                bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                speaker: '陆潇',
+                text: '你安静地等着，她似乎注意到了你的观察。\n\n「喜欢这里的氛围吗？」她一边制作咖啡一边问。\n\n「我是陆潇，这家店的主理人。看你的样子，应该是新搬来这附近的吧？」',
+                sprite: 'luxiao',
+                choices: [{ text: '「嗯，刚搬来。这里很舒服。」', next: 'chapter1_end', affection: { luxiao: 3 } }]
+            },
+            'meet_xiayang': {
+                id: 'meet_xiayang', chapter: 1, title: '公园的偶遇',
+                bg: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                speaker: '',
+                text: '公园里，一个穿着运动装的女生正在跑步。她看到你，停下脚步，露出灿烂的笑容。',
+                sprite: 'xiayang',
+                choices: [
+                    { text: '「你好！」挥手打招呼', next: 'xiayang_intro_friendly', affection: { xiayang: 5 } },
+                    { text: '微笑点头，继续走', next: 'xiayang_intro_polite', affection: { xiayang: 2 } },
+                    { text: '「你也经常来这里运动吗？」', next: 'xiayang_intro_sport', affection: { xiayang: 4 } }
+                ]
+            },
+            'xiayang_intro_friendly': {
+                id: 'xiayang_intro_friendly', chapter: 1,
+                bg: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                speaker: '夏阳',
+                text: '「你好呀！我是夏阳，在清华读研二。」她擦擦汗，「你是新面孔诶，刚搬来这附近吗？」\n\n她的笑容像阳光一样灿烂。',
+                sprite: 'xiayang',
+                choices: [{ text: '「对，刚搬来。请多关照！」', next: 'chapter1_end', affection: { xiayang: 3 } }]
+            },
+            'xiayang_intro_polite': {
+                id: 'xiayang_intro_polite', chapter: 1,
+                bg: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                speaker: '夏阳',
+                text: '她主动跑过来：「你好！我是夏阳，经常在这个公园跑步。」\n\n「你是新搬来的吧？这附近我熟，有什么想知道的可以问我！」',
+                sprite: 'xiayang',
+                choices: [{ text: '「谢谢，有需要一定问你。」', next: 'chapter1_end', affection: { xiayang: 2 } }]
+            },
+            'xiayang_intro_sport': {
+                id: 'xiayang_intro_sport', chapter: 1,
+                bg: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                speaker: '夏阳',
+                text: '「对啊！我每天都要跑几圈。」她眼睛一亮，「你也喜欢运动吗？」\n\n「我是夏阳，在清华读研。学累了就来跑步，特别解压！」',
+                sprite: 'xiayang',
+                choices: [
+                    { text: '「我也喜欢运动，有机会一起？」', next: 'chapter1_end', affection: { xiayang: 5 } },
+                    { text: '「我运动细胞不太好……」', next: 'chapter1_end', affection: { xiayang: 1 } }
+                ]
+            },
+            'meet_sujingyi': {
+                id: 'meet_sujingyi', chapter: 1, title: '意外的相遇',
+                bg: 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)',
+                speaker: '',
+                text: '走着走着，你不小心撞到了一个人。文件散落一地。\n\n「抱歉抱歉！」你连忙蹲下帮忙捡。',
+                sprite: 'sujingyi',
+                choices: [
+                    { text: '「真的对不起，我没注意看路。」', next: 'sujingyi_intro_apologetic', affection: { sujingyi: 5 } },
+                    { text: '「你没事吧？有没有受伤？」', next: 'sujingyi_intro_concerned', affection: { sujingyi: 4 } },
+                    { text: '默默帮忙捡文件', next: 'sujingyi_intro_quiet', affection: { sujingyi: 3 } }
+                ]
+            },
+            'sujingyi_intro_apologetic': {
+                id: 'sujingyi_intro_apologetic', chapter: 1,
+                bg: 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)',
+                speaker: '苏静怡',
+                text: '「没关系，是我走得太急了。」她的声音温柔而有礼貌。\n\n她接过文件：「我是苏静怡，在市医院工作。刚下班，想着买点东西回家。」\n\n「你没事吧？刚才撞得挺重的。」她关切地看着你。',
+                sprite: 'sujingyi',
+                choices: [{ text: '「我没事，谢谢你关心。」', next: 'chapter1_end', affection: { sujingyi: 3 } }]
+            },
+            'sujingyi_intro_concerned': {
+                id: 'sujingyi_intro_concerned', chapter: 1,
+                bg: 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)',
+                speaker: '苏静怡',
+                text: '她愣了一下，随即露出温和的笑容：「我没事，倒是你，没受伤吧？」\n\n「我是医生，让我看看。」她仔细检查了一下你的手，「还好，没有擦伤。」\n\n「我叫苏静怡，在市医院工作。」',
+                sprite: 'sujingyi',
+                choices: [{ text: '「你是医生啊，好厉害！」', next: 'chapter1_end', affection: { sujingyi: 4 } }]
+            },
+            'sujingyi_intro_quiet': {
+                id: 'sujingyi_intro_quiet', chapter: 1,
+                bg: 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)',
+                speaker: '苏静怡',
+                text: '你们一起把文件捡起来。她整理好后，温和地说：「谢谢你的帮忙。」\n\n「我是苏静怡，在市医院工作。刚才在想事情，没注意看路。」\n\n「你是这附近的新住户吗？之前没见过你。」',
+                sprite: 'sujingyi',
+                choices: [{ text: '「嗯，刚搬来。请多关照。」', next: 'chapter1_end', affection: { sujingyi: 2 } }]
+            },
+            'chapter1_end': {
+                id: 'chapter1_end', chapter: 1, title: '第一章 完',
+                bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                speaker: '',
+                text: '第一天就这样过去了。\n\n你遇到了几位有趣的邻居和朋友。这座城市，似乎没有想象中那么陌生。\n\n新的故事，才刚刚开始……',
+                sprite: null,
+                choices: [{ text: '【进入第二章】', next: 'chapter2_start' }]
+            },
+            'chapter2_start': {
+                id: 'chapter2_start', chapter: 2, title: '第二章 开发中',
+                bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                speaker: '',
+                text: '【第二章 开发中……】\n\n感谢试玩！目前剧情正在持续创作中。\n\n你可以：\n- 读取之前的存档继续探索\n- 重新开始，体验不同的选择\n- 期待后续更新！',
+                sprite: null,
+                choices: [{ text: '【返回标题】', next: 'title' }]
+            },
+            'title': { id: 'title', chapter: 0, title: '', bg: '', speaker: '', text: '', sprite: null, choices: [] }
+        };
+
+        // ===== 游戏引擎 =====
+        class GameEngine {
+            constructor() {
+                this.currentStory = null;
+                this.isTyping = false;
+                this.typingTimer = null;
+                this.fullText = '';
+                this.displayedText = '';
+                this.mbtiTest = {
+                    currentQuestion: 0,
+                    scores: { E: 0, I: 0, N: 0, S: 0, T: 0, F: 0, J: 0, P: 0 },
+                    onComplete: null
+                };
+                this.saveMode = 'save';
+                this.init();
+            }
+
+            init() {
+                this.checkSaves();
+                this.showPage('home-page');
+            }
+
+            showPage(pageId) {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+            }
+
+            checkSaves() {
+                const btn = document.getElementById('btn-continue-home');
+                if (btn) btn.disabled = !saveSystem.hasSaves();
+            }
+
+            goHome() {
+                this.checkSaves();
+                this.showPage('home-page');
+            }
+
+            goToCreate() {
+                gameState.reset();
+                this.showPage('create-page');
+                this.checkCreateComplete();
+            }
+
+            goToSave(mode) {
+                this.saveMode = mode;
+                document.getElementById('save-title').textContent = mode === 'save' ? '💾 保存进度' : '📂 读取存档';
+                this.renderSaveSlots();
+                this.showPage('save-page');
+            }
+
+            showSave(mode) {
+                this.saveMode = mode;
+                document.getElementById('save-title').textContent = mode === 'save' ? '💾 保存进度' : '📂 读取存档';
+                this.renderSaveSlots();
+                this.showPage('save-page');
+            }
+
+            backToGame() {
+                this.showPage('game-page');
+            }
+
+            continueGame() {
+                const slots = saveSystem.getAllSlots();
+                const latestSlot = slots.filter(s => s.info).sort((a, b) => b.info.timestamp - a.info.timestamp)[0];
+                if (latestSlot) {
+                    this.loadGame(latestSlot.index);
+                }
+            }
+
+            checkCreateComplete() {
+                const name = document.getElementById('player-name')?.value.trim();
+                const age = document.getElementById('player-age')?.value;
+                const job = document.getElementById('player-job')?.value.trim();
+                const mbti = gameState.player.mbti;
+                const btn = document.getElementById('btn-start-game');
+                if (btn) btn.disabled = !(name && age && job && mbti);
+            }
+
+            showMBTIDirect() {
+                const grid = document.getElementById('mbti-grid');
+                const result = document.getElementById('mbti-result');
+                grid.style.display = 'grid';
+                result.style.display = 'none';
+
+                grid.innerHTML = MBTI_TYPES.map(type =>
+                    `<button class="mbti-type-btn" onclick="game.selectMBTI('${type}')">${type}</button>`
+                ).join('');
+            }
+
+            selectMBTI(type) {
+                gameState.player.mbti = type;
+                document.querySelectorAll('.mbti-type-btn').forEach(btn => btn.classList.remove('selected'));
+                event.target.classList.add('selected');
+
+                document.getElementById('mbti-result').innerHTML = `✅ 已选择：<strong>${type}</strong> - ${MBTI_DESCRIPTIONS[type]}`;
+                document.getElementById('mbti-result').style.display = 'block';
+                document.getElementById('mbti-grid').style.display = 'none';
+                this.checkCreateComplete();
+            }
+
+            startMBTITest() {
+                this.mbtiTest.currentQuestion = 0;
+                this.mbtiTest.scores = { E: 0, I: 0, N: 0, S: 0, T: 0, F: 0, J: 0, P: 0 };
+                this.mbtiTest.answers = new Array(10).fill(null); // 保存每题答案
+                this.showPage('test-page');
+                this.showTestQuestion();
+                this.updateNavButtons();
+            }
+
+            showTestQuestion() {
+                const q = MBTI_QUESTIONS[this.mbtiTest.currentQuestion];
+                document.getElementById('current-q').textContent = this.mbtiTest.currentQuestion + 1;
+                document.getElementById('progress-fill').style.width = ((this.mbtiTest.currentQuestion + 1) * 10) + '%';
+                document.getElementById('test-question').textContent = q.text;
+
+                const optionsEl = document.getElementById('test-options');
+                optionsEl.innerHTML = q.options.map((opt, idx) => {
+                    const selected = this.mbtiTest.answers[this.mbtiTest.currentQuestion] === opt.type ? 'selected' : '';
+                    return `<button class="option-btn ${selected}" onclick="game.selectOption('${opt.type}', ${idx})">${opt.text}</button>`;
+                }).join('');
+                
+                // 显示导航按钮
+                const prevBtn = document.getElementById('btn-prev-q');
+                const nextBtn = document.getElementById('btn-next-q');
+                
+                if (prevBtn) prevBtn.disabled = (this.mbtiTest.currentQuestion === 0);
+                
+                // 第一次显示时，隐藏下一题按钮
+                if (nextBtn) {
+                    if (this.mbtiTest.answers[this.mbtiTest.currentQuestion] !== null) {
+                        nextBtn.style.display = 'block';
+                        nextBtn.textContent = (this.mbtiTest.currentQuestion >= MBTI_QUESTIONS.length - 1) ? '完成' : '下一题';
+                    } else {
+                        nextBtn.style.display = 'none';
+                    }
+                }
+            }
+            
+            selectOption(type, optionIndex) {
+                // 保存当前答案
+                this.mbtiTest.answers[this.mbtiTest.currentQuestion] = type;
+                
+                // 更新 UI 显示选中状态
+                document.querySelectorAll('.option-btn').forEach((btn, idx) => {
+                    if (idx === optionIndex) {
+                        btn.classList.add('selected');
+                        btn.style.background = '#667eea';
+                        btn.style.color = '#fff';
+                        btn.style.borderColor = '#667eea';
+                    } else {
+                        btn.classList.remove('selected');
+                        btn.style.background = '#fff';
+                        btn.style.color = '#333';
+                        btn.style.borderColor = '#e0e0e0';
+                    }
+                });
+                
+                // 显示下一题按钮
+                const nextBtn = document.getElementById('btn-next-q');
+                if (nextBtn) {
+                    nextBtn.style.display = 'block';
+                    nextBtn.textContent = (this.mbtiTest.currentQuestion >= MBTI_QUESTIONS.length - 1) ? '完成' : '下一题';
+                }
+                
+                // 启用上一题按钮
+                const prevBtn = document.getElementById('btn-prev-q');
+                if (prevBtn) {
+                    prevBtn.disabled = (this.mbtiTest.currentQuestion === 0);
+                }
+            }
+            
+            updateNavButtons() {
+                const prevBtn = document.getElementById('btn-prev-q');
+                const nextBtn = document.getElementById('btn-next-q');
+                
+                prevBtn.disabled = (this.mbtiTest.currentQuestion === 0);
+                
+                const hasAnswer = this.mbtiTest.answers[this.mbtiTest.currentQuestion] !== null;
+                if (hasAnswer) {
+                    nextBtn.style.display = 'block';
+                    if (this.mbtiTest.currentQuestion >= MBTI_QUESTIONS.length - 1) {
+                        nextBtn.textContent = '完成';
+                    } else {
+                        nextBtn.textContent = '下一题';
+                    }
+                } else {
+                    nextBtn.style.display = 'none';
+                }
+            }
+            
+            prevQuestion() {
+                if (this.mbtiTest.currentQuestion > 0) {
+                    this.mbtiTest.currentQuestion--;
+                    this.showTestQuestion();
+                }
+            }
+            
+            nextQuestion() {
+                if (this.mbtiTest.currentQuestion >= MBTI_QUESTIONS.length - 1) {
+                    // 完成测试
+                    this.finishMBTITest();
+                } else {
+                    this.mbtiTest.currentQuestion++;
+                    this.showTestQuestion();
+                }
+            }
+            
+            finishMBTITest() {
+                // 计算结果
+                const scores = { E: 0, I: 0, N: 0, S: 0, T: 0, F: 0, J: 0, P: 0 };
+                this.mbtiTest.answers.forEach(answer => {
+                    if (answer) scores[answer]++;
+                });
+                
+                const result = [
+                    scores.E >= scores.I ? 'E' : 'I',
+                    scores.N >= scores.S ? 'N' : 'S',
+                    scores.T >= scores.F ? 'T' : 'F',
+                    scores.J >= scores.P ? 'J' : 'P'
+                ].join('');
+
+                gameState.player.mbti = result;
+                document.getElementById('mbti-result').innerHTML = `🎉 测试结果：<strong>${result}</strong> - ${MBTI_DESCRIPTIONS[result]}`;
+                document.getElementById('mbti-result').style.display = 'block';
+                this.showPage('create-page');
+                this.checkCreateComplete();
+            }
+
+            createCharacter() {
+                const name = document.getElementById('player-name').value.trim();
+                const age = parseInt(document.getElementById('player-age').value);
+                const job = document.getElementById('player-job').value.trim();
+                const mbti = gameState.player.mbti;
+
+                gameState.setPlayer(name, age, job, mbti);
+                this.startStory('start');
+            }
+
+            startStory(storyId) {
+                const story = STORIES[storyId];
+                if (!story) {
+                    console.error('剧情不存在:', storyId);
+                    return;
+                }
+
+                this.currentStory = story;
+                gameState.currentStoryId = storyId;
+                gameState.currentChapter = story.chapter;
+
+                this.showPage('game-page');
+                this.renderStory(story);
+            }
+
+            renderStory(story) {
+                document.getElementById('game-background').style.background = story.bg;
+                document.getElementById('chapter-title').textContent = story.chapter > 0 ? `第${story.chapter}章 ${story.title || ''}` : story.title || '';
+
+                const sprite = document.getElementById('character-sprite');
+                if (story.sprite && CHARACTERS[story.sprite]) {
+                    sprite.style.background = `linear-gradient(180deg, ${CHARACTERS[story.sprite].color} 0%, transparent 100%)`;
+                    sprite.style.display = 'block';
+                } else {
+                    sprite.style.display = 'none';
+                }
+
+                const speakerEl = document.getElementById('speaker-name');
+                if (story.speaker) {
+                    speakerEl.textContent = story.speaker;
+                    speakerEl.style.display = 'block';
+                } else {
+                    speakerEl.style.display = 'none';
+                }
+
+                this.updateAffectionDisplay();
+
+                this.fullText = story.text;
+                this.displayedText = '';
+                this.isTyping = true;
+                document.getElementById('dialogue-text').textContent = '';
+                this.typeText(story.text);
+
+                this.renderChoices(story.choices);
+            }
+
+            typeText(text) {
+                if (!this.isTyping) return;
+                const chars = text.split('');
+                let index = 0;
+
+                const type = () => {
+                    if (index < chars.length && this.isTyping) {
+                        this.displayedText += chars[index];
+                        document.getElementById('dialogue-text').textContent = this.displayedText;
+                        index++;
+                        this.typingTimer = setTimeout(type, 30);
+                    } else {
+                        this.isTyping = false;
+                    }
+                };
+                type();
+            }
+
+            renderChoices(choices) {
+                const container = document.getElementById('choices-container');
+                container.innerHTML = '';
+
+                if (!choices || choices.length === 0) return;
+
+                choices.forEach(choice => {
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn';
+                    btn.textContent = choice.text;
+                    btn.onclick = () => this.makeChoice(choice);
+                    container.appendChild(btn);
+                });
+            }
+
+            makeChoice(choice) {
+                if (choice.affection) {
+                    Object.keys(choice.affection).forEach(charId => {
+                        changeAffection(charId, choice.affection[charId]);
+                        gameState.markMet(charId);
+                    });
+                    this.updateAffectionDisplay();
+                }
+
+                if (choice.next) {
+                    this.startStory(choice.next);
+                }
+            }
+
+            updateAffectionDisplay() {
+                const container = document.getElementById('affection-display');
+                container.innerHTML = getAllCharacters().filter(char =>
+                    gameState.metCharacters.includes(char.id) || char.affection > 0
+                ).map(char =>
+                    `<div class="affection-item">
+                        <span class="heart" style="color: ${char.color}">❤️</span>
+                        <span>${char.name.split('')[0]}</span>
+                        <span>${'★'.repeat(Math.floor(char.affection / 20))}${'☆'.repeat(5 - Math.floor(char.affection / 20))}</span>
+                    </div>`
+                ).join('');
+            }
+
+            renderSaveSlots() {
+                const container = document.getElementById('save-slots');
+                const slots = saveSystem.getAllSlots();
+
+                container.innerHTML = slots.map(slot => {
+                    if (slot.info) {
+                        return `<div class="save-card" onclick="game.handleSaveSlotClick(${slot.index})">
+                            <div class="save-title">💾 存档 ${slot.index + 1}</div>
+                            <div class="save-info">${slot.info.formattedTime}</div>
+                            <div class="save-info">第${slot.info.chapter}章</div>
+                            <div class="save-info">${slot.info.playerName} (${slot.info.playerMbti})</div>
+                        </div>`;
+                    } else {
+                        return `<div class="save-card empty" onclick="game.handleSaveSlotClick(${slot.index})">
+                            <div class="save-title">📭 空槽位 ${slot.index + 1}</div>
+                            <div class="save-info">点击${this.saveMode === 'save' ? '保存' : '读取'}</div>
+                        </div>`;
+                    }
+                }).join('');
+            }
+
+            handleSaveSlotClick(slotIndex) {
+                if (this.saveMode === 'save') {
+                    saveSystem.save(slotIndex, gameState.export());
+                    alert('✅ 存档成功！');
+                    this.showPage('game-page');
+                } else {
+                    const success = this.loadGame(slotIndex);
+                    if (!success) alert('该槽位没有存档');
+                }
+            }
+
+            loadGame(slotIndex) {
+                const state = saveSystem.load(slotIndex);
+                if (state) {
+                    gameState.import(state);
+                    this.startStory(state.currentStoryId);
+                    this.checkSaves();
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        // 初始化游戏
+        const game = new GameEngine();
+    </script>
+</body>
+</html>

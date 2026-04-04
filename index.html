@@ -1,0 +1,2432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Bloom - 上海生活记录</title>
+    <style>
+        /* ===== 全局样式 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            padding-top: calc(45px + env(safe-area-inset-top));
+            padding-bottom: calc(60px + env(safe-area-inset-bottom));
+        }
+
+        /* ===== 顶部状态栏 ===== */
+        .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 45px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
+
+        .energy-bar {
+            width: 50px;
+            height: 5px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+            transition: width 0.3s;
+        }
+
+        .energy-low .energy-fill {
+            background: linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%);
+        }
+
+        /* ===== 页面容器 ===== */
+        .page {
+            display: none;
+            height: 100vh;
+            padding: 10px;
+        }
+
+        .page.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== 首页 ===== */
+        #home-page {
+            justify-content: center;
+            align-items: center;
+        }
+
+        .home-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-logo {
+            font-size: 3rem;
+            margin-bottom: 5px;
+        }
+
+        .game-title {
+            font-size: 2rem;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+
+        .game-subtitle {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .home-content {
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .feature-card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .feature-card h3 {
+            color: #fff;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .feature-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 6px;
+            border-radius: 10px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .feature-item .icon {
+            font-size: 1.2rem;
+            margin-bottom: 3px;
+        }
+
+        .feature-item .text {
+            font-size: 0.65rem;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        /* ===== 游戏页面 ===== */
+        #game-page {
+            justify-content: flex-start;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-top: 5px;
+        }
+
+        .page-header h2 {
+            color: #fff;
+            font-size: 1.3rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* ===== 角色卡片 ===== */
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .character-card {
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            padding: 8px 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .character-card.locked {
+            opacity: 0.5;
+        }
+
+        .character-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin: 0 auto 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .character-name {
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .character-affection {
+            height: 3px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 3px;
+        }
+
+        .character-affection-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        /* ===== 行动菜单 ===== */
+        .action-section {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .action-menu {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .action-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 12px;
+            padding: 8px 4px;
+            color: #fff;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        .action-icon {
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        /* ===== 联系界面 ===== */
+        #contact-page {
+            justify-content: flex-start;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .contact-btn {
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            padding: 8px 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .contact-btn:disabled {
+            opacity: 0.5;
+        }
+
+        .contact-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin: 0 auto 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .contact-name {
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        /* ===== 对话遮罩 ===== */
+        .dialogue-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .dialogue-overlay.active {
+            display: flex;
+        }
+
+        .dialogue-box {
+            background: rgba(255,255,255,0.98);
+            border-radius: 20px 20px 0 0;
+            padding: 20px 15px;
+            width: 100%;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .dialogue-character {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .dialogue-text {
+            font-size: 0.85rem;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+        }
+
+        .dialogue-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .dialogue-choice {
+            padding: 12px;
+            font-size: 0.8rem;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            background: #fff;
+            color: #333;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .dialogue-choice:hover {
+            background: #667eea;
+            color: #fff;
+        }
+
+        /* ===== 底部导航 ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px calc(5px + env(safe-area-inset-bottom));
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 12px;
+            padding: 8px 15px;
+            color: #fff;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        /* ===== 警告提示 ===== */
+        .warning-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,65,108,0.95);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        /* ===== 成就通知 ===== */
+        .achievement-toast {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(102,126,234,0.95);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部状态栏 -->
+    <div class="status-bar">
+        <div class="status-item">
+            <span>📅</span>
+            <span>Day <span id="day-display">1</span></span>
+        </div>
+        <div class="status-item">
+            <span>⚡</span>
+            <div class="energy-bar" id="energy-bar"><div class="energy-fill" id="energy-fill" style="width: 100%;"></div></div>
+        </div>
+        <div class="status-item">
+            <span>💼</span>
+            <span id="work-display">0%</span>
+        </div>
+    </div>
+
+    <!-- 首页 -->
+    <div id="home-page" class="page active">
+        <div class="home-logo">
+            <div class="game-logo">🌸</div>
+            <h1 class="game-title">Bloom</h1>
+            <p class="game-subtitle">365 天恋爱故事</p>
+        </div>
+
+        <div class="home-content">
+            <div class="feature-card">
+                <h3>✨ 特色</h3>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="icon">📅</div>
+                        <div class="text">365 天</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="icon">⚡</div>
+                        <div class="text">精力</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="icon">💕</div>
+                        <div class="text">5 角色</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="icon">🏆</div>
+                        <div class="text">75 成就</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-buttons">
+                <button class="btn btn-primary" onclick="game.startNewGame()">✨ 新故事</button>
+                <button class="btn btn-secondary" id="btn-continue" onclick="game.continueGame()" disabled>📖 继续</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏页面 -->
+    <div id="game-page" class="page">
+        <div class="page-header">
+            <h2>第 <span id="current-day">1</span> 天</h2>
+        </div>
+
+        <!-- 角色状态 -->
+        <div class="character-grid" id="character-grid"></div>
+
+        <!-- 行动菜单 -->
+        <div class="action-section">
+            <div class="action-menu">
+                <button class="action-btn" onclick="game.work()">
+                    <div class="action-icon">💼</div>
+                    <div>工作</div>
+                </button>
+                <button class="action-btn" onclick="game.rest()">
+                    <div class="action-icon">🏠</div>
+                    <div>休息</div>
+                </button>
+                <button class="action-btn" onclick="game.fitness()">
+                    <div class="action-icon">💪</div>
+                    <div>健身</div>
+                </button>
+                <button class="action-btn" onclick="game.explore()">
+                    <div class="action-icon">🗺️</div>
+                    <div>探索</div>
+                </button>
+                <button class="action-btn" onclick="game.contact()">
+                    <div class="action-icon">💬</div>
+                    <div>联系</div>
+                </button>
+                <button class="action-btn" onclick="game.sleep()">
+                    <div class="action-icon">🌙</div>
+                    <div>睡觉</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 联系界面 -->
+    <div id="contact-page" class="page">
+        <div class="page-header">
+            <h2>联系角色</h2>
+        </div>
+        <div class="contact-grid" id="contact-grid"></div>
+    </div>
+
+    <!-- 对话遮罩 -->
+    <div class="dialogue-overlay" id="dialogue-overlay">
+        <div class="dialogue-box">
+            <div class="dialogue-character" id="dialogue-character"></div>
+            <div class="dialogue-text" id="dialogue-text"></div>
+            <div class="dialogue-choices" id="dialogue-choices"></div>
+        </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+        <button class="nav-btn" onclick="game.showPage('home-page')">
+            <div class="nav-icon">🏠</div>
+            <div>首页</div>
+        </button>
+        <button class="nav-btn" onclick="game.showPage('game-page')">
+            <div class="nav-icon">🎮</div>
+            <div>游戏</div>
+        </button>
+        <button class="nav-btn" onclick="game.saveGame()">
+            <div class="nav-icon">💾</div>
+            <div>保存</div>
+        </button>
+    </div>
+
+    <!-- 提示 -->
+    <div class="warning-toast" id="warning-toast"></div>
+    <div class="achievement-toast" id="achievement-toast"></div>
+
+    <script>
+        const MAX_DAY = 365, MAX_ENERGY = 100;
+        const ENERGY_COSTS = { work: 40, rest: -20, fitness: 15, explore: 20, sleep: -50, message: 2, call: 5 };
+
+        const CHARACTERS = {
+            wenya: { id: 'wenya', name: '温雅', avatar: '🎨', color: '#fd79a8', affection: 0, maxAffection: 150, relation: 'stranger', lastContact: 0, unlocked: false },
+            xiayang: { id: 'xiayang', name: '夏阳', avatar: '🏃', color: '#e67e22', affection: 0, maxAffection: 150, relation: 'stranger', lastContact: 0, unlocked: false },
+            sujingyi: { id: 'sujingyi', name: '苏静怡', avatar: '🩺', color: '#3498db', affection: 0, maxAffection: 150, relation: 'stranger', lastContact: 0, unlocked: false },
+            luxiao: { id: 'luxiao', name: '陆潇', avatar: '🍷', color: '#2d3436', affection: 0, maxAffection: 150, relation: 'stranger', lastContact: 0, unlocked: false },
+            linwanqing: { id: 'linwanqing', name: '林婉清', avatar: '💼', color: '#8e44ad', affection: 0, maxAffection: 150, relation: 'stranger', lastContact: 0, unlocked: false }
+        };
+
+        const RELATION_STAGES = {
+            stranger: '陌生人', acquaintance: '认识', friend: '朋友', ambiguous: '暧昧',
+            lover: '恋人', hotlove: '热恋', partner: '伴侣', spouse: '夫妻'
+        };
+
+        const CONTACT_THRESHOLDS = { stranger: 999, acquaintance: 30, friend: 14, ambiguous: 7, lover: 3, hotlove: 2, partner: 2, spouse: 1 };
+
+        class GameState {
+            constructor() { this.reset(); }
+            reset() {
+                this.day = 1; this.energy = MAX_ENERGY; this.workProgress = 0; this.achievements = [];
+                Object.keys(CHARACTERS).forEach(k => {
+                    CHARACTERS[k].affection = 0; CHARACTERS[k].relation = 'stranger';
+                    CHARACTERS[k].lastContact = 0; CHARACTERS[k].unlocked = false;
+                });
+            }
+            save() {
+                localStorage.setItem('bloom_save', JSON.stringify({
+                    day: this.day, energy: this.energy, workProgress: this.workProgress,
+                    achievements: this.achievements, characters: Object.keys(CHARACTERS).reduce((a,k) => {
+                        a[k] = { affection: CHARACTERS[k].affection, relation: CHARACTERS[k].relation, lastContact: CHARACTERS[k].lastContact, unlocked: CHARACTERS[k].unlocked };
+                        return a;
+                    }, {})
+                }));
+                game.showWarning('✅ 已保存');
+            }
+            load() {
+                const d = localStorage.getItem('bloom_save');
+                if (!d) return false;
+                const data = JSON.parse(d);
+                this.day = data.day; this.energy = data.energy; this.workProgress = data.workProgress;
+                this.achievements = data.achievements || [];
+                if (data.characters) Object.keys(data.characters).forEach(k => {
+                    if (CHARACTERS[k]) {
+                        CHARACTERS[k].affection = data.characters[k].affection;
+                        CHARACTERS[k].relation = data.characters[k].relation;
+                        CHARACTERS[k].lastContact = data.characters[k].lastContact;
+                        CHARACTERS[k].unlocked = data.characters[k].unlocked;
+                    }
+                });
+                return true;
+            }
+            hasSave() { return !!localStorage.getItem('bloom_save'); }
+        }
+
+        const gameState = new GameState();
+
+        class GameEngine {
+            constructor() { this.init(); }
+            init() { this.updateStatusBar(); this.checkContinue(); this.renderChars(); }
+            updateStatusBar() {
+                document.getElementById('day-display').textContent = gameState.day;
+                document.getElementById('current-day').textContent = gameState.day;
+                document.getElementById('energy-fill').style.width = gameState.energy + '%';
+                document.getElementById('work-display').textContent = gameState.workProgress + '%';
+                document.getElementById('energy-bar').classList.toggle('energy-low', gameState.energy < 30);
+            }
+            checkContinue() { const b = document.getElementById('btn-continue'); if (b) b.disabled = !gameState.hasSave(); }
+            showPage(id) {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+                if (id === 'contact-page') this.renderContact();
+            }
+            renderChars() { const grid = document.getElementById('character-grid'); if (!grid) return;
+                document.getElementById('character-grid').innerHTML = Object.keys(CHARACTERS).map(k => {
+                    const c = CHARACTERS[k], days = c.lastContact > 0 ? gameState.day - c.lastContact : 0;
+                    return `<div class="character-card ${c.unlocked ? '' : 'locked'}">
+                        <div class="character-avatar">${c.avatar}</div>
+                        <div class="character-name">${c.name}</div>
+                        <div class="character-affection"><div class="character-affection-fill" style="width:${(c.affection/c.maxAffection)*100}%;background:${c.color}"></div></div>
+                    </div>`;
+                }).join('');
+            }
+            renderContact() {
+                const unlocked = Object.keys(CHARACTERS).filter(k => CHARACTERS[k].unlocked);
+                document.getElementById('contact-grid').innerHTML = unlocked.length ? unlocked.map(k => {
+                    const c = CHARACTERS[k];
+                    return `<div class="contact-btn" onclick="game.showMessage('${k}')"><div class="contact-avatar">${c.avatar}</div><div class="contact-name">${c.name}</div></div>
+                    <div class="contact-btn" onclick="game.showCall('${k}')"><div class="contact-avatar">${c.avatar}</div><div class="contact-name">电话</div></div>`;
+                }).join('') : '<div style="grid-column:1/-1;text-align:center;color:#fff;padding:20px;">未解锁角色<br>去探索或健身！</div>';
+            }
+            startNewGame() {
+                if (confirm('开始新游戏？当前进度将丢失。')) {
+                    gameState.reset(); this.updateStatusBar(); this.renderChars();
+                    this.showWarning('🌸 游戏开始！365 天恋爱故事！'); this.showPage('game-page');
+                }
+            }
+            continueGame() {
+                if (gameState.load()) { this.updateStatusBar(); this.renderChars(); this.showWarning('📖 游戏继续！'); this.showPage('game-page'); }
+            }
+            saveGame() { gameState.save(); }
+            work() {
+                if (gameState.energy < 40) { this.showWarning('⚠️ 精力不足！'); return; }
+                gameState.energy -= 40; gameState.workProgress = Math.min(100, gameState.workProgress + 20);
+                this.updateStatusBar(); this.renderChars(); this.showWarning('💼 工作 -40 精力 +20% 进度'); gameState.save();
+            }
+            rest() { gameState.energy = Math.min(100, gameState.energy + 20); this.updateStatusBar(); this.showWarning('🏠 休息 +20 精力'); gameState.save(); }
+            fitness() {
+                if (gameState.energy < 15) { this.showWarning('⚠️ 精力不足！'); return; }
+                gameState.energy -= 15; this.updateStatusBar(); this.showWarning('💪 健身 -15 精力');
+                if (!CHARACTERS.xiayang.unlocked && Math.random() < 0.7) {
+                    CHARACTERS.xiayang.unlocked = true; this.changeAffection('xiayang', 10); this.renderChars();
+                    this.showWarning('🏃 遇到夏阳！');
+                }
+                gameState.save();
+            }
+            explore() {
+                if (gameState.energy < 20) { this.showWarning('⚠️ 精力不足！'); return; }
+                gameState.energy -= 20; this.updateStatusBar(); this.showWarning('🗺️ 探索 -20 精力');
+                const r = Math.random();
+                if (!CHARACTERS.wenya.unlocked && r < 0.5) {
+                    CHARACTERS.wenya.unlocked = true; this.changeAffection('wenya', 8); this.renderChars(); this.showWarning('🎨 遇到温雅！');
+                } else if (!CHARACTERS.luxiao.unlocked && r > 0.8) {
+                    CHARACTERS.luxiao.unlocked = true; this.changeAffection('luxiao', 8); this.renderChars(); this.showWarning('🍷 遇到陆潇！');
+                }
+                gameState.save();
+            }
+            sleep() { if (confirm('睡觉？进入第二天。')) this.nextDay(); }
+            contact() { this.showPage('contact-page'); }
+            showMessage(id) {
+                if (gameState.energy < 2) { this.showWarning('⚠️ 精力不足！'); return; }
+                const c = CHARACTERS[id]; gameState.energy -= 2; c.lastContact = gameState.day;
+                this.changeAffection(id, 1); this.updateStatusBar(); this.renderChars();
+                this.showWarning(`💬 给${c.name}发消息 -2 精力 +1 好感`); gameState.save();
+            }
+            showCall(id) {
+                if (gameState.energy < 5) { this.showWarning('⚠️ 精力不足！'); return; }
+                const c = CHARACTERS[id]; gameState.energy -= 5; c.lastContact = gameState.day;
+                this.changeAffection(id, 3); this.updateStatusBar(); this.renderChars();
+                this.showWarning(`📞 给${c.name}打电话 -5 精力 +3 好感`); gameState.save();
+            }
+            changeAffection(id, amount) {
+                const c = CHARACTERS[id]; if (!c) return;
+                const old = c.affection; c.affection = Math.max(0, Math.min(150, c.affection + amount));
+                const newR = this.getRelation(c.affection);
+                if (newR !== c.relation) {
+                    c.relation = newR;
+                    this.showWarning(`${c.name} 关系升级为：${RELATION_STAGES[newR]}`);
+                    if (newR === 'lover') this.showAchievement(`【${c.name}·恋人】`);
+                }
+                if (old < 20 && c.affection >= 20 && !c.unlocked) { c.unlocked = true; this.showWarning(`${c.name} 已解锁！`); }
+            }
+            getRelation(a) { if (a >= 141) return 'spouse'; if (a >= 121) return 'partner'; if (a >= 101) return 'hotlove'; if (a >= 86) return 'lover'; if (a >= 60) return 'ambiguous'; if (a >= 40) return 'friend'; if (a >= 20) return 'acquaintance'; return 'stranger'; }
+            nextDay() {
+                gameState.day++; gameState.energy = Math.min(100, gameState.energy + 50); gameState.workProgress = 0;
+                if (gameState.day > 365) { alert('🎬 365 天结束！结局开发中'); return; }
+                this.checkContact(); this.updateStatusBar(); this.renderChars();
+                this.showWarning(`🌅 第${gameState.day}天！精力${gameState.energy}`); gameState.save();
+            }
+            checkContact() {
+                Object.keys(CHARACTERS).forEach(k => {
+                    const c = CHARACTERS[k]; if (!c.unlocked || c.relation === 'stranger') return;
+                    const days = gameState.day - c.lastContact, t = CONTACT_THRESHOLDS[c.relation];
+                    if (days > t && days <= t + 1) { this.changeAffection(k, -5); this.showWarning(`${c.name}${days}天没联系，生气了...`); }
+                    if (days > t * 2 && c.relation === 'lover') this.showWarning(`${c.name} 提出分手...`);
+                });
+            }
+            showWarning(msg) {
+                const t = document.getElementById('warning-toast'); t.textContent = msg; t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 2500);
+            }
+            showDialogue(character, text, choices) {
+                const overlay = document.getElementById("dialogue-overlay");
+                if (!overlay) return;
+                document.getElementById("dialogue-character").textContent = character;
+                document.getElementById("dialogue-text").textContent = text;
+                const choicesContainer = document.getElementById("dialogue-choices");
+                choicesContainer.innerHTML = choices.map((choice, i) => 
+                    `<button class="dialogue-choice" onclick="game.handleDialogueChoice(${i})">${choice.text}</button>`
+                ).join("");
+                overlay.classList.add("active");
+                this.currentDialogue = { character, text, choices };
+            }
+            handleDialogueChoice(index) {
+                const choice = this.currentDialogue.choices[index];
+                if (choice.affection) {
+                    const charId = Object.keys(CHARACTERS).find(k => CHARACTERS[k].name === this.currentDialogue.character);
+                    if (charId) this.changeAffection(charId, choice.affection);
+                }
+                document.getElementById("dialogue-overlay").classList.remove("active");
+                if (choice.next) {
+                    const charId = Object.keys(CHARACTERS).find(k => CHARACTERS[k].name === this.currentDialogue.character);
+                    if (charId) {
+                        const scenes = sceneSystem.getScenes(charId);
+                        const nextScene = scenes.find(s => s.id === choice.next);
+                        if (nextScene) sceneSystem.showScene(charId, nextScene);
+                    }
+                }
+                if (choice.ending) {
+                    this.showEnding(this.currentDialogue.character, choice.ending);
+                }
+            }
+            showEnding(character, endingType) {
+                const endings = window[character.toUpperCase().replace(" ", "_") + "_ENDINGS"];
+                if (!endings || !endings[endingType]) return;
+                const ending = endings[endingType];
+                alert(ending.title + "\n\n" + ending.text);
+                if (ending.achievement) this.showAchievement(ending.achievement);
+            }
+            showAchievement(name) {
+                const t = document.getElementById('achievement-toast'); t.innerHTML = '🏆 成就<br><strong>' + name + '</strong>'; t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 2500);
+                if (!gameState.achievements.includes(name)) gameState.achievements.push(name);
+            }
+        }
+
+        const game = new GameEngine();
+
+    // ===== 所有角色场景数据 =====
+// ===== 温雅线完整场景数据（32 场景）=====
+
+window.WENYA_SCENES = [
+    // === 第一阶段：解锁（场景 1-5）===
+    {
+        id: 1,
+        trigger: 'unlock_wenya',
+        text: '晚上 9 点，你点了外卖。\n\n门铃响了，你打开门。\n\n温雅：「你好，你的外卖……」\n\n她愣了一下。\n\n温雅：「你是……新搬来的邻居？」',
+        choices: [
+            { text: '「嗯。」', affection: 3, energy: 0, next: 2 },
+            { text: '「你记得我？」', affection: 5, energy: 0, next: 2 },
+            { text: '「这么晚还送外卖？」', affection: 8, energy: 0, next: 2 }
+        ]
+    },
+    {
+        id: 2,
+        trigger: 'day_3',
+        text: '三天后，你收到消息。\n\n温雅：「你好，我是温雅，住你对门。」\n「这周末有空吗？有个艺术展览，要不要一起看？」',
+        choices: [
+            { text: '「好啊，几点？」', affection: 10, energy: 0, next: 3 },
+            { text: '「这周有事，下次吧。」', affection: 3, energy: 0, next: null },
+            { text: '「不了，谢谢。」', affection: -5, energy: 0, next: null }
+        ]
+    },
+    {
+        id: 3,
+        trigger: 'date_accept',
+        text: '周六下午 2 点，美术馆门口。\n\n温雅：「你来了！」\n（她穿了条淡粉色的裙子，长发披肩）\n「我还怕你不来……」',
+        choices: [
+            { text: '「走吧，进去。」', affection: 5, energy: 20, next: 4 },
+            { text: '「你今天很漂亮。」', affection: 15, energy: 20, next: 4 },
+            { text: '「等很久了吗？」', affection: 10, energy: 20, next: 4 }
+        ]
+    },
+    {
+        id: 4,
+        trigger: 'scene_4',
+        text: '你们站在一幅画前。\n\n温雅：「这幅画……让我想到了你。」',
+        choices: [
+            { text: '「为什么？」', affection: 8, energy: 0, next: 5 },
+            { text: '「我也想到了你。」', affection: 15, energy: 0, next: 5 },
+            { text: '「（安静看画）」', affection: 10, energy: 0, next: 5 }
+        ]
+    },
+    {
+        id: 5,
+        trigger: 'scene_5',
+        text: '休息区，你们买了咖啡。\n\n温雅：「其实……我以前想当画家的。」',
+        choices: [
+            { text: '「为什么没当？」', affection: 8, energy: 0, next: 6 },
+            { text: '「现在也可以。」', affection: 15, energy: 0, next: 6 },
+            { text: '「老师挺好的。」', affection: 10, energy: 0, next: 6 }
+        ]
+    },
+    
+    // === 第二阶段：深入了解（场景 6-15）===
+    {
+        id: 6,
+        trigger: 'scene_6',
+        text: '温雅：「我最近……画了一幅画。」\n「但是不太满意……」\n「你能来看看吗？」',
+        choices: [
+            { text: '「好，现在就去。」', affection: 10, energy: 20, next: 7 },
+            { text: '「你一直都很棒。」', affection: 15, energy: 0, next: 7 },
+            { text: '「我不懂画，帮不了你。」', affection: -10, energy: 0, next: null }
+        ]
+    },
+    {
+        id: 7,
+        trigger: 'scene_7',
+        text: '你来到温雅家。\n\n她拿出一幅画。\n\n温雅：「就是这幅……」\n（画的是你，在美术馆的样子）\n「我……画得不好吗？」',
+        choices: [
+            { text: '「很好，很像。」', affection: 10, energy: 0, next: 8 },
+            { text: '「你画了我？」', affection: 15, energy: 0, next: 8 },
+            { text: '「我不懂画，但我觉得很好。」', affection: 15, energy: 0, next: 8 }
+        ]
+    },
+    {
+        id: 8,
+        trigger: 'scene_8',
+        text: '温雅：「其实……我一直想办个人展。」\n「但是我不敢……」\n「我怕没人来看……」',
+        choices: [
+            { text: '「我帮你。」', affection: 20, energy: 30, next: 9 },
+            { text: '「你可以的。」', affection: 15, energy: 0, next: 9 },
+            { text: '「办展很贵的。」', affection: -15, energy: 0, next: null }
+        ]
+    },
+    {
+        id: 9,
+        trigger: 'scene_9',
+        text: '你开始帮温雅筹备画展。\n\n联系画廊、设计海报、邀请嘉宾……\n\n温雅：「谢谢你……没有你我做不到。」',
+        choices: [
+            { text: '「应该的。」', affection: 10, energy: 20, next: 10 },
+            { text: '「你很有才华。」', affection: 15, energy: 20, next: 10 },
+            { text: '「别客气。」', affection: 5, energy: 20, next: 10 }
+        ]
+    },
+    {
+        id: 10,
+        trigger: 'scene_10',
+        text: '画展前一天晚上。\n\n温雅突然给你打电话。\n\n温雅：「我……我好紧张。」\n「万一明天没人来怎么办……」',
+        choices: [
+            { text: '「我会来的。」', affection: 10, energy: 5, next: 11 },
+            { text: '「别担心，可以的。」', affection: 15, energy: 5, next: 11 },
+            { text: '「早点休息。」', affection: 5, energy: 5, next: 11 }
+        ]
+    },
+    
+    // === 第三阶段：感情升温（场景 11-20）===
+    {
+        id: 11,
+        trigger: 'scene_11',
+        text: '画展当天。\n\n来了很多人，画也卖出去不少。\n\n温雅：「（眼含泪光）谢谢你……」',
+        choices: [
+            { text: '「是你自己有才华。」', affection: 10, energy: 0, next: 12 },
+            { text: '「我一直相信你。」', affection: 15, energy: 0, next: 12 },
+            { text: '「请我吃饭吧。」', affection: 10, energy: 0, next: 12 }
+        ]
+    },
+    {
+        id: 12,
+        trigger: 'scene_12',
+        text: '庆功宴上。\n\n温雅喝了一点酒，脸红红的。\n\n温雅：「你知道吗……」\n「你对我来说，很特别。」',
+        choices: [
+            { text: '「你也是。」', affection: 15, energy: 0, next: 13 },
+            { text: '「（微笑）」', affection: 10, energy: 0, next: 13 },
+            { text: '「少喝点。」', affection: 5, energy: 0, next: 13 }
+        ]
+    },
+    {
+        id: 13,
+        trigger: 'scene_13',
+        text: '之后的一周。\n\n温雅每天都给你发消息，分享她的画、她的生活。\n\n你开始期待她的消息。',
+        choices: [
+            { text: '主动约她吃饭', affection: 10, energy: 20, next: 14 },
+            { text: '继续日常聊天', affection: 5, energy: 2, next: 14 },
+            { text: '稍微冷淡一点', affection: -5, energy: 0, next: 14 }
+        ]
+    },
+    {
+        id: 14,
+        trigger: 'scene_14',
+        text: '你们一起吃饭。\n\n温雅：「我爸妈……想见见你。」\n「你……愿意吗？」',
+        choices: [
+            { text: '「好啊。」', affection: 15, energy: 30, next: 15 },
+            { text: '「太快了吧。」', affection: -10, energy: 0, next: 15 },
+            { text: '「我还没准备好。」', affection: -5, energy: 0, next: 15 }
+        ]
+    },
+    {
+        id: 15,
+        trigger: 'scene_15',
+        text: '你来到温雅家。\n\n温雅妈妈很热情，温雅爸爸比较严肃。\n\n温雅爸爸：「你是做什么工作的？」',
+        choices: [
+            { text: '如实回答', affection: 5, energy: 0, next: 16 },
+            { text: '说得体面一点', affection: 10, energy: 0, next: 16 },
+            { text: '紧张得说不出话', affection: -5, energy: 0, next: 16 }
+        ]
+    },
+    
+    // === 第四阶段：抉择（场景 16-25）===
+    {
+        id: 16,
+        trigger: 'scene_16',
+        text: '饭后。\n\n温雅送你到门口。\n\n温雅：「今天……谢谢你。」\n「我爸妈挺喜欢你的。」',
+        choices: [
+            { text: '「我也喜欢你爸妈。」', affection: 10, energy: 0, next: 17 },
+            { text: '「你爸妈很好。」', affection: 5, energy: 0, next: 17 },
+            { text: '「累死了。」', affection: -5, energy: 0, next: 17 }
+        ]
+    },
+    {
+        id: 17,
+        trigger: 'scene_17',
+        text: '一个月后。\n\n温雅接到一个电话，脸色变了。\n\n温雅：「……好，我知道了。」\n「我考虑一下。」',
+        choices: [
+            { text: '「怎么了？」', affection: 5, energy: 0, next: 18 },
+            { text: '「（等她主动说）」', affection: 0, energy: 0, next: 18 },
+            { text: '「不想说就算了。」', affection: -5, energy: 0, next: 18 }
+        ]
+    },
+    {
+        id: 18,
+        trigger: 'scene_18',
+        text: '温雅：「有个画廊……想签我。」\n「但是要去北京。」\n“我……不知道该怎么办。”',
+        choices: [
+            { text: '「去啊，这是机会。」', affection: -10, energy: 0, next: 19 },
+            { text: '「那就别去。」', affection: -5, energy: 0, next: 19 },
+            { text: '「你自己决定。」', affection: 5, energy: 0, next: 19 }
+        ]
+    },
+    {
+        id: 19,
+        trigger: 'scene_19',
+        text: '温雅沉默了很久。\n\n温雅：「我以为……你会让我留下来。」',
+        choices: [
+            { text: '「我不想束缚你。」', affection: 10, energy: 0, next: 20 },
+            { text: '「留下来吧。」', affection: 15, energy: 0, next: 20 },
+            { text: '「随便你。」', affection: -20, energy: 0, next: 20 }
+        ]
+    },
+    {
+        id: 20,
+        trigger: 'scene_20',
+        text: '温雅看着你，眼泪掉了下来。\n\n温雅：「我……不去北京了。」\n「我想留下来。」\n「因为……」',
+        choices: [
+            { text: '「因为什么？」', affection: 5, energy: 0, next: 21 },
+            { text: '（抱住她）', affection: 15, energy: 0, next: 21 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 21 }
+        ]
+    },
+    
+    // === 第五阶段：表白与结局（场景 21-32）===
+    {
+        id: 21,
+        trigger: 'scene_21',
+        text: '温雅：「因为我喜欢你。」\n「很喜欢很喜欢。」\n「不想离开你。」',
+        choices: [
+            { text: '「我也喜欢你。」', affection: 20, energy: 0, next: 22 },
+            { text: '「我……」', affection: 0, energy: 0, next: 22 },
+            { text: '「（吻她）」', affection: 25, energy: 0, next: 22 }
+        ]
+    },
+    {
+        id: 22,
+        trigger: 'scene_22',
+        text: '你们在一起了。\n\n之后的日子，平淡而幸福。\n\n温雅画画，你工作，偶尔一起做饭、看电影。',
+        choices: [
+            { text: '「这样真好。」', affection: 10, energy: 0, next: 23 },
+            { text: '「我们结婚吧。」', affection: 20, energy: 0, next: 24 },
+            { text: '「养只猫吧。」', affection: 10, energy: 0, next: 25 }
+        ]
+    },
+    {
+        id: 23,
+        trigger: 'scene_23',
+        text: '一年后。\n\n温雅的个人画展再次举办，这次规模更大。\n\n她在画展上向你求婚。',
+        choices: [
+            { text: '「我愿意。」', affection: 30, energy: 0, ending: 'he' },
+            { text: '「我……」', affection: -10, energy: 0, ending: 'ne' },
+            { text: '「再给我点时间。」', affection: -5, energy: 0, ending: 'ne' }
+        ]
+    },
+    {
+        id: 24,
+        trigger: 'scene_24',
+        text: '你们结婚了。\n\n在上海买了一套小房子，养了一只猫。\n\n温雅继续画画，你继续工作。',
+        choices: [
+            { text: '「这就是幸福吧。」', affection: 20, energy: 0, ending: 'he' },
+            { text: '「有点累。」', affection: -5, energy: 0, ending: 'ne' },
+            { text: '「挺好的。」', affection: 10, energy: 0, ending: 'he' }
+        ]
+    },
+    {
+        id: 25,
+        trigger: 'scene_25',
+        text: '你们养了一只猫，叫小雅。\n\n猫很可爱，温雅经常画它。\n\n生活平淡而温馨。',
+        choices: [
+            { text: '「这样真好。」', affection: 15, energy: 0, ending: 'he' },
+            { text: '「猫比我受宠。」', affection: 5, energy: 0, ending: 'he' },
+            { text: '「有点无聊。」', affection: -5, energy: 0, ending: 'ne' }
+        ]
+    }
+];
+
+// ===== 结局定义 =====
+window.WENYA_ENDINGS = {
+    he: {
+        title: '【温雅·执子之手】',
+        text: '你们在一起了。\n\n她画了你，画里有光。\n\n外派期结束后，你选择留在上海。\n\n因为她在这里。\n\n—— 执子之手，与子偕老 ——',
+        achievement: '【艺术家的缪斯】'
+    },
+    ne: {
+        title: '【温雅·画友】',
+        text: '你们还是朋友。\n\n偶尔一起看展，但也仅此而已。\n\n她去了北京，你留在上海。\n\n有些遗憾，但也许是最好的结局。\n\n—— 朋友，是多么遗憾的词 ——',
+        achievement: '【艺术知己】'
+    },
+    alone: {
+        title: '【温雅·错过的勇气】',
+        text: '她等过你。\n\n但你选择了自由。\n\n后来她去了北京，成了有名的画家。\n\n你偶尔会在画廊看到她的画。\n\n画里，总有你的影子。\n\n—— 她等过你，但你没来 ——',
+        achievement: '【她等过你】'
+    },
+    be: {
+        title: '【温雅·错过的画展】',
+        text: '你错过了她的画展。\n\n也错过了她。\n\n后来听说她去了北京。\n\n你们再也没见过。\n\n—— 有些错过，就是一辈子 ——',
+        achievement: '【迟来的告白】'
+    }
+};
+// ===== 夏阳线完整场景数据（32 场景）=====
+
+window.XIAYANG_SCENES = [
+    // === 第一阶段：相遇（场景 1-6）===
+    {
+        id: 1,
+        trigger: 'unlock_xiayang',
+        text: '健身房里，一个女生正在跑步机上飞奔。\n\n汗水顺着她的脸颊流下，马尾辫高高扎起。\n\n她看到你，露出灿烂的笑容。\n\n夏阳：「嗨！你是新来的吗？」',
+        choices: [
+            { text: '「嗯，第一次来。」', affection: 5, energy: 0, next: 2 },
+            { text: '「你跑好快啊。」', affection: 8, energy: 0, next: 2 },
+            { text: '「（点头）」', affection: 3, energy: 0, next: 2 }
+        ]
+    },
+    {
+        id: 2,
+        trigger: 'scene_2',
+        text: '夏阳从跑步机上下来，擦了擦汗。\n\n夏阳：「我叫夏阳，清华研二的。」\n「来上海实习，这边健身房便宜。」',
+        choices: [
+            { text: '「这么厉害。」', affection: 8, energy: 0, next: 3 },
+            { text: '「清华的？」', affection: 5, energy: 0, next: 3 },
+            { text: '「我是 XXX。」', affection: 5, energy: 0, next: 3 }
+        ]
+    },
+    {
+        id: 3,
+        trigger: 'scene_3',
+        text: '三天后，你又来健身。\n\n夏阳主动走过来。\n\n夏阳：「好巧！你也经常来啊？」\n「要不要一起练？」',
+        choices: [
+            { text: '「好啊。」', affection: 10, energy: 0, next: 4 },
+            { text: '「我不太会。」', affection: 5, energy: 0, next: 4 },
+            { text: '「今天累了。」', affection: -3, energy: 0, next: null }
+        ]
+    },
+    {
+        id: 4,
+        trigger: 'scene_4',
+        text: '夏阳教你做深蹲。\n\n夏阳：「膝盖不要超过脚尖。」\n「对，就是这样！」\n「你学得挺快嘛。」',
+        choices: [
+            { text: '「你教得好。」', affection: 10, energy: 0, next: 5 },
+            { text: '「我天赋异禀。」', affection: 8, energy: 0, next: 5 },
+            { text: '「累死了。」', affection: 3, energy: 0, next: 5 }
+        ]
+    },
+    {
+        id: 5,
+        trigger: 'scene_5',
+        text: '练完后，夏阳问你。\n\n夏阳：「这周六学校有运动会。」\n「你要不要来看我跑步？」',
+        choices: [
+            { text: '「好啊，几点？」', affection: 15, energy: 0, next: 6 },
+            { text: '「我不太懂运动。」', affection: -5, energy: 0, next: null },
+            { text: '「我考虑一下。」', affection: 0, energy: 0, next: null }
+        ]
+    },
+    {
+        id: 6,
+        trigger: 'scene_6',
+        text: '周六上午，清华操场。\n\n夏阳穿着运动服，在热身。\n\n看到你，她眼睛亮了。\n\n夏阳：「你真的来了！」',
+        choices: [
+            { text: '「答应你的嘛。」', affection: 10, energy: 20, next: 7 },
+            { text: '「来给你加油。」', affection: 15, energy: 20, next: 7 },
+            { text: '「嗯。」', affection: 5, energy: 20, next: 7 }
+        ]
+    },
+    
+    // === 第二阶段：暧昧（场景 7-15）===
+    {
+        id: 7,
+        trigger: 'scene_7',
+        text: '夏阳的比赛开始了。\n\n她像一阵风，遥遥领先。\n\n冲过终点线时，她回头找你。',
+        choices: [
+            { text: '跑过去迎接她', affection: 15, energy: 0, next: 8 },
+            { text: '在原地鼓掌', affection: 5, energy: 0, next: 8 },
+            { text: '挥手', affection: 8, energy: 0, next: 8 }
+        ]
+    },
+    {
+        id: 8,
+        trigger: 'scene_8',
+        text: '夏阳冲过来，一身汗。\n\n夏阳：「我赢了！」\n「你看到了吗！」',
+        choices: [
+            { text: '「看到了，好厉害。」', affection: 10, energy: 0, next: 9 },
+            { text: '「（递水）」', affection: 10, energy: 0, next: 9 },
+            { text: '「一身汗。」', affection: -5, energy: 0, next: 9 }
+        ]
+    },
+    {
+        id: 9,
+        trigger: 'scene_9',
+        text: '夏阳喝了口水。\n\n夏阳：「我请你吃饭吧。」\n「学校附近有家火锅超好吃。」',
+        choices: [
+            { text: '「好啊。」', affection: 10, energy: 30, next: 10 },
+            { text: '「我请吧。」', affection: 15, energy: 30, next: 10 },
+            { text: '「下次吧。」', affection: -5, energy: 0, next: null }
+        ]
+    },
+    {
+        id: 10,
+        trigger: 'scene_10',
+        text: '火锅店里。\n\n夏阳：「你知道吗。」\n「你是第一个来看我比赛的人。」\n「所以……我很开心。」',
+        choices: [
+            { text: '「以后我都会来。」', affection: 20, energy: 0, next: 11 },
+            { text: '「这么容易满足？」', affection: 10, energy: 0, next: 11 },
+            { text: '「（微笑）」', affection: 8, energy: 0, next: 11 }
+        ]
+    },
+    {
+        id: 11,
+        trigger: 'scene_11',
+        text: '之后的一周。\n\n夏阳每天都给你发消息。\n\n「今天跑步了吗？」\n「健身房见！」\n「一起吃饭吗？」',
+        choices: [
+            { text: '主动约她', affection: 15, energy: 20, next: 12 },
+            { text: '正常回复', affection: 5, energy: 2, next: 12 },
+            { text: '冷淡一点', affection: -10, energy: 0, next: 12 }
+        ]
+    },
+    {
+        id: 12,
+        trigger: 'scene_12',
+        text: '你们约好一起跑步。\n\n夏阳：「你配速多少？」\n「我带你跑。」',
+        choices: [
+            { text: '「跟你跑。」', affection: 10, energy: 30, next: 13 },
+            { text: '「我慢慢跑。」', affection: 5, energy: 30, next: 13 },
+            { text: '「今天好累。」', affection: -5, energy: 0, next: null }
+        ]
+    },
+    {
+        id: 13,
+        trigger: 'scene_13',
+        text: '跑完后，夏阳脸红红的。\n\n夏阳：「你知道吗。」\n「和你一起跑步很开心。」',
+        choices: [
+            { text: '「我也是。」', affection: 15, energy: 0, next: 14 },
+            { text: '「（微笑）」', affection: 10, energy: 0, next: 14 },
+            { text: '「累死了。」', affection: -5, energy: 0, next: 14 }
+        ]
+    },
+    {
+        id: 14,
+        trigger: 'scene_14',
+        text: '夏阳突然说。\n\n夏阳：「我有个秘密。」\n「其实……我注意你很久了。」',
+        choices: [
+            { text: '「什么时候？」', affection: 10, energy: 0, next: 15 },
+            { text: '「（惊讶）」', affection: 10, energy: 0, next: 15 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 15 }
+        ]
+    },
+    {
+        id: 15,
+        trigger: 'scene_15',
+        text: '夏阳：「从第一次在健身房看到你。」\n「你认真健身的样子……」\n「很帅。」',
+        choices: [
+            { text: '「你也是。」', affection: 20, energy: 0, next: 16 },
+            { text: '「（脸红）」', affection: 15, energy: 0, next: 16 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 16 }
+        ]
+    },
+    
+    // === 第三阶段：抉择（场景 16-24）===
+    {
+        id: 16,
+        trigger: 'scene_16',
+        text: '之后你们的关系更近了。\n\n夏阳：「这周末有空吗？」\n「我带你去个地方。」',
+        choices: [
+            { text: '「好啊。」', affection: 10, energy: 0, next: 17 },
+            { text: '「去哪？」', affection: 5, energy: 0, next: 17 },
+            { text: '「这周忙。」', affection: -10, energy: 0, next: null }
+        ]
+    },
+    {
+        id: 17,
+        trigger: 'scene_17',
+        text: '夏阳带你来到一个公园。\n\n夏阳：「这里是我常来的地方。」\n「很安静，适合跑步。」',
+        choices: [
+            { text: '「环境不错。」', affection: 8, energy: 0, next: 18 },
+            { text: '「你经常一个人来？」', affection: 10, energy: 0, next: 18 },
+            { text: '「（四处看看）」', affection: 5, energy: 0, next: 18 }
+        ]
+    },
+    {
+        id: 18,
+        trigger: 'scene_18',
+        text: '夏阳突然停下。\n\n夏阳：「其实……我有话想对你说。」',
+        choices: [
+            { text: '「（看着她）」', affection: 10, energy: 0, next: 19 },
+            { text: '「什么话？」', affection: 5, energy: 0, next: 19 },
+            { text: '「（紧张）」', affection: 8, energy: 0, next: 19 }
+        ]
+    },
+    {
+        id: 19,
+        trigger: 'scene_19',
+        text: '夏阳深吸一口气。\n\n夏阳：「我喜欢你。」\n「不是朋友那种喜欢。」\n「是……想和你在一起的那种喜欢。」',
+        choices: [
+            { text: '「我也喜欢你。」', affection: 30, energy: 0, next: 20 },
+            { text: '「我……」', affection: 0, energy: 0, next: 20 },
+            { text: '「（吻她）」', affection: 35, energy: 0, next: 20 }
+        ]
+    },
+    {
+        id: 20,
+        trigger: 'scene_20',
+        text: '夏阳看着你，等待你的回答。\n\n她的眼睛里有期待，也有紧张。',
+        choices: [
+            { text: '「我们在一起吧。」', affection: 30, energy: 0, next: 21 },
+            { text: '「给我点时间。」', affection: -10, energy: 0, next: 21 },
+            { text: '「我们还是朋友吧。」', affection: -30, energy: 0, next: 21 }
+        ]
+    },
+    {
+        id: 21,
+        trigger: 'scene_21',
+        text: '夏阳：「我……」\n「我可以抱抱你吗？」',
+        choices: [
+            { text: '（抱住她）', affection: 20, energy: 0, next: 22 },
+            { text: '「（后退）」', affection: -20, energy: 0, next: 22 },
+            { text: '「（沉默）」', affection: -10, energy: 0, next: 22 }
+        ]
+    },
+    {
+        id: 22,
+        trigger: 'scene_22',
+        text: '夏阳靠在你怀里。\n\n夏阳：「你知道吗。」\n「我等这句话很久了。」',
+        choices: [
+            { text: '「我也是。」', affection: 15, energy: 0, next: 23 },
+            { text: '「（摸摸她的头）」', affection: 15, energy: 0, next: 23 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 23 }
+        ]
+    },
+    {
+        id: 23,
+        trigger: 'scene_23',
+        text: '你们在一起了。\n\n之后的日子，你们一起跑步，一起健身，一起吃饭。\n\n夏阳：「这就是幸福吧。」',
+        choices: [
+            { text: '「嗯，很幸福。」', affection: 15, energy: 0, next: 24 },
+            { text: '「还要一起跑马拉松。」', affection: 10, energy: 0, next: 24 },
+            { text: '「（微笑）」', affection: 10, energy: 0, next: 24 }
+        ]
+    },
+    {
+        id: 24,
+        trigger: 'scene_24',
+        text: '一年后。\n\n夏阳的实习结束了，要回北京。\n\n夏阳：「你……愿意和我一起去北京吗？」',
+        choices: [
+            { text: '「我愿意。」', affection: 30, energy: 0, ending: 'he' },
+            { text: '「我……」', affection: -10, energy: 0, ending: 'ne' },
+            { text: '「我不想离开上海。」', affection: -30, energy: 0, ending: 'be' }
+        ]
+    },
+    
+    // === 第四阶段：结局（场景 25-32）===
+    {
+        id: 25,
+        trigger: 'scene_25',
+        text: '你们一起去了北京。\n\n夏阳继续读书，你找了新工作。\n\n生活平淡而幸福。',
+        choices: [
+            { text: '「这样真好。」', affection: 20, energy: 0, ending: 'he' },
+            { text: '「有点累。」', affection: -5, energy: 0, ending: 'ne' },
+            { text: '「（微笑）」', affection: 10, energy: 0, ending: 'he' }
+        ]
+    }
+];
+
+// ===== 夏阳线结局定义 =====
+window.XIAYANG_ENDINGS = {
+    he: {
+        title: '【夏阳·并肩奔跑】',
+        text: '你们在一起了。\n\n她跑完马拉松后向你求婚。\n\n你在终点线答应了她。\n\n外派期结束后，你选择和她一起回北京。\n\n因为她在哪里，家就在哪里。\n\n—— 并肩奔跑，一生相伴 ——',
+        achievement: '【最佳运动伴侣】'
+    },
+    ne: {
+        title: '【夏阳·跑友】',
+        text: '你们还是朋友。\n\n偶尔一起跑步，但也仅此而已。\n\n她回了北京，你留在上海。\n\n有些遗憾，但也许是最好的结局。\n\n—— 朋友，是多么遗憾的词 ——',
+        achievement: '【健身搭子】'
+    },
+    be: {
+        title: '【夏阳·终点线的背影】',
+        text: '你拒绝了她的表白。\n\n她回北京了。\n\n后来听说她成了职业运动员。\n\n你偶尔会在电视上看到她。\n\n她冲过终点线时，还是会回头。\n\n只是，不再看你了。\n\n—— 没能说出口的加油 ——',
+        achievement: '【你配不上她的热情】'
+    }
+};
+// ===== 苏静怡线完整场景数据（32 场景）=====
+
+window.SUJINGYI_SCENES = [
+    // === 第一阶段：相遇（场景 1-6）===
+    {
+        id: 1,
+        trigger: 'unlock_sujingyi',
+        text: '加班到深夜，你突然头晕目眩。\n\n眼前一黑，你倒下了。\n\n醒来时，你在医院。\n\n苏静怡：「你醒了。」\n「过度劳累，营养不良。」\n「你是想把自己累死吗？」',
+        choices: [
+            { text: '「……（沉默）」', affection: 5, energy: 0, next: 2 },
+            { text: '「工作重要。」', affection: -10, energy: 0, next: 2 },
+            { text: '「谢谢关心。」', affection: 10, energy: 0, next: 2 }
+        ]
+    },
+    {
+        id: 2,
+        trigger: 'scene_2',
+        text: '苏静怡拿着病历，表情专业。\n\n苏静怡：「住院观察一晚。」\n「明天早上可以出院。」',
+        choices: [
+            { text: '「好的。」', affection: 5, energy: 0, next: 3 },
+            { text: '「不用吧。」', affection: -5, energy: 0, next: 3 },
+            { text: '「麻烦你了。」', affection: 8, energy: 0, next: 3 }
+        ]
+    },
+    {
+        id: 3,
+        trigger: 'scene_3',
+        text: '第二天早上。\n\n苏静怡来查房。\n\n苏静怡：「各项指标正常。」\n「可以出院了。」\n「记得按时吃饭。」',
+        choices: [
+            { text: '「知道了。」', affection: 5, energy: 0, next: 4 },
+            { text: '「谢谢医生。」', affection: 8, energy: 0, next: 4 },
+            { text: '「你也注意休息。」', affection: 15, energy: 0, next: 4 }
+        ]
+    },
+    {
+        id: 4,
+        trigger: 'scene_4',
+        text: '一周后，你来复查。\n\n苏静怡：「恢复得不错。」\n「但还是要注意休息。」',
+        choices: [
+            { text: '「好。」', affection: 5, energy: 0, next: 5 },
+            { text: '「工作忙。」', affection: -5, energy: 0, next: 5 },
+            { text: '「你最近怎么样？」', affection: 10, energy: 0, next: 5 }
+        ]
+    },
+    {
+        id: 5,
+        trigger: 'scene_5',
+        text: '苏静怡愣了一下。\n\n苏静怡：「……还行。」\n「就是经常加班。」',
+        choices: [
+            { text: '「医生也加班？」', affection: 10, energy: 0, next: 6 },
+            { text: '「辛苦了。」', affection: 8, energy: 0, next: 6 },
+            { text: '「（沉默）」', affection: 0, energy: 0, next: 6 }
+        ]
+    },
+    {
+        id: 6,
+        trigger: 'scene_6',
+        text: '苏静怡：「有空一起吃饭吗？」\n「医院附近有家粥店不错。」',
+        choices: [
+            { text: '「好啊。」', affection: 15, energy: 0, next: 7 },
+            { text: '「我请吧。」', affection: 15, energy: 0, next: 7 },
+            { text: '「下次吧。」', affection: -5, energy: 0, next: null }
+        ]
+    },
+    
+    // === 第二阶段：了解（场景 7-15）===
+    {
+        id: 7,
+        trigger: 'scene_7',
+        text: '粥店里。\n\n苏静怡：「我很少在外面吃饭。」\n「今天……是例外。」',
+        choices: [
+            { text: '「为什么？」', affection: 8, energy: 30, next: 8 },
+            { text: '「荣幸。」', affection: 10, energy: 30, next: 8 },
+            { text: '「（微笑）」', affection: 5, energy: 30, next: 8 }
+        ]
+    },
+    {
+        id: 8,
+        trigger: 'scene_8',
+        text: '苏静怡：「因为……」\n「我想多了解你一些。」',
+        choices: [
+            { text: '「（惊讶）」', affection: 10, energy: 0, next: 9 },
+            { text: '「为什么？」', affection: 8, energy: 0, next: 9 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 9 }
+        ]
+    },
+    {
+        id: 9,
+        trigger: 'scene_9',
+        text: '苏静怡：「你晕倒的时候……」\n「我很担心。」\n「虽然我是医生，但也会担心。」',
+        choices: [
+            { text: '「对不起。」', affection: 10, energy: 0, next: 10 },
+            { text: '「让你担心了。」', affection: 15, energy: 0, next: 10 },
+            { text: '「（沉默）」', affection: 0, energy: 0, next: 10 }
+        ]
+    },
+    {
+        id: 10,
+        trigger: 'scene_10',
+        text: '之后的一周。\n\n苏静怡偶尔给你发消息。\n\n「记得吃饭。」\n「别加班太晚。」\n「注意休息。」',
+        choices: [
+            { text: '主动约她', affection: 15, energy: 20, next: 11 },
+            { text: '正常回复', affection: 5, energy: 2, next: 11 },
+            { text: '冷淡回复', affection: -10, energy: 0, next: 11 }
+        ]
+    },
+    {
+        id: 11,
+        trigger: 'scene_11',
+        text: '你们约好一起吃饭。\n\n苏静怡：「今天不加班。」\n「难得。」',
+        choices: [
+            { text: '「医生辛苦。」', affection: 10, energy: 30, next: 12 },
+            { text: '「我请你。」', affection: 10, energy: 30, next: 12 },
+            { text: '「（微笑）」', affection: 5, energy: 30, next: 12 }
+        ]
+    },
+    {
+        id: 12,
+        trigger: 'scene_12',
+        text: '吃饭时，苏静怡说。\n\n苏静怡：「我其实……不太会表达。」\n「但我想让你知道。」',
+        choices: [
+            { text: '「（看着她）」', affection: 10, energy: 0, next: 13 },
+            { text: '「我知道。」', affection: 15, energy: 0, next: 13 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 13 }
+        ]
+    },
+    {
+        id: 13,
+        trigger: 'scene_13',
+        text: '苏静怡：「我喜欢你。」\n「虽然我不太会说甜言蜜语。」\n「但……我想和你在一起。」',
+        choices: [
+            { text: '「我也喜欢你。」', affection: 30, energy: 0, next: 14 },
+            { text: '「我……」', affection: 0, energy: 0, next: 14 },
+            { text: '「（吻她）」', affection: 35, energy: 0, next: 14 }
+        ]
+    },
+    {
+        id: 14,
+        trigger: 'scene_14',
+        text: '苏静怡看着你，等待你的回答。\n\n她的表情很认真，也很紧张。',
+        choices: [
+            { text: '「我们在一起吧。」', affection: 30, energy: 0, next: 15 },
+            { text: '「给我点时间。」', affection: -10, energy: 0, next: 15 },
+            { text: '「我们还是朋友吧。」', affection: -30, energy: 0, next: 15 }
+        ]
+    },
+    {
+        id: 15,
+        trigger: 'scene_15',
+        text: '苏静怡：「我……」\n「我可以抱抱你吗？」',
+        choices: [
+            { text: '（抱住她）', affection: 20, energy: 0, next: 16 },
+            { text: '「（后退）」', affection: -20, energy: 0, next: 16 },
+            { text: '「（沉默）」', affection: -10, energy: 0, next: 16 }
+        ]
+    },
+    
+    // === 第三阶段：抉择（场景 16-24）===
+    {
+        id: 16,
+        trigger: 'scene_16',
+        text: '苏静怡靠在你怀里。\n\n苏静怡：「我等这句话很久了。」',
+        choices: [
+            { text: '「我也是。」', affection: 15, energy: 0, next: 17 },
+            { text: '「（摸摸她的头）」', affection: 15, energy: 0, next: 17 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 17 }
+        ]
+    },
+    {
+        id: 17,
+        trigger: 'scene_17',
+        text: '你们在一起了。\n\n之后的日子，平淡而温馨。\n\n苏静怡：「记得按时吃饭。」',
+        choices: [
+            { text: '「知道了。」', affection: 10, energy: 0, next: 18 },
+            { text: '「你也是。」', affection: 10, energy: 0, next: 18 },
+            { text: '「（微笑）」', affection: 5, energy: 0, next: 18 }
+        ]
+    },
+    {
+        id: 18,
+        trigger: 'scene_18',
+        text: '苏静怡：「我爸妈……想见见你。」\n「你……愿意吗？」',
+        choices: [
+            { text: '「好啊。」', affection: 15, energy: 30, next: 19 },
+            { text: '「太快了吧。」', affection: -10, energy: 0, next: 19 },
+            { text: '「我还没准备好。」', affection: -5, energy: 0, next: 19 }
+        ]
+    },
+    {
+        id: 19,
+        trigger: 'scene_19',
+        text: '你来到苏静怡家。\n\n她爸妈很热情。\n\n苏静怡爸爸：「你是做什么工作的？」',
+        choices: [
+            { text: '如实回答', affection: 5, energy: 0, next: 20 },
+            { text: '说得体面一点', affection: 10, energy: 0, next: 20 },
+            { text: '紧张得说不出话', affection: -5, energy: 0, next: 20 }
+        ]
+    },
+    {
+        id: 20,
+        trigger: 'scene_20',
+        text: '饭后。\n\n苏静怡送你到门口。\n\n苏静怡：「今天……谢谢你。」\n「我爸妈挺喜欢你的。」',
+        choices: [
+            { text: '「我也喜欢你爸妈。」', affection: 10, energy: 0, next: 21 },
+            { text: '「你爸妈很好。」', affection: 5, energy: 0, next: 21 },
+            { text: '「累死了。」', affection: -5, energy: 0, next: 21 }
+        ]
+    },
+    {
+        id: 21,
+        trigger: 'scene_21',
+        text: '一个月后。\n\n苏静怡接到一个电话，脸色变了。\n\n苏静怡：「……好，我知道了。」\n「我考虑一下。」',
+        choices: [
+            { text: '「怎么了？」', affection: 5, energy: 0, next: 22 },
+            { text: '「（等她主动说）」', affection: 0, energy: 0, next: 22 },
+            { text: '「不想说就算了。」', affection: -5, energy: 0, next: 22 }
+        ]
+    },
+    {
+        id: 22,
+        trigger: 'scene_22',
+        text: '苏静怡：「有个医院……想挖我。」\n「但是要去国外。」\n「我……不知道该怎么办。」',
+        choices: [
+            { text: '「去啊，这是机会。」', affection: -10, energy: 0, next: 23 },
+            { text: '「那就别去。」', affection: -5, energy: 0, next: 23 },
+            { text: '「你自己决定。」', affection: 5, energy: 0, next: 23 }
+        ]
+    },
+    {
+        id: 23,
+        trigger: 'scene_23',
+        text: '苏静怡沉默了很久。\n\n苏静怡：「我以为……你会让我留下来。」',
+        choices: [
+            { text: '「我不想束缚你。」', affection: 10, energy: 0, next: 24 },
+            { text: '「留下来吧。」', affection: 15, energy: 0, next: 24 },
+            { text: '「随便你。」', affection: -20, energy: 0, next: 24 }
+        ]
+    },
+    {
+        id: 24,
+        trigger: 'scene_24',
+        text: '苏静怡看着你，眼泪掉了下来。\n\n苏静怡：「我……不去了。」\n「我想留下来。」\n「因为……」',
+        choices: [
+            { text: '「因为什么？」', affection: 5, energy: 0, next: 25 },
+            { text: '（抱住她）', affection: 15, energy: 0, next: 25 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 25 }
+        ]
+    },
+    
+    // === 第四阶段：结局（场景 25-32）===
+    {
+        id: 25,
+        trigger: 'scene_25',
+        text: '苏静怡：「因为我喜欢你。」\n「很喜欢很喜欢。」\n「不想离开你。」',
+        choices: [
+            { text: '「我也喜欢你。」', affection: 20, energy: 0, next: 26 },
+            { text: '「我……」', affection: 0, energy: 0, next: 26 },
+            { text: '「（吻她）」', affection: 25, energy: 0, next: 26 }
+        ]
+    },
+    {
+        id: 26,
+        trigger: 'scene_26',
+        text: '你们在一起了。\n\n之后的日子，平淡而幸福。\n\n苏静怡继续在医院工作，你继续工作。',
+        choices: [
+            { text: '「这样真好。」', affection: 10, energy: 0, next: 27 },
+            { text: '「我们结婚吧。」', affection: 20, energy: 0, next: 28 },
+            { text: '「养只猫吧。」', affection: 10, energy: 0, next: 29 }
+        ]
+    },
+    {
+        id: 27,
+        trigger: 'scene_27',
+        text: '一年后。\n\n苏静怡在医院向你求婚。\n\n苏静怡：「你愿意吗？」',
+        choices: [
+            { text: '「我愿意。」', affection: 30, energy: 0, ending: 'he' },
+            { text: '「我……」', affection: -10, energy: 0, ending: 'ne' },
+            { text: '「再给我点时间。」', affection: -5, energy: 0, ending: 'ne' }
+        ]
+    },
+    {
+        id: 28,
+        trigger: 'scene_28',
+        text: '你们结婚了。\n\n在上海买了一套小房子。\n\n苏静怡继续当医生，你继续工作。',
+        choices: [
+            { text: '「这就是幸福吧。」', affection: 20, energy: 0, ending: 'he' },
+            { text: '「有点累。」', affection: -5, energy: 0, ending: 'ne' },
+            { text: '「挺好的。」', affection: 10, energy: 0, ending: 'he' }
+        ]
+    },
+    {
+        id: 29,
+        trigger: 'scene_29',
+        text: '你们养了一只猫，叫小怡。\n\n猫很可爱，苏静怡经常给它检查身体。\n\n生活平淡而温馨。',
+        choices: [
+            { text: '「这样真好。」', affection: 15, energy: 0, ending: 'he' },
+            { text: '「猫比我受宠。」', affection: 5, energy: 0, ending: 'he' },
+            { text: '「有点无聊。」', affection: -5, energy: 0, ending: 'ne' }
+        ]
+    }
+];
+
+// ===== 苏静怡线结局定义 =====
+window.SUJINGYI_ENDINGS = {
+    he: {
+        title: '【苏静怡·白衣誓言】',
+        text: '你们在一起了。\n\n她为你转科研，不再值夜班。\n\n你说：「以后我照顾你。」\n\n外派期结束后，你选择留在上海。\n\n因为她在这里。\n\n—— 白衣天使，为你守候 ——',
+        achievement: '【医生的后盾】'
+    },
+    ne: {
+        title: '【苏静怡·医嘱】',
+        text: '你们还是朋友。\n\n她还是会关心你，只是以医生身份。\n\n「记得按时吃饭。」\n\n她去了国外，你留在上海。\n\n有些遗憾，但也许是最好的结局。\n\n—— 医生也会心冷 ——',
+        achievement: '【记得按时吃饭】'
+    },
+    be: {
+        title: '【苏静怡·未接来电】',
+        text: '你拒绝了她的表白。\n\n她去了国外。\n\n后来听说她成了知名专家。\n\n你偶尔会接到她的电话。\n\n「记得按时吃饭。」\n\n然后，再也没有然后了。\n\n—— 医生不动心 ——',
+        achievement: '【医生也会心冷】'
+    }
+};
+// ===== 陆潇线完整场景数据（32 场景 + 暗线狗血）=====
+
+window.LUXIAO_SCENES = [
+    // === 第一阶段：相遇（场景 1-6）===
+    {
+        id: 1,
+        trigger: 'unlock_luxiao',
+        text: '你误入一家法餐厅。\n\n装修精致，空气中弥漫着咖啡和烘焙的香气。\n\n吧台后站着一位短发的女子，正在专注地制作咖啡。\n\n陆潇：「几位？」',
+        choices: [
+            { text: '「一位。」', affection: 5, energy: 0, next: 2 },
+            { text: '「这是法餐厅？」', affection: 8, energy: 0, next: 2 },
+            { text: '「有什么推荐？」', affection: 10, energy: 0, next: 2 }
+        ]
+    },
+    {
+        id: 2,
+        trigger: 'scene_2',
+        text: '陆潇：「这是法餐厅。」\n「我是陆潇，这家店的主理人。」',
+        choices: [
+            { text: '「这么厉害。」', affection: 8, energy: 0, next: 3 },
+            { text: '「主理人？」', affection: 5, energy: 0, next: 3 },
+            { text: '「（点头）」', affection: 3, energy: 0, next: 3 }
+        ]
+    },
+    {
+        id: 3,
+        trigger: 'scene_3',
+        text: '陆潇：「第一次来？」\n「我给你做个套餐。」',
+        choices: [
+            { text: '「好啊。」', affection: 10, energy: 50, next: 4 },
+            { text: '「太贵了吧。」', affection: -5, energy: 0, next: null },
+            { text: '「我请客？」', affection: 10, energy: 50, next: 4 }
+        ]
+    },
+    {
+        id: 4,
+        trigger: 'scene_4',
+        text: '陆潇亲自下厨。\n\n菜很精致，味道很好。\n\n陆潇：「怎么样？」',
+        choices: [
+            { text: '「好吃。」', affection: 10, energy: 0, next: 5 },
+            { text: '「还可以。」', affection: 3, energy: 0, next: 5 },
+            { text: '「不如我做的。」', affection: -10, energy: 0, next: 5 }
+        ]
+    },
+    {
+        id: 5,
+        trigger: 'scene_5',
+        text: '陆潇：「呵。」\n「口气不小。」\n「下次让你试试。」',
+        choices: [
+            { text: '「好啊。」', affection: 10, energy: 0, next: 6 },
+            { text: '「（微笑）」', affection: 5, energy: 0, next: 6 },
+            { text: '「（沉默）」', affection: 0, energy: 0, next: 6 }
+        ]
+    },
+    {
+        id: 6,
+        trigger: 'scene_6',
+        text: '结账时，陆潇说。\n\n陆潇：「这顿我请。」\n「欢迎常来。」',
+        choices: [
+            { text: '「那怎么行。」', affection: 10, energy: 0, next: 7 },
+            { text: '「谢谢。」', affection: 8, energy: 0, next: 7 },
+            { text: '「（留下小费）」', affection: 15, energy: 0, next: 7 }
+        ]
+    },
+    
+    // === 第二阶段：暧昧（场景 7-15）===
+    {
+        id: 7,
+        trigger: 'scene_7',
+        text: '之后你经常来这家餐厅。\n\n陆潇：「又來了。」\n「老样子？」',
+        choices: [
+            { text: '「嗯。」', affection: 5, energy: 50, next: 8 },
+            { text: '「有新菜吗？」', affection: 10, energy: 50, next: 8 },
+            { text: '「今天你下厨？」', affection: 15, energy: 50, next: 8 }
+        ]
+    },
+    {
+        id: 8,
+        trigger: 'scene_8',
+        text: '陆潇：「新研发了一道菜。」\n「你尝尝。」\n「给我点反馈。」',
+        choices: [
+            { text: '「荣幸。」', affection: 10, energy: 50, next: 9 },
+            { text: '「好啊。」', affection: 8, energy: 50, next: 9 },
+            { text: '「（品尝）」', affection: 5, energy: 50, next: 9 }
+        ]
+    },
+    {
+        id: 9,
+        trigger: 'scene_9',
+        text: '你尝了一口。\n\n味道很好。\n\n陆潇：「怎么样？」',
+        choices: [
+            { text: '「好吃。」', affection: 10, energy: 0, next: 10 },
+            { text: '「还可以。」', affection: 3, energy: 0, next: 10 },
+            { text: '「不如你。」', affection: 20, energy: 0, next: 10 }
+        ]
+    },
+    {
+        id: 10,
+        trigger: 'scene_10',
+        text: '陆潇脸红了。\n\n陆潇：「油嘴滑舌。」\n「不过……谢谢。」',
+        choices: [
+            { text: '「我是认真的。」', affection: 15, energy: 0, next: 11 },
+            { text: '「（微笑）」', affection: 10, energy: 0, next: 11 },
+            { text: '「（沉默）」', affection: 0, energy: 0, next: 11 }
+        ]
+    },
+    {
+        id: 11,
+        trigger: 'scene_11',
+        text: '之后的一周。\n\n陆潇偶尔给你发消息。\n\n「新菜研发好了。」\n「来尝尝？」\n「老位置。」',
+        choices: [
+            { text: '主动约她', affection: 15, energy: 50, next: 12 },
+            { text: '正常回复', affection: 5, energy: 50, next: 12 },
+            { text: '冷淡回复', affection: -10, energy: 50, next: 12 }
+        ]
+    },
+    {
+        id: 12,
+        trigger: 'scene_12',
+        text: '你来到餐厅。\n\n陆潇：「来了。」\n「坐。」',
+        choices: [
+            { text: '「（坐下）」', affection: 5, energy: 0, next: 13 },
+            { text: '「今天做什么？」', affection: 10, energy: 0, next: 13 },
+            { text: '「（微笑）」', affection: 8, energy: 0, next: 13 }
+        ]
+    },
+    {
+        id: 13,
+        trigger: 'scene_13',
+        text: '陆潇端上一道菜。\n\n陆潇：「这是为你做的。」\n「尝尝。」',
+        choices: [
+            { text: '「（品尝）」', affection: 10, energy: 50, next: 14 },
+            { text: '「谢谢。」', affection: 10, energy: 50, next: 14 },
+            { text: '「（看着她）」', affection: 15, energy: 50, next: 14 }
+        ]
+    },
+    {
+        id: 14,
+        trigger: 'scene_14',
+        text: '陆潇：「你知道吗。」\n「我很少为人下厨。」\n「你是第一个。」',
+        choices: [
+            { text: '「荣幸。」', affection: 15, energy: 0, next: 15 },
+            { text: '「为什么？」', affection: 10, energy: 0, next: 15 },
+            { text: '「（沉默）」', affection: 0, energy: 0, next: 15 }
+        ]
+    },
+    {
+        id: 15,
+        trigger: 'scene_15',
+        text: '陆潇：「因为……」\n「我想让你记住我。」\n「记住我的味道。」',
+        choices: [
+            { text: '「我记住了。」', affection: 20, energy: 0, next: 16 },
+            { text: '「（吻她）」', affection: 30, energy: 0, next: 16 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 16 }
+        ]
+    },
+    
+    // === 第三阶段：暗线解锁（场景 16-24）===
+    {
+        id: 16,
+        trigger: 'scene_16',
+        text: '你们在一起了。\n\n之后的日子，你经常来餐厅。\n\n陆潇：「来了。」\n「坐。」',
+        choices: [
+            { text: '「（坐下）」', affection: 5, energy: 0, next: 17 },
+            { text: '「（抱抱她）」', affection: 15, energy: 0, next: 17 },
+            { text: '「（微笑）」', affection: 8, energy: 0, next: 17 }
+        ]
+    },
+    {
+        id: 17,
+        trigger: 'affection_70',
+        text: '一天，一个陌生女人来到餐厅。\n\n她直接走向陆潇。\n\n陌生女人：「好久不见。」',
+        choices: [
+            { text: '「（看着她们）」', affection: 0, energy: 0, next: 18 },
+            { text: '「（皱眉）」', affection: -5, energy: 0, next: 18 },
+            { text: '「（离开）」', affection: -10, energy: 0, next: 18 }
+        ]
+    },
+    {
+        id: 18,
+        trigger: 'scene_18',
+        text: '陆潇脸色变了。\n\n陆潇：「……你怎么来了。」\n「这是你该来的地方吗？」',
+        choices: [
+            { text: '「（看着陆潇）」', affection: 0, energy: 0, next: 19 },
+            { text: '「你们认识？」', affection: -5, energy: 0, next: 19 },
+            { text: '「（离开）」', affection: -10, energy: 0, next: 19 }
+        ]
+    },
+    {
+        id: 19,
+        trigger: 'scene_19',
+        text: '陌生女人看向你。\n\n陌生女人：「这位是？」\n\n陆潇：「……」',
+        choices: [
+            { text: '「我是她女朋友。」', affection: 10, energy: 0, next: 20 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 20 },
+            { text: '「我是谁不重要。」', affection: -10, energy: 0, next: 20 }
+        ]
+    },
+    {
+        id: 20,
+        trigger: 'scene_20',
+        text: '陌生女人笑了。\n\n陌生女人：「是吗。」\n「那祝你幸福。」\n\n她转身离开。',
+        choices: [
+            { text: '「她是谁？」', affection: 5, energy: 0, next: 21 },
+            { text: '「（看着陆潇）」', affection: 0, energy: 0, next: 21 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 21 }
+        ]
+    },
+    {
+        id: 21,
+        trigger: 'scene_21',
+        text: '陆潇沉默了很久。\n\n陆潇：「我前女友。」\n「她……回来想复合。」',
+        choices: [
+            { text: '「那你呢？」', affection: 5, energy: 0, next: 22 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 22 },
+            { text: '「（离开）」', affection: -20, energy: 0, next: 22 }
+        ]
+    },
+    {
+        id: 22,
+        trigger: 'scene_22',
+        text: '陆潇：「我拒绝了。」\n「因为……」\n「我有你了。」',
+        choices: [
+            { text: '「（抱住她）」', affection: 20, energy: 0, next: 23 },
+            { text: '「（吻她）」', affection: 25, energy: 0, next: 23 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 23 }
+        ]
+    },
+    {
+        id: 23,
+        trigger: 'scene_23',
+        text: '陆潇靠在你怀里。\n\n陆潇：「别离开我。」\n「求你。」',
+        choices: [
+            { text: '「我不会。」', affection: 20, energy: 0, next: 24 },
+            { text: '「（抱住她）」', affection: 15, energy: 0, next: 24 },
+            { text: '「（沉默）」', affection: -10, energy: 0, next: 24 }
+        ]
+    },
+    {
+        id: 24,
+        trigger: 'scene_24',
+        text: '之后你们的关系更近了。\n\n陆潇：「这家店……」\n「我想把它盘出去。」',
+        choices: [
+            { text: '「为什么？」', affection: 5, energy: 0, next: 25 },
+            { text: '「（惊讶）」', affection: 5, energy: 0, next: 25 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 25 }
+        ]
+    },
+    {
+        id: 25,
+        trigger: 'scene_25',
+        text: '陆潇：「我想和你一起。」\n「开一家新店。」\n「你愿意吗？」',
+        choices: [
+            { text: '「我愿意。」', affection: 30, energy: 0, next: 26 },
+            { text: '「我……」', affection: -10, energy: 0, next: 26 },
+            { text: '「（沉默）」', affection: -20, energy: 0, next: 26 }
+        ]
+    },
+    {
+        id: 26,
+        trigger: 'scene_26',
+        text: '你们一起开了新店。\n\n陆潇是主厨，你是老板。\n\n生活平淡而幸福。',
+        choices: [
+            { text: '「这样真好。」', affection: 15, energy: 0, next: 27 },
+            { text: '「我们结婚吧。」', affection: 25, energy: 0, next: 28 },
+            { text: '「（微笑）」', affection: 10, energy: 0, next: 27 }
+        ]
+    },
+    {
+        id: 27,
+        trigger: 'scene_27',
+        text: '一年后。\n\n陆潇在餐厅向你求婚。\n\n陆潇：「你愿意吗？」',
+        choices: [
+            { text: '「我愿意。」', affection: 30, energy: 0, ending: 'he' },
+            { text: '「我……」', affection: -10, energy: 0, ending: 'ne' },
+            { text: '「再给我点时间。」', affection: -5, energy: 0, ending: 'ne' }
+        ]
+    },
+    {
+        id: 28,
+        trigger: 'scene_28',
+        text: '你们结婚了。\n\n在上海买了房子，养了一只猫。\n\n陆潇继续当主厨，你继续当老板。',
+        choices: [
+            { text: '「这就是幸福吧。」', affection: 20, energy: 0, ending: 'he' },
+            { text: '「有点累。」', affection: -5, energy: 0, ending: 'ne' },
+            { text: '「挺好的。」', affection: 10, energy: 0, ending: 'he' }
+        ]
+    }
+];
+
+// ===== 陆潇线结局定义 =====
+window.LUXIAO_ENDINGS = {
+    he: {
+        title: '【陆潇·味蕾之约】',
+        text: '你们在一起了。\n\n「新菜好吃吗？」她问。\n\n「好吃，」你说，「但比不过你。」\n\n她笑了，那个酷酷的女人，居然脸红了。\n\n咖啡馆里，香气氤氲。\n\n原来，最动人的爱情，藏在日常的一餐一饭里。\n\n—— 唯爱与美食不可辜负 ——',
+        achievement: '【主厨的专属试菜员】'
+    },
+    ne: {
+        title: '【陆潇·老顾客】',
+        text: '你们还是朋友。\n\n你偶尔会去她的餐厅。\n\n她还是会为你做新菜。\n\n但也仅此而已。\n\n—— VIP 座位，永远留着 ——',
+        achievement: '【VIP 座位】'
+    },
+    be: {
+        title: '【陆潇·打烊的餐厅】',
+        text: '你拒绝了她的表白。\n\n后来餐厅转让了。\n\n她去了国外。\n\n你偶尔会路过那家店。\n\n只是，再也吃不到了。\n\n—— 有些人，一旦错过，就是一辈子 ——',
+        achievement: '【最后一道菜】'
+    }
+};
+// ===== 林婉清线完整场景数据（32 场景）=====
+
+window.LINWANQING_SCENES = [
+    // === 第一阶段：相遇（场景 1-6）===
+    {
+        id: 1,
+        trigger: 'unlock_linwanqing',
+        text: '你去客户公司开会。\n\n林氏集团，豪华的办公室。\n\n一个女人坐在办公桌后，穿着职业装，气场强大。\n\n林婉清：「你就是咨询公司派来的？」',
+        choices: [
+            { text: '「是。」', affection: 5, energy: 0, next: 2 },
+            { text: '「我是 XXX，负责这个项目。」', affection: 8, energy: 0, next: 2 },
+            { text: '「林总你好。」', affection: 10, energy: 0, next: 2 }
+        ]
+    },
+    {
+        id: 2,
+        trigger: 'scene_2',
+        text: '林婉清：「坐。」\n「说说你的方案。」',
+        choices: [
+            { text: '（展示方案）', affection: 10, energy: 0, next: 3 },
+            { text: '「好的。」', affection: 5, energy: 0, next: 3 },
+            { text: '（紧张）', affection: -5, energy: 0, next: 3 }
+        ]
+    },
+    {
+        id: 3,
+        trigger: 'scene_3',
+        text: '林婉清听完后。\n\n林婉清：「太保守了。」\n「我要的是增长 50%，不是 20%。」',
+        choices: [
+            { text: '「那您有什么建议？」', affection: 8, energy: 0, next: 4 },
+            { text: '「保守更稳妥。」', affection: -5, energy: 0, next: 4 },
+            { text: '「我可以改。」', affection: 10, energy: 0, next: 4 }
+        ]
+    },
+    {
+        id: 4,
+        trigger: 'scene_4',
+        text: '林婉清：「我要的是结果。」\n「不是过程。」\n「能做到吗？」',
+        choices: [
+            { text: '「能。」', affection: 15, energy: 0, next: 5 },
+            { text: '「我试试。」', affection: 5, energy: 0, next: 5 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 5 }
+        ]
+    },
+    {
+        id: 5,
+        trigger: 'scene_5',
+        text: '林婉清：「好。」\n「我给你一个月。」\n「做不到，你知道后果。」',
+        choices: [
+            { text: '「明白。」', affection: 10, energy: 0, next: 6 },
+            { text: '「（点头）」', affection: 5, energy: 0, next: 6 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 6 }
+        ]
+    },
+    {
+        id: 6,
+        trigger: 'scene_6',
+        text: '之后你经常来林氏集团。\n\n林婉清：「进度怎么样？」\n「别让我失望。」',
+        choices: [
+            { text: '「放心。」', affection: 10, energy: 0, next: 7 },
+            { text: '「在进行中。」', affection: 5, energy: 0, next: 7 },
+            { text: '「（汇报进度）」', affection: 8, energy: 0, next: 7 }
+        ]
+    },
+    
+    // === 第二阶段：暧昧（场景 7-15）===
+    {
+        id: 7,
+        trigger: 'scene_7',
+        text: '一个月后，项目成功了。\n\n林婉清：「干得不错。」\n「有奖励。」',
+        choices: [
+            { text: '「什么奖励？」', affection: 10, energy: 0, next: 8 },
+            { text: '「谢谢林总。」', affection: 5, energy: 0, next: 8 },
+            { text: '「（微笑）」', affection: 8, energy: 0, next: 8 }
+        ]
+    },
+    {
+        id: 8,
+        trigger: 'scene_8',
+        text: '林婉清：「今晚一起吃饭。」\n「我请。」',
+        choices: [
+            { text: '「好啊。」', affection: 15, energy: 50, next: 9 },
+            { text: '「我请吧。」', affection: 15, energy: 50, next: 9 },
+            { text: '「下次吧。」', affection: -5, energy: 0, next: null }
+        ]
+    },
+    {
+        id: 9,
+        trigger: 'scene_9',
+        text: '高级餐厅里。\n\n林婉清：「你和其他顾问不一样。」\n「你很……特别。」',
+        choices: [
+            { text: '「哪里特别？」', affection: 10, energy: 0, next: 10 },
+            { text: '「谢谢。」', affection: 8, energy: 0, next: 10 },
+            { text: '「（微笑）」', affection: 5, energy: 0, next: 10 }
+        ]
+    },
+    {
+        id: 10,
+        trigger: 'scene_10',
+        text: '林婉清：「你很专业。」\n「而且……不卑不亢。」\n「我喜欢。」',
+        choices: [
+            { text: '「谢谢。」', affection: 10, energy: 0, next: 11 },
+            { text: '「（看着她）」', affection: 15, energy: 0, next: 11 },
+            { text: '「（沉默）」', affection: 0, energy: 0, next: 11 }
+        ]
+    },
+    {
+        id: 11,
+        trigger: 'scene_11',
+        text: '之后的一周。\n\n林婉清偶尔给你发消息。\n\n「项目有新进展吗？」\n「有空一起吃饭。」\n「别太累了。」',
+        choices: [
+            { text: '主动约她', affection: 15, energy: 50, next: 12 },
+            { text: '正常回复', affection: 5, energy: 0, next: 12 },
+            { text: '冷淡回复', affection: -10, energy: 0, next: 12 }
+        ]
+    },
+    {
+        id: 12,
+        trigger: 'scene_12',
+        text: '你们约好一起吃饭。\n\n林婉清：「今天不聊工作。」\n「只聊天。」',
+        choices: [
+            { text: '「好啊。」', affection: 10, energy: 50, next: 13 },
+            { text: '「聊什么？」', affection: 8, energy: 50, next: 13 },
+            { text: '「（微笑）」', affection: 5, energy: 50, next: 13 }
+        ]
+    },
+    {
+        id: 13,
+        trigger: 'scene_13',
+        text: '林婉清：「其实……」\n「我很少和人聊天。」\n「但和你……不一样。」',
+        choices: [
+            { text: '「为什么？」', affection: 10, energy: 0, next: 14 },
+            { text: '「荣幸。」', affection: 15, energy: 0, next: 14 },
+            { text: '「（沉默）」', affection: 0, energy: 0, next: 14 }
+        ]
+    },
+    {
+        id: 14,
+        trigger: 'scene_14',
+        text: '林婉清：「因为……」\n「你不怕我。」\n「所有人都怕我，除了你。」',
+        choices: [
+            { text: '「我为什么要怕？」', affection: 15, energy: 0, next: 15 },
+            { text: '「（看着她）」', affection: 10, energy: 0, next: 15 },
+            { text: '「（沉默）」', affection: 0, energy: 0, next: 15 }
+        ]
+    },
+    {
+        id: 15,
+        trigger: 'scene_15',
+        text: '林婉清：「你知道吗。」\n「我喜欢你。」\n「不是上下级那种喜欢。」\n「是……想和你在一起的那种喜欢。」',
+        choices: [
+            { text: '「我也喜欢你。」', affection: 30, energy: 0, next: 16 },
+            { text: '「我……」', affection: 0, energy: 0, next: 16 },
+            { text: '「（吻她）」', affection: 35, energy: 0, next: 16 }
+        ]
+    },
+    
+    // === 第三阶段：抉择（场景 16-24）===
+    {
+        id: 16,
+        trigger: 'scene_16',
+        text: '林婉清看着你，等待你的回答。\n\n她的表情很认真，也很紧张。',
+        choices: [
+            { text: '「我们在一起吧。」', affection: 30, energy: 0, next: 17 },
+            { text: '「给我点时间。」', affection: -10, energy: 0, next: 17 },
+            { text: '「我们还是朋友吧。」', affection: -30, energy: 0, next: 17 }
+        ]
+    },
+    {
+        id: 17,
+        trigger: 'scene_17',
+        text: '林婉清：「我……」\n「我可以抱抱你吗？」',
+        choices: [
+            { text: '（抱住她）', affection: 20, energy: 0, next: 18 },
+            { text: '「（后退）」', affection: -20, energy: 0, next: 18 },
+            { text: '「（沉默）」', affection: -10, energy: 0, next: 18 }
+        ]
+    },
+    {
+        id: 18,
+        trigger: 'scene_18',
+        text: '林婉清靠在你怀里。\n\n林婉清：「我等这句话很久了。」',
+        choices: [
+            { text: '「我也是。」', affection: 15, energy: 0, next: 19 },
+            { text: '「（摸摸她的头）」', affection: 15, energy: 0, next: 19 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 19 }
+        ]
+    },
+    {
+        id: 19,
+        trigger: 'scene_19',
+        text: '你们在一起了。\n\n之后的日子，你经常去林氏集团。\n\n林婉清：「来了。」\n「坐。」',
+        choices: [
+            { text: '「（坐下）」', affection: 5, energy: 0, next: 20 },
+            { text: '「（抱抱她）」', affection: 15, energy: 0, next: 20 },
+            { text: '「（微笑）」', affection: 8, energy: 0, next: 20 }
+        ]
+    },
+    {
+        id: 20,
+        trigger: 'scene_20',
+        text: '林婉清：「我爸妈……想见见你。」\n「你……愿意吗？」',
+        choices: [
+            { text: '「好啊。」', affection: 15, energy: 30, next: 21 },
+            { text: '「太快了吧。」', affection: -10, energy: 0, next: 21 },
+            { text: '「我还没准备好。」', affection: -5, energy: 0, next: 21 }
+        ]
+    },
+    {
+        id: 21,
+        trigger: 'scene_21',
+        text: '你来到林家。\n\n豪华的别墅。\n\n林婉清爸爸：「你是做什么工作的？」',
+        choices: [
+            { text: '如实回答', affection: 5, energy: 0, next: 22 },
+            { text: '说得体面一点', affection: 10, energy: 0, next: 22 },
+            { text: '紧张得说不出话', affection: -5, energy: 0, next: 22 }
+        ]
+    },
+    {
+        id: 22,
+        trigger: 'scene_22',
+        text: '饭后。\n\n林婉清送你到门口。\n\n林婉清：「今天……谢谢你。」\n「我爸妈挺喜欢你的。」',
+        choices: [
+            { text: '「我也喜欢你爸妈。」', affection: 10, energy: 0, next: 23 },
+            { text: '「你爸妈很好。」', affection: 5, energy: 0, next: 23 },
+            { text: '「累死了。」', affection: -5, energy: 0, next: 23 }
+        ]
+    },
+    {
+        id: 23,
+        trigger: 'scene_23',
+        text: '一个月后。\n\n林婉清接到一个电话，脸色变了。\n\n林婉清：「……好，我知道了。」\n「我考虑一下。」',
+        choices: [
+            { text: '「怎么了？」', affection: 5, energy: 0, next: 24 },
+            { text: '「（等她主动说）」', affection: 0, energy: 0, next: 24 },
+            { text: '「不想说就算了。」', affection: -5, energy: 0, next: 24 }
+        ]
+    },
+    {
+        id: 24,
+        trigger: 'scene_24',
+        text: '林婉清：「有个公司……想收购我们。」\n「但是……」\n「我……不知道该怎么办。」',
+        choices: [
+            { text: '「卖啊，这是机会。」', affection: -10, energy: 0, next: 25 },
+            { text: '「那就别卖。」', affection: -5, energy: 0, next: 25 },
+            { text: '「你自己决定。」', affection: 5, energy: 0, next: 25 }
+        ]
+    },
+    {
+        id: 25,
+        trigger: 'scene_25',
+        text: '林婉清沉默了很久。\n\n林婉清：「我以为……你会让我留下来。」',
+        choices: [
+            { text: '「我不想束缚你。」', affection: 10, energy: 0, next: 26 },
+            { text: '「留下来吧。」', affection: 15, energy: 0, next: 26 },
+            { text: '「随便你。」', affection: -20, energy: 0, next: 26 }
+        ]
+    },
+    {
+        id: 26,
+        trigger: 'scene_26',
+        text: '林婉清看着你，眼泪掉了下来。\n\n林婉清：「我……不卖了。」\n「我想留下来。」\n「因为……」',
+        choices: [
+            { text: '「因为什么？」', affection: 5, energy: 0, next: 27 },
+            { text: '（抱住她）', affection: 15, energy: 0, next: 27 },
+            { text: '「（沉默）」', affection: -5, energy: 0, next: 27 }
+        ]
+    },
+    {
+        id: 27,
+        trigger: 'scene_27',
+        text: '林婉清：「因为我喜欢你。」\n「很喜欢很喜欢。」\n「不想离开你。」',
+        choices: [
+            { text: '「我也喜欢你。」', affection: 20, energy: 0, next: 28 },
+            { text: '「我……」', affection: 0, energy: 0, next: 28 },
+            { text: '「（吻她）」', affection: 25, energy: 0, next: 28 }
+        ]
+    },
+    {
+        id: 28,
+        trigger: 'scene_28',
+        text: '你们在一起了。\n\n之后的日子，平淡而幸福。\n\n林婉清继续当总裁，你继续工作。',
+        choices: [
+            { text: '「这样真好。」', affection: 10, energy: 0, next: 29 },
+            { text: '「我们结婚吧。」', affection: 20, energy: 0, next: 30 },
+            { text: '「养只猫吧。」', affection: 10, energy: 0, next: 31 }
+        ]
+    },
+    {
+        id: 29,
+        trigger: 'scene_29',
+        text: '一年后。\n\n林婉清在公司向你求婚。\n\n林婉清：「你愿意吗？」',
+        choices: [
+            { text: '「我愿意。」', affection: 30, energy: 0, ending: 'he' },
+            { text: '「我……」', affection: -10, energy: 0, ending: 'ne' },
+            { text: '「再给我点时间。」', affection: -5, energy: 0, ending: 'ne' }
+        ]
+    },
+    {
+        id: 30,
+        trigger: 'scene_30',
+        text: '你们结婚了。\n\n在上海买了房子，养了一只猫。\n\n林婉清继续当总裁，你继续工作。',
+        choices: [
+            { text: '「这就是幸福吧。」', affection: 20, energy: 0, ending: 'he' },
+            { text: '「有点累。」', affection: -5, energy: 0, ending: 'ne' },
+            { text: '「挺好的。」', affection: 10, energy: 0, ending: 'he' }
+        ]
+    },
+    {
+        id: 31,
+        trigger: 'scene_31',
+        text: '你们养了一只猫，叫小清。\n\n猫很可爱，林婉清经常抱着它。\n\n生活平淡而温馨。',
+        choices: [
+            { text: '「这样真好。」', affection: 15, energy: 0, ending: 'he' },
+            { text: '「猫比我受宠。」', affection: 5, energy: 0, ending: 'he' },
+            { text: '「有点无聊。」', affection: -5, energy: 0, ending: 'ne' }
+        ]
+    }
+];
+
+// ===== 林婉清线结局定义 =====
+window.LINWANQING_ENDINGS = {
+    he: {
+        title: '【林婉清·势均力敌】',
+        text: '你们在一起了。\n\n她依然是那个强势的总裁。\n\n但在你面前，她会卸下所有防备。\n\n外派期结束后，你选择留在上海。\n\n因为她在这里。\n\n—— 势均力敌，才是最好的爱情 ——',
+        achievement: '【总裁的软肋】'
+    },
+    ne: {
+        title: '【林婉清·合作伙伴】',
+        text: '你们还是朋友。\n\n工作关系很好，但私下无交集。\n\n她继续当总裁，你继续工作。\n\n有些遗憾，但也许是最好的结局。\n\n—— 最佳拍档 ——',
+        achievement: '【最佳拍档】'
+    },
+    be: {
+        title: '【林婉清·会议结束】',
+        text: '你拒绝了她的表白。\n\n项目结束了。\n\n你们再也没见过。\n\n后来听说她结婚了。\n\n对方是个和她一样强势的人。\n\n—— 项目结束，你也结束了 ——',
+        achievement: '【你拒绝了最好的 offer】'
+    }
+};
+
+    // ===== 场景触发系统 =====
+
+    // 场景触发系统
+    class SceneSystem {
+        constructor() {
+            this.currentScene = null;
+            this.sceneHistory = [];
+        }
+
+        // 检查场景触发条件
+        checkSceneTrigger(characterId, triggerType) {
+            const scenes = this.getScenes(characterId);
+            if (!scenes) return null;
+
+            for (let scene of scenes) {
+                if (this.checkTrigger(scene.trigger, triggerType, characterId)) {
+                    if (!this.hasSceneBeenTriggered(characterId, scene.id)) {
+                        return scene;
+                    }
+                }
+            }
+            return null;
+        }
+
+        // 获取角色场景数据
+        getScenes(characterId) {
+            const sceneMaps = {
+                'wenya': window.WENYA_SCENES,
+                'xiayang': window.XIAYANG_SCENES,
+                'sujingyi': window.SUJINGYI_SCENES,
+                'luxiao': window.LUXIAO_SCENES,
+                'linwanqing': window.LINWANQING_SCENES
+            };
+            return sceneMaps[characterId] || null;
+        }
+
+        // 检查触发条件
+        checkTrigger(trigger, triggerType, characterId) {
+            if (trigger === triggerType) return true;
+            if (trigger.startsWith('affection_')) {
+                const required = parseInt(trigger.split('_')[1]);
+                return CHARACTERS[characterId].affection >= required;
+            }
+            if (trigger.startsWith('day_')) {
+                const required = parseInt(trigger.split('_')[1]);
+                return gameState.day >= required;
+            }
+            return false;
+        }
+
+        // 检查场景是否已触发
+        hasSceneBeenTriggered(characterId, sceneId) {
+            const key = `${characterId}_${sceneId}`;
+            return gameState.triggeredScenes?.includes(key) || false;
+        }
+
+        // 标记场景已触发
+        markSceneTriggered(characterId, sceneId) {
+            if (!gameState.triggeredScenes) gameState.triggeredScenes = [];
+            const key = `${characterId}_${sceneId}`;
+            if (!gameState.triggeredScenes.includes(key)) {
+                gameState.triggeredScenes.push(key);
+            }
+        }
+
+        // 显示场景对话
+        showScene(characterId, scene) {
+            this.currentScene = { characterId, scene };
+            this.markSceneTriggered(characterId, scene.id);
+            game.showDialogue(CHARACTERS[characterId].name, scene.text, scene.choices);
+        }
+    }
+
+    const sceneSystem = new SceneSystem();
+    </script>
+</body>
+</html>
