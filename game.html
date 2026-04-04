@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bloom - 60天恋爱故事</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'PingFang SC', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            height: 100vh; overflow: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            color: #fff;
+        }
+        /* ===== 顶部状态栏 ===== */
+        .status-bar {
+            position: fixed; top: 0; left: 0; right: 0; height: 50px;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(20px);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 16px; z-index: 1000;
+        }
+        .status-left { display: flex; align-items: center; gap: 12px; }
+        .status-day { font-size: 0.85rem; font-weight: 700; color: #e2e2e2; }
+        .status-day-label { font-size: 0.6rem; color: #aaa; }
+        .status-right { display: flex; align-items: center; gap: 8px; }
+        .action-points { display: flex; gap: 4px; align-items: center; }
+        .action-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.6);
+            transition: all 0.3s;
+        }
+        .action-dot.used { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.2); }
+        .action-dot.available { background: #f093fb; border-color: #f093fb; box-shadow: 0 0 6px rgba(240,147,251,0.6); }
+        /* ===== 页面容器 ===== */
+        .page { display: none; height: 100vh; flex-direction: column; }
+        .page.active { display: flex; }
+        /* ===== 首页 ===== */
+        #home-page { justify-content: center; align-items: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+        .home-logo { text-align: center; margin-bottom: 32px; }
+        .home-logo .bloom-icon { font-size: 4rem; margin-bottom: 8px; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+        .home-logo h1 { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg,#f093fb,#f5576c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .home-logo p { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 4px; }
+        .home-card {
+            background: rgba(255,255,255,0.08); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 20px;
+            padding: 24px 20px; margin: 0 20px; width: 100%; max-width: 340px;
+        }
+        .home-tags { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .home-tag { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; color: rgba(255,255,255,0.7); }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #f093fb, #f5576c); color: #fff; box-shadow: 0 4px 15px rgba(245,87,108,0.4); }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); margin-top: 10px; border: 1px solid rgba(255,255,255,0.2); }
+        .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
+        /* ===== 角色创建页 ===== */
+        #create-page { justify-content: flex-start; align-items: center; padding: 70px 20px 20px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); overflow-y: auto; }
+        .create-title { font-size: 1.4rem; font-weight: 800; text-align: center; margin-bottom: 24px; color: #fff; }
+        .create-subtitle { font-size: 0.75rem; color: rgba(255,255,255,0.5); text-align: center; margin-top: 4px; margin-bottom: 20px; }
+        .create-section { width: 100%; max-width: 340px; margin-bottom: 20px; }
+        .create-label { font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
+        .create-input {
+            width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem; font-family: inherit;
+            outline: none; transition: border 0.2s;
+        }
+        .create-input:focus { border-color: #f093fb; }
+        .create-input::placeholder { color: rgba(255,255,255,0.3); }
+        /* MBTI选择卡片 */
+        .mbti-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .mbti-card {
+            background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15);
+            border-radius: 10px; padding: 8px 4px; text-align: center; cursor: pointer;
+            transition: all 0.2s; font-size: 0.7rem; color: rgba(255,255,255,0.7);
+        }
+        .mbti-card:hover { border-color: rgba(255,255,255,0.4); }
+        .mbti-card.selected { border-color: #f093fb; background: rgba(240,147,251,0.15); color: #f093fb; }
+        .mbti-card .mbti-type { font-size: 0.8rem; font-weight: 700; margin-bottom: 2px; }
+        /* MBTI测试题 */
+        .mbti-test { display: none; }
+        .mbti-question { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .mbti-q-num { font-size: 0.7rem; color: #f093fb; font-weight: 700; margin-bottom: 8px; }
+        .mbti-q-text { font-size: 0.85rem; color: #fff; margin-bottom: 14px; line-height: 1.5; }
+        .mbti-opt { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); font-size: 0.8rem; font-family: inherit; cursor: pointer; text-align: left; margin-bottom: 6px; transition: all 0.2s; }
+        .mbti-opt:hover { border-color: #f093fb; color: #fff; }
+        .mbti-opt.selected { border-color: #f093fb; background: rgba(240,147,251,0.2); color: #fff; }
+        .mbti-nav { display: flex; gap: 8px; margin-top: 16px; }
+        .mbti-nav .btn { flex: 1; }
+        .btn-back { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+        .mbti-result { display: none; text-align: center; padding: 20px; background: rgba(240,147,251,0.15); border-radius: 16px; border: 2px solid #f093fb; }
+        .mbti-result-type { font-size: 2rem; font-weight: 800; color: #f093fb; margin-bottom: 8px; }
+        .mbti-result-name { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+        .mbti-result-desc { font-size: 0.75rem; color: rgba(255,255,255,0.5); line-height: 1.5; }
+        /* ===== 开场5人亮相 ===== */
+        #intro-page { justify-content: center; align-items: center; padding: 60px 16px 20px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); overflow-y: auto; }
+        .intro-title { font-size: 1.2rem; font-weight: 800; text-align: center; margin-bottom: 6px; }
+        .intro-sub { font-size: 0.7rem; color: rgba(255,255,255,0.4); text-align: center; margin-bottom: 20px; }
+        .intro-cards { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 10px; }
+        .intro-card {
+            background: rgba(255,255,255,0.08); backdrop-filter: blur(20px);
+            border: 2px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 14px 16px;
+            cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px;
+            opacity: 0; transform: translateY(20px);
+        }
+        .intro-card.show { opacity: 1; transform: translateY(0); }
+        .intro-card:hover { border-color: rgba(255,255,255,0.4); transform: translateX(4px); }
+        .intro-card:active { transform: scale(0.98); }
+        .intro-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+        .intro-info { flex: 1; min-width: 0; }
+        .intro-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
+        .intro-meta { font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-bottom: 3px; }
+        .intro-mbti { display: inline-block; background: rgba(255,255,255,0.1); border-radius: 6px; padding: 1px 6px; font-size: 0.6rem; color: #f093fb; }
+        .intro-quote { font-size: 0.7rem; color: rgba(255,255,255,0.4); font-style: italic; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .intro-arrow { color: rgba(255,255,255,0.3); font-size: 1rem; }
+        /* ===== 游戏主页面 ===== */
+        #game-page { padding: 60px 12px 70px; overflow-y: auto; }
+        .day-theme { text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-bottom: 12px; }
+        /* 角色卡片 */
+        .chars-grid { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
+        .char-mini {
+            flex-shrink: 0; width: 52px; background: rgba(255,255,255,0.08); border-radius: 12px;
+            padding: 8px 4px; text-align: center; cursor: pointer; border: 2px solid transparent;
+            transition: all 0.2s; position: relative;
+        }
+        .char-mini:hover { background: rgba(255,255,255,0.12); }
+        .char-mini.locked { opacity: 0.4; cursor: default; }
+        .char-mini.glow { border-color: rgba(240,147,251,0.5); box-shadow: 0 0 10px rgba(240,147,251,0.2); }
+        .char-mini-icon { font-size: 1.2rem; margin-bottom: 3px; }
+        .char-mini-name { font-size: 0.6rem; font-weight: 700; color: rgba(255,255,255,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .char-mini-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .char-mini-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+        .char-badge { position: absolute; top: -4px; right: -4px; font-size: 0.5rem; background: #f5576c; border-radius: 6px; padding: 1px 4px; color: #fff; font-weight: 700; }
+        /* 行动菜单 */
+        .action-panel { background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); border-radius: 20px; padding: 16px; border: 1px solid rgba(255,255,255,0.1); }
+        .action-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px; }
+        .action-row:last-child { margin-bottom: 0; }
+        .act-btn {
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px; padding: 14px 8px; color: #fff; cursor: pointer;
+            font-family: inherit; text-align: center; transition: all 0.2s; display: flex;
+            flex-direction: column; align-items: center; gap: 4px;
+        }
+        .act-btn:active { transform: scale(0.96); background: rgba(255,255,255,0.15); }
+        .act-btn.disabled { opacity: 0.3; cursor: not-allowed; }
+        .act-btn-icon { font-size: 1.4rem; }
+        .act-btn-label { font-size: 0.75rem; font-weight: 600; }
+        .act-btn-sub { font-size: 0.6rem; color: rgba(255,255,255,0.4); }
+        .sleep-btn { background: linear-gradient(135deg, rgba(240,147,251,0.3), rgba(245,87,108,0.3)); border-color: rgba(240,147,251,0.3); }
+        /* 每日提示 */
+        .daily-tip { margin-top: 12px; font-size: 0.7rem; color: rgba(255,255,255,0.35); text-align: center; }
+        /* ===== 联系界面 ===== */
+        #contact-page { padding: 60px 12px 20px; overflow-y: auto; }
+        .contact-list { display: flex; flex-direction: column; gap: 8px; }
+        .contact-item {
+            background: rgba(255,255,255,0.08); border-radius: 14px; padding: 14px;
+            border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center;
+            gap: 12px; cursor: pointer; transition: all 0.2s;
+        }
+        .contact-item:hover { background: rgba(255,255,255,0.12); }
+        .contact-item:active { transform: scale(0.98); }
+        .contact-item.disabled { opacity: 0.4; cursor: not-allowed; }
+        .contact-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+        .contact-info { flex: 1; min-width: 0; }
+        .contact-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+        .contact-tag { font-size: 0.55rem; background: rgba(240,147,251,0.3); border-radius: 6px; padding: 1px 5px; color: #f093fb; }
+        .contact-tag.lover { background: rgba(245,87,108,0.4); color: #f5576c; }
+        .contact-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .contact-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+        .contact-mode { display: flex; gap: 6px; margin-left: auto; }
+        .mode-btn { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 10px; font-size: 0.65rem; color: rgba(255,255,255,0.7); cursor: pointer; border: none; font-family: inherit; }
+        .mode-btn:active { background: rgba(255,255,255,0.2); }
+        /* ===== 回顾关系页 ===== */
+        #review-page { padding: 60px 16px 20px; overflow-y: auto; }
+        .review-title { font-size: 1rem; font-weight: 700; text-align: center; margin-bottom: 16px; }
+        .review-cards { display: flex; flex-direction: column; gap: 10px; }
+        .review-card { background: rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; border: 1px solid rgba(255,255,255,0.1); }
+        .review-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .review-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+        .review-name { font-size: 0.85rem; font-weight: 700; }
+        .review-stage { font-size: 0.65rem; color: rgba(255,255,255,0.5); }
+        .review-bar-wrap { background: rgba(255,255,255,0.1); border-radius: 4px; height: 6px; overflow: hidden; margin-bottom: 4px; }
+        .review-bar { height: 100%; border-radius: 4px; transition: width 0.4s; }
+        .review-num { font-size: 0.65rem; color: rgba(255,255,255,0.4); display: flex; justify-content: space-between; }
+        /* ===== 对话遮罩 ===== */
+        .dialogue-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); z-index: 3000;
+            display: none; justify-content: center; align-items: flex-end;
+        }
+        .dialogue-overlay.active { display: flex; }
+        .dialogue-box {
+            background: rgba(20,20,35,0.98); border-radius: 20px 20px 0 0;
+            padding: 20px 16px; width: 100%; max-height: 72vh; overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .dialogue-char { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .dialogue-char-avatar { font-size: 1.4rem; }
+        .dialogue-char-name { font-size: 0.85rem; font-weight: 700; color: #f093fb; }
+        .dialogue-char-mbti { font-size: 0.6rem; color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); border-radius: 6px; padding: 1px 6px; }
+        .dialogue-text { font-size: 0.85rem; color: rgba(255,255,255,0.9); line-height: 1.7; margin-bottom: 16px; white-space: pre-wrap; }
+        .dialogue-choices { display: flex; flex-direction: column; gap: 8px; }
+        .dialogue-choice {
+            padding: 13px 16px; font-size: 0.82rem; border: 2px solid rgba(255,255,255,0.15);
+            border-radius: 12px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85);
+            cursor: pointer; font-family: inherit; text-align: left; transition: all 0.2s;
+        }
+        .dialogue-choice:hover { border-color: #f093fb; background: rgba(240,147,251,0.15); color: #fff; }
+        .dialogue-choice:active { transform: scale(0.98); }
+        .dialogue-close { margin-top: 12px; text-align: center; }
+        .dialogue-close-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; color: rgba(255,255,255,0.5); font-size: 0.75rem; cursor: pointer; font-family: inherit; width: 100%; }
+        /* ===== 底部导航 ===== */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(20px);
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 0 10px calc(5px + env(safe-area-inset-bottom)); z-index: 1000;
+        }
+        .nav-btn { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 12px; border-radius: 10px; transition: all 0.2s; }
+        .nav-btn.active { color: #f093fb; }
+        .nav-btn:active { background: rgba(255,255,255,0.1); }
+        .nav-icon { font-size: 1.1rem; }
+        .nav-label { font-size: 0.6rem; font-weight: 600; }
+        /* ===== Toast提示 ===== */
+        .toast {
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+            background: rgba(20,20,35,0.95); color: #fff; padding: 10px 20px;
+            border-radius: 20px; font-size: 0.75rem; font-weight: 600; z-index: 5000;
+            display: none; max-width: 90%; text-align: center;
+            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .toast.show { display: block; animation: toastIn 0.3s ease; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .toast.achievement { background: rgba(240,147,251,0.9); }
+        /* ===== 结局页 ===== */
+        #ending-page { justify-content: center; align-items: center; padding: 40px 20px; background: linear-gradient(135deg, #1a1a2e, #16213e); overflow-y: auto; }
+        .ending-card { background: rgba(255,255,255,0.08); border-radius: 20px; padding: 28px 20px; border: 1px solid rgba(255,255,255,0.1); max-width: 340px; width: 100%; text-align: center; }
+        .ending-icon { font-size: 3rem; margin-bottom: 16px; }
+        .ending-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 12px; background: linear-gradient(135deg,#f093fb,#f5576c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .ending-text { font-size: 0.82rem; color: rgba(255,255,255,0.7); line-height: 1.8; margin-bottom: 20px; white-space: pre-wrap; }
+        .ending-stat { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+        /* ===== 滚动条 ===== */
+        ::-webkit-scrollbar { width: 0; height: 0; }
+    </style>
+</head>
+<body>
+
+<!-- ==================== 顶部状态栏 ==================== -->
+<div class="status-bar" id="status-bar" style="display:none;">
+    <div class="status-left">
+        <div>
+            <div class="status-day">Day <span id="day-num">1</span> / 60</div>
+            <div class="status-day-label" id="day-theme-label"></div>
+        </div>
+    </div>
+    <div class="status-right">
+        <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-right:4px;">行动点</div>
+        <div class="action-points" id="action-points"></div>
+    </div>
+</div>
+
+<!-- ==================== 首页 ==================== -->
+<div id="home-page" class="page active">
+    <div class="home-logo">
+        <div class="bloom-icon">🌸</div>
+        <h1>Bloom</h1>
+        <p>60 天恋爱故事 · 上海</p>
+    </div>
+    <div class="home-card">
+        <div class="home-tags">
+            <span class="home-tag">📅 60天</span>
+            <span class="home-tag">💕 5位角色</span>
+            <span class="home-tag">🎯 MBTI互动</span>
+            <span class="home-tag">🌃 上海</span>
+        </div>
+        <button class="btn btn-primary" onclick="game.startNewGame()">✨ 开始新故事</button>
+        <button class="btn btn-secondary" id="btn-continue" onclick="game.continueGame()" disabled>📖 继续游戏</button>
+    </div>
+</div>
+
+<!-- ==================== 角色创建页 ==================== -->
+<div id="create-page" class="page">
+    <div class="create-title">🌸 创建你的角色</div>
+    <div class="create-subtitle">27岁 · 咨询公司顾问 · 上海</div>
+
+    <div class="create-section">
+        <div class="create-label">你的名字</div>
+        <input class="create-input" id="input-name" type="text" placeholder="输入你的姓名" maxlength="10">
+    </div>
+
+    <div class="create-section">
+        <div class="create-label">测试你的 MBTI（10题）</div>
+        <div class="mbti-test" id="mbti-test">
+            <!-- 题目的动态生成 -->
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+            <button class="btn btn-secondary" style="flex:1" onclick="game.showMbtiGrid()">↩️ 直接选择</button>
+            <button class="btn btn-primary" style="flex:1" onclick="game.calcMbtiResult()">📊 计算结果</button>
+        </div>
+        <div class="mbti-result" id="mbti-result">
+            <div class="mbti-result-type" id="mbti-result-type"></div>
+            <div class="mbti-result-name" id="mbti-result-name"></div>
+            <div class="mbti-result-desc" id="mbti-result-desc"></div>
+            <button class="btn btn-secondary" style="margin-top:12px" onclick="game.resetMbti()">🔄 重新测试</button>
+        </div>
+    </div>
+
+    <div class="create-section" id="mbti-select-section" style="display:none;">
+        <div class="create-label">选择你的 MBTI（直接选择）</div>
+        <div class="mbti-grid" id="mbti-grid"></div>
+        <button class="btn btn-primary" style="margin-top:12px" onclick="game.startGame()">🌸 确认并开始</button>
+    </div>
+
+    <button class="btn btn-primary" id="btn-start-from-name" onclick="game.startGame()">🌸 确认并开始</button>
+</div>
+
+<!-- ==================== 开场5人亮相 ==================== -->
+<div id="intro-page" class="page">
+    <div class="intro-title">🗓️ Day 1 · 选择最想认识的人</div>
+    <div class="intro-sub">点击选择一人作为优先攻略对象</div>
+    <div class="intro-cards" id="intro-cards"></div>
+</div>
+
+<!-- ==================== 游戏主页面 ==================== -->
+<div id="game-page" class="page">
+    <div class="day-theme" id="day-theme-text"></div>
+
+    <!-- 角色快捷栏 -->
+    <div class="chars-grid" id="chars-grid"></div>
+
+    <!-- 行动面板 -->
+    <div class="action-panel">
+        <div class="action-row">
+            <button class="act-btn" id="btn-contact" onclick="game.showContact()">
+                <div class="act-btn-icon">💬</div>
+                <div class="act-btn-label">联系角色</div>
+                <div class="act-btn-sub">消耗1行动点</div>
+            </button>
+            <button class="act-btn" id="btn-encounter" onclick="game.doEncounter()">
+                <div class="act-btn-icon">✨</div>
+                <div class="act-btn-label">偶遇</div>
+                <div class="act-btn-sub" id="encounter-status">今日免费1次</div>
+            </button>
+        </div>
+        <div class="action-row">
+            <button class="act-btn" onclick="game.showReview()">
+                <div class="act-btn-icon">📊</div>
+                <div class="act-btn-label">回顾关系</div>
+                <div class="act-btn-sub">查看好感度</div>
+            </button>
+            <button class="act-btn sleep-btn" onclick="game.sleep()">
+                <div class="act-btn-icon">🌙</div>
+                <div class="act-btn-label">存档睡觉</div>
+                <div class="act-btn-sub">进入下一天</div>
+            </button>
+        </div>
+    </div>
+
+    <div class="daily-tip" id="daily-tip"></div>
+</div>
+
+<!-- ==================== 联系界面 ==================== -->
+<div id="contact-page" class="page">
+    <div style="padding:60px 12px 10px;text-align:center;">
+        <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">💬 联系角色</div>
+        <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);">选择一个角色开始互动</div>
+    </div>
+    <div style="padding:0 12px 20px;">
+        <div class="contact-list" id="contact-list"></div>
+        <div style="text-align:center;margin-top:16px;">
+            <button class="btn btn-secondary" onclick="game.showPage('game-page')">← 返回</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== 回顾关系页 ==================== -->
+<div id="review-page" class="page">
+    <div style="padding:60px 16px 10px;">
+        <div class="review-title">📊 关系总览</div>
+        <div class="review-cards" id="review-cards"></div>
+        <div style="text-align:center;margin-top:16px;">
+            <button class="btn btn-secondary" onclick="game.showPage('game-page')">← 返回</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== 结局页 ==================== -->
+<div id="ending-page" class="page">
+    <div class="ending-card">
+        <div class="ending-icon" id="ending-icon">🌸</div>
+        <div class="ending-title" id="ending-title"></div>
+        <div class="ending-text" id="ending-text"></div>
+        <div class="ending-stat" id="ending-stat"></div>
+        <button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">🔄 重新开始</button>
+    </div>
+</div>
+
+<!-- ==================== 对话遮罩 ==================== -->
+<div class="dialogue-overlay" id="dialogue-overlay">
+    <div class="dialogue-box">
+        <div class="dialogue-char">
+            <span class="dialogue-char-avatar" id="dlg-avatar"></span>
+            <div>
+                <div class="dialogue-char-name" id="dlg-char-name"></div>
+                <div class="dialogue-char-mbti" id="dlg-char-mbti"></div>
+            </div>
+        </div>
+        <div class="dialogue-text" id="dlg-text"></div>
+        <div class="dialogue-choices" id="dlg-choices"></div>
+        <div class="dialogue-close" id="dlg-close" style="display:none;">
+            <button class="dialogue-close-btn" onclick="game.closeDialogue()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== 底部导航 ==================== -->
+<div class="bottom-nav" id="bottom-nav" style="display:none;">
+    <button class="nav-btn active" onclick="game.showPage('game-page')">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-label">首页</div>
+    </button>
+    <button class="nav-btn" onclick="game.showReview()">
+        <div class="nav-icon">📊</div>
+        <div class="nav-label">关系</div>
+    </button>
+    <button class="nav-btn" onclick="game.saveGame()">
+        <div class="nav-icon">💾</div>
+        <div class="nav-label">保存</div>
+    </button>
+</div>
+
+<!-- ==================== Toast ==================== -->
+<div class="toast" id="toast"></div>
+
+<!-- ================================================================ -->
+<!-- ==================== 游戏数据（来自原场景）==================== -->
+<!-- ================================================================ -->
+<!-- 场景数据将在下方注入 -->
+
+</body>
+</html>
+<!-- ===== 场景数据注入点 ===== -->
+<!-- WENYA_SCENES, XIAYANG_SCENES, SUJINGYI_SCENES, LUXIAO_SCENES, LINWANQING_SCENES -->
+<!-- WENYA_ENDINGS, XIAYANG_ENDINGS, SUJINGYI_ENDINGS, LUXIAO_ENDINGS, LINWANQING_ENDINGS -->
+<!-- ===== 脚本开始 ===== -->
+<script>
+// ===== 角色基础数据 =====
+const CHARACTERS = {
+    wenya: {
+        id: 'wenya', name: '温雅', avatar: '🎨', color: '#fd79a8',
+        mbti: 'INFP', age: 24, job: '美术老师',
+        desc: '温柔细腻，内敛害羞，对艺术有独特的感知力',
+        quote: '「有些感觉……说不清楚。」',
+        attractMbti: ['INFP','ENFP','INFJ','INTJ'], repelMbti: ['ESTJ','ESFP']
+    },
+    xiayang: {
+        id: 'xiayang', name: '夏阳', avatar: '🏃', color: '#e67e22',
+        mbti: 'ESFP', age: 25, job: '清华大学研究生',
+        desc: '阳光开朗，热情直接，喜欢运动和挑战',
+        quote: '「冲！就完事了！」',
+        attractMbti: ['ESFP','ENFP','ESTP','ENTP'], repelMbti: ['ISTJ','INTJ']
+    },
+    sujingyi: {
+        id: 'sujingyi', name: '苏静怡', avatar: '🩺', color: '#3498db',
+        mbti: 'ISTJ', age: 28, job: '医生',
+        desc: '理性沉稳，专业认真，但在感情上不太会表达',
+        quote: '「作为医生，我有责任提醒你注意健康。」',
+        attractMbti: ['ISTJ','INTJ','ISFJ','INFJ'], repelMbti: ['ESFP','ENFP']
+    },
+    luxiao: {
+        id: 'luxiao', name: '陆潇', avatar: '🍷', color: '#a29bfe',
+        mbti: 'ENTJ', age: 27, job: '法餐厅主理人',
+        desc: '雷厉风行，自信强势，生活精致品味高',
+        quote: '「在我的字典里，没有'差不多'这个词。」',
+        attractMbti: ['ENTJ','INTJ','ENFJ','INTP'], repelMbti: ['ISFP','INFP']
+    },
+    linwanqing: {
+        id: 'linwanqing', name: '林婉清', avatar: '💼', color: '#e84393',
+        mbti: 'ESTJ', age: 30, job: '林氏集团总裁',
+        desc: '气场强大，追求效率，工作狂人但渴望真情',
+        quote: '「我只看结果，不看过程。」',
+        attractMbti: ['ESTJ','ENTJ','ISTJ','ENFJ'], repelMbti: ['INFP','ISFP']
+    }
+};
+
+const RELATION_STAGES = {
+    stranger: '陌生人',
+    acquaintance: '认识',
+    friend: '朋友',
+    ambiguous: '暧昧',
+    lover: '恋人',
+    hotlove: '热恋',
+    cohabiting: '同居',
+    engaged: '订婚',
+    married: '已婚'
+};
+
+// ===== MBTI测试题 =====
+const MBTI_QUESTIONS = [
+    { q: '周末你更想做什么？', opts: [
+        { text: '去健身房撸铁/跑步', score: 'E' },
+        { text: '宅在家里看书/追剧', score: 'I' }
+    ]},
+    { q: '你喜欢什么样的约会？', opts: [
+        { text: '热闹有趣，去没去过的地方', score: 'S' },
+        { text: '安静有氛围，聊深入的话题', score: 'N' }
+    ]},
+    { q: '另一半遇到烦心事找你倾诉，你会？', opts: [
+        { text: '给她实际的建议和分析', score: 'T' },
+        { text: '先安慰她的情绪', score: 'F' }
+    ]},
+    { q: '你们约会迟到了一小时，你会？', opts: [
+        { text: '计划被打乱，有点不开心', score: 'J' },
+        { text: '无所谓，随遇而安', score: 'P' }
+    ]},
+    { q: '你更看重另一半的什么特质？', opts: [
+        { text: '理性、可靠、能干', score: 'T' },
+        { text: '温柔、善解人意、有趣', score: 'F' }
+    ]},
+    { q: '下班后，你通常？', opts: [
+        { text: '参加社交活动，补充能量', score: 'E' },
+        { text: '一个人待着，恢复精力', score: 'I' }
+    ]},
+    { q: '你们吵架了，你会？', opts: [
+        { text: '冷静分析谁对谁错', score: 'T' },
+        { text: '先道歉缓和气氛', score: 'F' }
+    ]},
+    { q: '关于未来的生活，你希望？', opts: [
+        { text: '有清晰的规划，一起实现目标', score: 'J' },
+        { text: '保持开放，随缘发展', score: 'P' }
+    ]},
+    { q: '你想过什么样的生活？', opts: [
+        { text: '有品质、有成就、有挑战', score: 'S' },
+        { text: '有意义、有深度、有精神共鸣', score: 'N' }
+    ]},
+    { q: '第一次约会，你会？', opts: [
+        { text: '主动安排行程，展示规划能力', score: 'E' },
+        { text: '先听对方想法，配合对方节奏', score: 'I' }
+    ]}
+];
+
+const MBTI_NAMES = {
+    'INTJ': '建筑师', 'INTP': '逻辑学家', 'ENTJ': '指挥官', 'ENTP': '辩论家',
+    'INFJ': '提倡者', 'INFP': '调停者', 'ENFJ': '主人公', 'ENFP': '竞选者',
+    'ISTJ': '物流师', 'ISFJ': '守护者', 'ESTJ': '总经理', 'ESFJ': '执政官',
+    'ISTP': '鉴赏家', 'ISFP': '探险家', 'ESTP': '企业家', 'ESFP': '表演者'
+};
+const MBTI_DESCS = {
+    'INTJ': '理性、好奇、追求完美',
+    'INTP': '逻辑、抽象、专注思考',
+    'ENTJ': '果断、自信、有领导力',
+    'ENTP': '机智、好奇、善于辩论',
+    'INFJ': '洞察、真诚、理想主义',
+    'INFP': '浪漫、敏感、追求意义',
+    'ENFJ': '热情、有感染力、善于激励',
+    'ENFP': '活力、创意、善于社交',
+    'ISTJ': '可靠、务实、有责任感',
+    'ISFJ': '温暖、忠诚、乐于助人',
+    'ESTJ': '高效、组织、注重实际',
+    'ESFJ': '体贴、热情、重视关系',
+    'ISTP': '务实、灵活、动手能力强',
+    'ISFP': '艺术、温和、注重当下',
+    'ESTP': '活力、实际、善于应变',
+    'ESFP': '热情、爱玩、享受生活'
+};
+
+// ===== 特殊日定义 =====
+const SPECIAL_DAYS = {
+    1:  '游戏开始',
+    10: '温雅生日 🎂',
+    20: '暴雨夜 🌧️',
+    30: '告白窗口开启',
+    35: '苏静怡画展 🎨',
+    40: '求婚季',
+    50: '情人节 💕',
+    52: '陆潇餐厅周年庆 🍷',
+    55: '夏日海边聚会 🌊',
+    58: '夏阳生日 🏃',
+    59: '林婉清商务晚宴 💼',
+    60: '最终日 ✨'
+};
+
+// ===== 游戏状态 =====
+class GameState {
+    constructor() { this.reset(); }
+
+    reset() {
+        this.day = 1;
+        this.actionPoints = 3;
+        this.maxActionPoints = 3;
+        this.playerName = '';
+        this.playerMBTI = '';
+        this.chosenFirst = ''; // 首选角色id
+        this.dailyEncounter = true; // 今日是否已偶遇
+        this.achievements = [];
+        this.triggeredScenes = []; // 已触发场景记录
+        this.confessionWindow = {}; // 告白窗口 {charId: daysLeft}
+        this.cohabiting = {}; // 同居状态
+        this.divorced = {}; // 离婚状态（永久不可攻略）
+        this.gameEnded = false;
+
+        Object.keys(CHARACTERS).forEach(k => {
+            const c = CHARACTERS[k];
+            c.affection = 0;
+            c.relation = 'stranger';
+            c.unlocked = false;
+            c.sceneIndex = {}; // 记录每个角色当前推进到第几个场景
+            c.lastContactDay = 0; // 上次联系日（0=从未联系）
+        });
+    }
+
+    save() {
+        const data = {
+            day: this.day, actionPoints: this.actionPoints,
+            playerName: this.playerName, playerMBTI: this.playerMBTI,
+            chosenFirst: this.chosenFirst, dailyEncounter: this.dailyEncounter,
+            achievements: this.achievements, triggeredScenes: this.triggeredScenes,
+            confessionWindow: this.confessionWindow, cohabiting: this.cohabiting,
+            divorced: this.divorced, gameEnded: this.gameEnded,
+            characters: Object.keys(CHARACTERS).reduce((a, k) => {
+                a[k] = { affection: CHARACTERS[k].affection, relation: CHARACTERS[k].relation, unlocked: CHARACTERS[k].unlocked, sceneIndex: CHARACTERS[k].sceneIndex || {}, lastContactDay: CHARACTERS[k].lastContactDay || 0 };
+                return a;
+            }, {})
+        };
+        localStorage.setItem('bloom60_save', JSON.stringify(data));
+    }
+
+    load() {
+        const d = localStorage.getItem('bloom60_save');
+        if (!d) return false;
+        const data = JSON.parse(d);
+        this.day = data.day; this.actionPoints = data.actionPoints;
+        this.playerName = data.playerName; this.playerMBTI = data.playerMBTI;
+        this.chosenFirst = data.chosenFirst; this.dailyEncounter = data.dailyEncounter;
+        this.achievements = data.achievements || [];
+        this.triggeredScenes = data.triggeredScenes || [];
+        this.confessionWindow = data.confessionWindow || {};
+        this.cohabiting = data.cohabiting || {};
+        this.divorced = data.divorced || {};
+        this.gameEnded = data.gameEnded || false;
+        if (data.characters) {
+            Object.keys(data.characters).forEach(k => {
+                if (CHARACTERS[k]) {
+                    CHARACTERS[k].affection = data.characters[k].affection;
+                    CHARACTERS[k].relation = data.characters[k].relation;
+                    CHARACTERS[k].unlocked = data.characters[k].unlocked;
+                    CHARACTERS[k].sceneIndex = data.characters[k].sceneIndex || {};
+                    CHARACTERS[k].lastContactDay = data.characters[k].lastContactDay || 0;
+                }
+            });
+        }
+        return true;
+    }
+
+    hasSave() { return !!localStorage.getItem('bloom60_save'); }
+
+    isSceneTriggered(charId, sceneId) {
+        return this.triggeredScenes.includes(`${charId}_${sceneId}`);
+    }
+
+    markSceneTriggered(charId, sceneId) {
+        const key = `${charId}_${sceneId}`;
+        if (!this.triggeredScenes.includes(key)) this.triggeredScenes.push(key);
+    }
+}
+
+const gameState = new GameState();
+
+// ===== 核心游戏引擎 =====
+class GameEngine {
+    constructor() { this.init(); }
+
+    init() {
+        document.getElementById('btn-continue').disabled = !gameState.hasSave();
+        this.mbtiAnswers = {};
+        this.renderMbtiTest();
+        this.renderMbtiGrid();
+    }
+
+    // ===== 页面导航 =====
+    showPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if (id === 'contact-page') this.renderContact();
+        if (id === 'review-page') this.renderReview();
+    }
+
+    // ===== 首页 =====
+    startNewGame() {
+        if (confirm('开始新游戏？当前进度将丢失。')) {
+            gameState.reset();
+            this.showPage('create-page');
+        }
+    }
+
+    continueGame() {
+        if (gameState.load()) {
+            this.showPage('game-page');
+            this.updateUI();
+            toast('📖 继续游戏');
+        }
+    }
+
+    // ===== 角色创建 =====
+    renderMbtiTest() {
+        const container = document.getElementById('mbti-test');
+        container.innerHTML = MBTI_QUESTIONS.map((q, qi) => `
+            <div class="mbti-question" id="mbti-q-${qi}">
+                <div class="mbti-q-num">Q${qi + 1} / ${MBTI_QUESTIONS.length}</div>
+                <div class="mbti-q-text">${q.q}</div>
+                ${q.opts.map((o, oi) => `
+                    <button class="mbti-opt" data-q="${qi}" data-score="${o.score}" onclick="game.selectMbtiOpt(this, ${qi}, '${o.score}')">${o.text}</button>
+                `).join('')}
+            </div>
+        `).join('');
+    }
+
+    selectMbtiOpt(btn, qi, score) {
+        const qBtns = document.querySelectorAll(`[data-q="${qi}"]`);
+        qBtns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        this.mbtiAnswers[qi] = score;
+        // 自动滚动到下一题
+        const nextQ = document.getElementById(`mbti-q-${qi + 1}`);
+        if (nextQ) nextQ.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    calcMbtiResult() {
+        if (Object.keys(this.mbtiAnswers).length < MBTI_QUESTIONS.length) {
+            toast('请回答所有题目~');
+            return;
+        }
+        const counts = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+        Object.values(this.mbtiAnswers).forEach(s => counts[s]++);
+        const type = (counts.E >= counts.I ? 'E' : 'I') +
+                     (counts.S >= counts.N ? 'S' : 'N') +
+                     (counts.T >= counts.F ? 'T' : 'F') +
+                     (counts.J >= counts.P ? 'J' : 'P');
+        this.showMbtiResult(type);
+    }
+
+    showMbtiResult(type) {
+        gameState.playerMBTI = type;
+        document.getElementById('mbti-test').style.display = 'none';
+        document.querySelector('#create-page .mbti-test').nextElementSibling.style.display = 'none';
+        document.getElementById('mbti-result').style.display = 'block';
+        document.getElementById('mbti-result-type').textContent = type;
+        document.getElementById('mbti-result-name').textContent = MBTI_NAMES[type] || '';
+        document.getElementById('mbti-result-desc').textContent = MBTI_DESCS[type] || '';
+        document.getElementById('btn-start-from-name').style.display = 'block';
+    }
+
+    resetMbti() {
+        this.mbtiAnswers = {};
+        gameState.playerMBTI = '';
+        document.getElementById('mbti-test').style.display = 'block';
+        document.querySelector('#create-page .mbti-test').nextElementSibling.style.display = 'flex';
+        document.getElementById('mbti-result').style.display = 'none';
+        document.querySelectorAll('.mbti-opt').forEach(b => b.classList.remove('selected'));
+        this.renderMbtiTest();
+    }
+
+    showMbtiGrid() {
+        this.resetMbti();
+        document.getElementById('mbti-select-section').style.display = 'block';
+        document.getElementById('btn-start-from-name').style.display = 'none';
+    }
+
+    renderMbtiGrid() {
+        const grid = document.getElementById('mbti-grid');
+        const types = Object.keys(MBTI_NAMES);
+        grid.innerHTML = types.map(t => `
+            <div class="mbti-card" data-mbti="${t}" onclick="game.selectMbtiCard('${t}')">
+                <div class="mbti-type">${t}</div>
+                <div>${MBTI_NAMES[t]}</div>
+            </div>
+        `).join('');
+    }
+
+    selectMbtiCard(type) {
+        document.querySelectorAll('.mbti-card').forEach(c => c.classList.remove('selected'));
+        document.querySelector(`[data-mbti="${type}"]`).classList.add('selected');
+        gameState.playerMBTI = type;
+    }
+
+    // ===== 开始游戏 =====
+    startGame() {
+        const name = document.getElementById('input-name').value.trim();
+        if (!name) { toast('请输入你的名字~'); return; }
+        if (!gameState.playerMBTI) { toast('请选择或测试你的MBTI~'); return; }
+
+        gameState.playerName = name;
+        this.showIntro();
+    }
+
+    // ===== 开场5人亮相 =====
+    showIntro() {
+        this.showPage('intro-page');
+        const container = document.getElementById('intro-cards');
+        const chars = Object.values(CHARACTERS);
+        container.innerHTML = chars.map(c => `
+            <div class="intro-card" data-id="${c.id}" onclick="game.chooseFirst('${c.id}')">
+                <div class="intro-avatar" style="background:${c.color}">${c.avatar}</div>
+                <div class="intro-info">
+                    <div class="intro-name">${c.name}</div>
+                    <div class="intro-meta">${c.age}岁 · ${c.job}</div>
+                    <div><span class="intro-mbti">${c.mbti} · ${MBTI_NAMES[c.mbti]}</span></div>
+                    <div class="intro-quote">${c.quote}</div>
+                </div>
+                <div class="intro-arrow">›</div>
+            </div>
+        `).join('');
+
+        // 依次出现动画
+        document.querySelectorAll('.intro-card').forEach((card, i) => {
+            setTimeout(() => card.classList.add('show'), i * 120 + 200);
+        });
+    }
+
+    chooseFirst(id) {
+        gameState.chosenFirst = id;
+        // 首选+5，其他-2
+        Object.keys(CHARACTERS).forEach(k => {
+            if (k === id) {
+                CHARACTERS[k].affection = 5;
+                CHARACTERS[k].unlocked = true;
+            } else {
+                CHARACTERS[k].affection = -2;
+            }
+        });
+        // 触发首选intro场景
+        this.showIntroScene(id);
+    }
+
+    showIntroScene(id) {
+        const c = CHARACTERS[id];
+        const introTexts = {
+            wenya: '晚上9点，你点了外卖。\n\n门铃响了，你打开门。\n\n温雅：「你好，你的外卖……」\n\n她愣了一下。\n\n温雅：「你是……新搬来的邻居？」',
+            xiayang: '健身房跑步机上，一个女生正在飞奔。\n\n汗水顺着脸颊流下，马尾辫高高扎起。\n\n她看到你，露出灿烂的笑容。\n\n夏阳：「嗨！你是新来的吗？」',
+            sujingyi: '加班到深夜，你突然头晕目眩。\n\n醒来时，你在医院。\n\n苏静怡：「你醒了。」\n「过度劳累，营养不良。」\n「你是想把自己累死吗？」',
+            luxiao: '你误入一家法餐厅。\n\n装修精致，空气中弥漫着咖啡香气。\n\n吧台后站着一位短发女子，正在专注地制作咖啡。\n\n陆潇：「几位？」',
+            linwanqing: '会议室里，林婉清放下合同。\n\n她抬眼看你，目光如炬。\n\n林婉清：「你就是新来的顾问？」\n「听说你很忙？」'
+        };
+
+        this.showDialogue(c, introTexts[id] || '你好，我是' + c.name + '。', [
+            { text: '「你好，我是' + gameState.playerName + '。」', affection: 3, next: 'start' },
+            { text: '「你看起来很……' + (['INFP','ISFP'].includes(c.mbti) ? '温柔' : '厉害') + '。」', affection: 5, next: 'start' },
+            { text: '「（微笑点头）」', affection: 3, next: 'start' }
+        ], false);
+    }
+
+    // ===== 主UI更新 =====
+    updateUI() {
+        // 顶部状态栏
+        document.getElementById('day-num').textContent = gameState.day;
+        const theme = SPECIAL_DAYS[gameState.day] || '';
+        document.getElementById('day-theme-label').textContent = theme;
+        document.getElementById('day-theme-text').textContent = theme ? `✨ ${theme}` : '';
+
+        // 行动点
+        const apContainer = document.getElementById('action-points');
+        apContainer.innerHTML = '';
+        for (let i = 0; i < gameState.maxActionPoints; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'action-dot ' + (i < gameState.actionPoints ? 'available' : 'used');
+            apContainer.appendChild(dot);
+        }
+
+        // 角色快捷栏
+        this.renderCharsMini();
+
+        // 偶遇状态
+        const encBtn = document.getElementById('btn-encounter');
+        const encStatus = document.getElementById('encounter-status');
+        if (gameState.dailyEncounter) {
+            encStatus.textContent = '今日免费1次';
+            encBtn.classList.remove('disabled');
+        } else {
+            encStatus.textContent = '今日已用完';
+            encBtn.classList.add('disabled');
+        }
+
+        // 行动点不足时禁用联系按钮
+        const contactBtn = document.getElementById('btn-contact');
+        if (gameState.actionPoints <= 0) {
+            contactBtn.classList.add('disabled');
+        } else {
+            contactBtn.classList.remove('disabled');
+        }
+
+        // 每日提示
+        const tip = this.getDailyTip();
+        document.getElementById('daily-tip').textContent = tip;
+    }
+
+    renderCharsMini() {
+        const grid = document.getElementById('chars-grid');
+        grid.innerHTML = Object.keys(CHARACTERS).map(k => {
+            const c = CHARACTERS[k];
+            const pct = Math.max(0, Math.min(100, c.affection));
+            const stage = this.getRelation(c.affection);
+            const isLover = c.relation === 'lover' || c.relation === 'hotlove' || c.relation === 'cohabiting' || c.relation === 'engaged' || c.relation === 'married';
+            const isLocked = !c.unlocked || gameState.divorced[k];
+            return `
+                <div class="char-mini ${isLocked ? 'locked' : ''} ${isLover ? 'glow' : ''}"
+                     onclick="game.quickContact('${k}')"
+                     title="${c.name} · ${RELATION_STAGES[stage] || '陌生人'}">
+                    <div class="char-mini-icon">${c.avatar}</div>
+                    <div class="char-mini-name">${c.name}</div>
+                    <div class="char-mini-bar">
+                        <div class="char-mini-fill" style="width:${pct}%;background:${c.color}"></div>
+                    </div>
+                    ${isLover ? '<div class="char-badge">❤</div>' : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    // ===== 偶遇系统 =====
+    doEncounter() {
+        if (!gameState.dailyEncounter) {
+            toast('今日偶遇次数已用完');
+            return;
+        }
+        // 找好感度在20-30之间的已解锁角色
+        const candidates = Object.keys(CHARACTERS).filter(k => {
+            const c = CHARACTERS[k];
+            return c.unlocked && !gameState.divorced[k] && c.affection >= 20 && c.affection <= 30;
+        });
+        if (candidates.length === 0) {
+            toast('当前没有合适偶遇的角色');
+            return;
+        }
+        // 随机选一个
+        const targetId = candidates[Math.floor(Math.random() * candidates.length)];
+        const c = CHARACTERS[targetId];
+        const bonus = Math.floor(Math.random() * 6) + 5; // +5~+10
+        this.changeAffection(targetId, bonus);
+        c.lastContactDay = gameState.day; // 偶遇也算联系
+        gameState.dailyEncounter = false;
+
+        const encounterTexts = {
+            wenya: '你路过便利店，温雅正在门口整理货架。\n\n温雅抬头看到你，有点惊讶地笑了笑。\n\n温雅：「这么巧……」',
+            xiayang: '公园跑道上，你看到了正在跑步的夏阳。\n\n夏阳挥手：「嘿！一起跑？」',
+            sujingyi: '公司楼下，你遇到刚下班的苏静怡。\n\n苏静怡：「又加班？」',
+            luxiao: '路过那家法餐厅，陆潇正站在门口。\n\n陆潇：「又路过？」',
+            linwanqing: '在林氏集团大厅，你偶遇林婉清。\n\n林婉清：「你也在？」
+        };
+
+        this.showDialogue(c, encounterTexts[targetId] || `${c.name}：好巧！`, [
+            { text: '「是啊，真巧。」', affection: 2 },
+            { text: '「好久不见。」', affection: 1 }
+        ]);
+        this.updateUI();
+    }
+
+    // ===== 联系角色 =====
+    showContact() {
+        if (gameState.actionPoints <= 0) {
+            toast('今日行动点已用完');
+            return;
+        }
+        this.showPage('contact-page');
+    }
+
+    quickContact(id) {
+        const c = CHARACTERS[id];
+        if (!c.unlocked) {
+            toast(`${c.name} 需要通过偶遇解锁`);
+            return;
+        }
+        if (gameState.divorced[id]) {
+            toast(`${c.name} 已与你断绝关系`);
+            return;
+        }
+        if (c.relation === 'stranger' && c.affection < 20) {
+            toast(`${c.name} 好感度不足，需要继续偶遇加深印象`);
+            return;
+        }
+        if (gameState.actionPoints <= 0) {
+            toast('行动点不足');
+            return;
+        }
+        this.showPage('game-page');
+        this.triggerScene(id, 'contact');
+    }
+
+    renderContact() {
+        const list = document.getElementById('contact-list');
+        const unlocked = Object.keys(CHARACTERS).filter(k => {
+            const c = CHARACTERS[k];
+            return c.unlocked && !gameState.divorced[k] && c.affection >= 20;
+        });
+        if (unlocked.length === 0) {
+            list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px 0;">未解锁任何角色<br>使用「偶遇」功能来认识新朋友</div>';
+            return;
+        }
+        list.innerHTML = unlocked.map(k => {
+            const c = CHARACTERS[k];
+            const pct = Math.max(0, Math.min(100, c.affection));
+            const stage = this.getRelation(c.affection);
+            const isLover = ['lover','hotlove','cohabiting','engaged','married'].includes(c.relation);
+            const canMsg = c.affection >= 20;
+            const canDate = c.affection >= 50;
+            const dateBtn = canDate ? `<button class="mode-btn" onclick="game.triggerScene('${k}','date')">💕 约会</button>` : '';
+            return `
+                <div class="contact-item">
+                    <div class="contact-avatar" style="background:${c.color}">${c.avatar}</div>
+                    <div class="contact-info">
+                        <div class="contact-name">
+                            ${c.name}
+                            <span class="contact-tag ${isLover ? 'lover' : ''}">${RELATION_STAGES[stage]}</span>
+                        </div>
+                        <div class="contact-bar">
+                            <div class="contact-fill" style="width:${pct}%;background:${c.color}"></div>
+                        </div>
+                    </div>
+                    <div class="contact-mode">
+                        ${canMsg ? `<button class="mode-btn" onclick="game.triggerScene('${k}','msg')">💬 消息</button>` : ''}
+                        ${canDate ? `<button class="mode-btn" onclick="game.triggerScene('${k}','call')">📞 电话</button>` : ''}
+                        ${dateBtn}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // ===== 场景触发 =====
+    triggerScene(charId, type) {
+        const scenes = this.getScenes(charId);
+        if (!scenes) return;
+
+        // 消耗行动点
+        if (type !== 'intro' && type !== 'auto') {
+            gameState.actionPoints = Math.max(0, gameState.actionPoints - 1);
+        }
+
+        // 记录联系时间（用于好感度递减计算）
+        if (CHARACTERS[charId]) {
+            CHARACTERS[charId].lastContactDay = gameState.day;
+        }
+
+        // 找到未触发的场景
+        const nextScene = scenes.find(s => {
+            if (gameState.isSceneTriggered(charId, s.id)) return false;
+            if (s.trigger === `unlock_${charId}`) return type === 'intro';
+            if (s.trigger === `msg_${charId}`) return type === 'msg';
+            if (s.trigger === `call_${charId}`) return type === 'call';
+            if (s.trigger === `date_${charId}`) return type === 'date';
+            // 自动触发型
+            if (s.trigger.startsWith('scene_')) return type === 'msg' || type === 'call';
+            return false;
+        });
+
+        if (nextScene) {
+            this.showScene(charId, nextScene);
+        } else {
+            // 没有场景就生成一个通用互动
+            const c = CHARACTERS[charId];
+            const genericTexts = this.getGenericText(charId, type);
+            this.showDialogue(c, genericTexts.text, genericTexts.choices);
+        }
+        this.updateUI();
+    }
+
+    getScenes(charId) {
+        const maps = {
+            wenya: window.WENYA_SCENES, xiayang: window.XIAYANG_SCENES,
+            sujingyi: window.SUJINGYI_SCENES, luxiao: window.LUXIAO_SCENES,
+            linwanqing: window.LINWANQING_SCENES
+        };
+        return maps[charId] || null;
+    }
+
+    getGenericText(charId, type) {
+        const c = CHARACTERS[charId];
+        const baseTexts = {
+            msg: {
+                text: `${c.name}给你发了消息：\n\n「在吗？」`,
+                choices: [
+                    { text: '「在呢~」', affection: 3 },
+                    { text: '「有什么事？」', affection: 1 },
+                    { text: '「在想你。」', affection: 5 },
+                    { text: '「忙，迟点聊。」', affection: -2 }
+                ]
+            },
+            call: {
+                text: `你拨通了${c.name}的电话。\n\n${c.name}：「喂？」`,
+                choices: [
+                    { text: '「想听听你的声音。」', affection: 5 },
+                    { text: '「最近怎么样？」', affection: 3 },
+                    { text: '「没什么事，就想聊聊。」', affection: 3 },
+                    { text: '「打扰了，挂了吧。」', affection: -3 }
+                ]
+            },
+            date: {
+                text: `${c.name}提议：\n\n「这周末有空吗？想约你出来。」`,
+                choices: [
+                    { text: '「好呀，去哪？」', affection: 5 },
+                    { text: '「可以，几点？」', affection: 4 },
+                    { text: '「我看看日程。」', affection: 1 },
+                    { text: '「这周比较忙。」', affection: -3 }
+                ]
+            }
+        };
+        return baseTexts[type] || baseTexts.msg;
+    }
+
+    showScene(charId, scene) {
+        const c = CHARACTERS[charId];
+        gameState.markSceneTriggered(charId, scene.id);
+        this.showDialogue(c, scene.text, scene.choices);
+    }
+
+    // ===== 对话系统 =====
+    showDialogue(char, text, choices, closeable = true) {
+        document.getElementById('dlg-avatar').textContent = char.avatar;
+        document.getElementById('dlg-char-name').textContent = char.name;
+        document.getElementById('dlg-char-mbti').textContent = `${char.mbti} · ${MBTI_NAMES[char.mbti] || ''}`;
+        document.getElementById('dlg-text').textContent = text;
+
+        const playerMBTI = gameState.playerMBTI;
+        // MBTI过滤：只显示玩家MBTI倾向的选项（随机选2个，避免选项过多）
+        const filtered = choices.filter(ch => !ch.mbtiHide || !ch.mbtiHide.includes(playerMBTI));
+        const toShow = filtered.length <= 3 ? filtered :
+            filtered.sort(() => Math.random() - 0.5).slice(0, 3);
+
+        document.getElementById('dlg-choices').innerHTML = toShow.map((ch, i) => `
+            <button class="dialogue-choice" onclick="game.handleChoice(${i}, ${JSON.stringify(ch).replace(/"/g, '&quot;')})">${ch.text}</button>
+        `).join('');
+
+        document.getElementById('dlg-close').style.display = closeable ? 'block' : 'none';
+        document.getElementById('dialogue-overlay').classList.add('active');
+        this._currentChoices = toShow;
+        this._currentCharId = char.id;
+        this._choiceData = choices;
+    }
+
+    handleChoice(index, rawChoice) {
+        const choice = this._choiceData.find(c => c.text === rawChoice.text) || rawChoice;
+        const charId = this._currentCharId;
+        const c = CHARACTERS[charId];
+
+        // 计算好感度变化（含MBTI加成）
+        let affectionDelta = choice.affection || 0;
+        if (affectionDelta !== 0) {
+            const bonus = this.calcMbtiBonus(charId, choice);
+            affectionDelta += bonus;
+            this.changeAffection(charId, affectionDelta);
+        }
+
+        // 处理next跳转
+        if (choice.next) {
+            if (choice.next === 'start') {
+                this.closeDialogue();
+                this.enterGame();
+                return;
+            }
+            const scenes = this.getScenes(charId);
+            const next = scenes ? scenes.find(s => s.id === choice.next) : null;
+            if (next) {
+                this.showScene(charId, next);
+                return;
+            }
+        }
+
+        // 处理结局
+        if (choice.ending) {
+            this.closeDialogue();
+            this.showEnding(charId, choice.ending);
+            return;
+        }
+
+        this.closeDialogue();
+        this.updateUI();
+    }
+
+    calcMbtiBonus(charId, choice) {
+        const playerMBTI = gameState.playerMBTI;
+        const char = CHARACTERS[charId];
+        let bonus = 0;
+        // 攻略角色MBTI加成
+        if (choice.charMbtiBonus && choice.charMbtiBonus[char.mbti]) {
+            const charBonus = choice.charMbtiBonus[char.mbti][playerMBTI] ||
+                              choice.charMbtiBonus[char.mbti].default || 0;
+            bonus += charBonus;
+        }
+        // 玩家MBTI通用加成
+        if (choice.mbtiBonus && choice.mbtiBonus[playerMBTI]) {
+            bonus += choice.mbtiBonus[playerMBTI];
+        }
+        // 自然吸引加成（玩家MBTI在角色attract列表内）
+        if (char.attractMbti && char.attractMbti.includes(playerMBTI) && bonus >= 0) {
+            bonus += 2;
+        }
+        // 自然排斥（玩家MBTI在角色repel列表内）
+        if (char.repelMbti && char.repelMbti.includes(playerMBTI) && bonus > 0) {
+            bonus -= 2;
+        }
+        return bonus;
+    }
+
+    closeDialogue() {
+        document.getElementById('dialogue-overlay').classList.remove('active');
+    }
+
+    // ===== 好感度变化 =====
+    changeAffection(charId, amount) {
+        const c = CHARACTERS[charId];
+        if (!c || gameState.divorced[charId]) return;
+        const old = c.affection;
+        c.affection = Math.max(0, Math.min(120, c.affection + amount));
+        const newR = this.getRelation(c.affection);
+
+        if (newR !== c.relation) {
+            c.relation = newR;
+            if (amount > 0) toast(`${c.name} 关系升级：${RELATION_STAGES[newR]}`);
+            if (newR === 'lover' || newR === 'hotlove') {
+                this.showAchievement(`【${c.name}·恋人】`);
+            }
+            if (newR === 'cohabiting') this.showAchievement(`【${c.name}·同居】`);
+            if (newR === 'married') this.showAchievement(`【${c.name}·结婚】`);
+        }
+
+        // 解锁检查
+        if (old < 20 && c.affection >= 20 && !c.unlocked) {
+            c.unlocked = true;
+            toast(`🎉 ${c.name} 解锁了！可以主动联系了`);
+        }
+
+        // 告白窗口检查（好感≥86）
+        if (c.affection >= 86 && !gameState.confessionWindow[charId] && c.relation !== 'lover') {
+            gameState.confessionWindow[charId] = 3;
+            toast(`💕 ${c.name} 似乎在等你的答复...`);
+        }
+    }
+
+    getRelation(affection) {
+        if (affection >= 120) return 'married';
+        if (affection >= 100) return 'engaged';
+        if (affection >= 86) return 'cohabiting';
+        if (affection >= 76) return 'hotlove';
+        if (affection >= 60) return 'lover';
+        if (affection >= 40) return 'ambiguous';
+        if (affection >= 20) return 'friend';
+        return 'stranger';
+    }
+
+    // ===== 回顾关系 =====
+    renderReview() {
+        const cards = document.getElementById('review-cards');
+        cards.innerHTML = Object.keys(CHARACTERS).map(k => {
+            const c = CHARACTERS[k];
+            const pct = Math.max(0, Math.min(100, c.affection));
+            const stage = this.getRelation(c.affection);
+            const isDivorced = gameState.divorced[k];
+            const triggeredCount = gameState.triggeredScenes.filter(s => s.startsWith(`${k}_`)).length;
+            return `
+                <div class="review-card">
+                    <div class="review-card-header">
+                        <div class="review-avatar" style="background:${c.color}">${c.avatar}</div>
+                        <div>
+                            <div class="review-name">${c.name} ${isDivorced ? '❌' : ''}</div>
+                            <div class="review-stage">${isDivorced ? '已断联' : RELATION_STAGES[stage] || '陌生人'}</div>
+                        </div>
+                    </div>
+                    <div class="review-bar-wrap">
+                        <div class="review-bar" style="width:${pct}%;background:${c.color}"></div>
+                    </div>
+                    <div class="review-num">
+                        <span>好感度 ${c.affection}</span>
+                        <span>已触发 ${triggeredCount} 个场景</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    showReview() {
+        this.renderReview();
+        this.showPage('review-page');
+    }
+
+    // ===== 睡觉/下一天 =====
+    sleep() {
+        if (gameState.day >= 60) {
+            this.showFinalEnding();
+            return;
+        }
+        gameState.day++;
+        gameState.actionPoints = gameState.maxActionPoints;
+        gameState.dailyEncounter = true;
+
+        // ===== 好感度递减 =====
+        // 认识阶段（0-20）不递减；熟悉/暧昧/恋人阶段递减
+        const decayMessages = [];
+        Object.keys(CHARACTERS).forEach(k => {
+            const c = CHARACTERS[k];
+            if (!c.unlocked || gameState.divorced[k]) return;
+            // 已触发告白窗口的角色单独处理，不叠加递减
+            if (gameState.confessionWindow[k] !== undefined) return;
+            // 恋人关系每天联系，不联系才递减（主动联系了会在triggerScene里更新lastContactDay）
+            // 递减：熟悉21-40 → -1，暧昧41-85 → -2，恋人86+ → -3
+            const daysSince = gameState.day - (c.lastContactDay || 0);
+            if (daysSince <= 1) return; // 今天刚联系过，不递减
+            // 计算应扣天数（最多回溯3天，避免极端情况）
+            const missedDays = Math.min(daysSince - 1, 3);
+            let decay = 0;
+            if (c.affection >= 86) {
+                decay = missedDays * 3; // 恋人每天-3
+            } else if (c.affection >= 41) {
+                decay = missedDays * 2; // 暧昧每天-2
+            } else if (c.affection >= 21) {
+                decay = missedDays * 1; // 熟悉每天-1
+            }
+            // 认识阶段（0-20）不递减
+            if (decay > 0) {
+                this.changeAffection(k, -decay);
+                const charName = c.name;
+                decayMessages.push(`${charName} 因为没有联系，好感度下降了`);
+            }
+        });
+        if (decayMessages.length > 0) {
+            setTimeout(() => {
+                decayMessages.forEach(m => toast(m));
+            }, 800);
+        }
+
+        // 告白窗口倒计时
+        Object.keys(gameState.confessionWindow).forEach(k => {
+            gameState.confessionWindow[k]--;
+            if (gameState.confessionWindow[k] <= 0) {
+                const char = CHARACTERS[k];
+                if (char && char.affection < 86) {
+                    // 窗口关闭，关系降级
+                    this.changeAffection(k, -15);
+                    toast(`${char.name} 等不到回应，关系降温了...`);
+                }
+                delete gameState.confessionWindow[k];
+            }
+        });
+
+        gameState.save();
+        this.updateUI();
+
+        // 检查特殊日
+        const specialText = SPECIAL_DAYS[gameState.day];
+        if (specialText) {
+            toast(`✨ Day ${gameState.day} · ${specialText}`);
+        }
+    }
+
+    // ===== 每日提示 =====
+    getDailyTip() {
+        const tips = [
+            '💡 偶遇不消耗行动点，每天免费1次',
+            '💡 选择选项时，MBTI会影响好感增减',
+            '💡 好感度≥20的角色可以主动联系',
+            '💡 好感度≥50可以约会对角色',
+            '💡 告白窗口开启后记得及时回应',
+            '💡 可以在「回顾关系」查看各角色进度',
+            '💡 多角色攻略存在风险，请谨慎选择',
+            '💡 熟悉后不联系会掉好感，每天要维护'
+        ];
+        return tips[Math.floor(Math.random() * tips.length)];
+    }
+
+    // ===== 结局 =====
+    showEnding(charId, endingType) {
+        const endingsMap = {
+            wenya: window.WENYA_ENDINGS, xiayang: window.XIAYANG_ENDINGS,
+            sujingyi: window.SUJINGYI_ENDINGS, luxiao: window.LUXIAO_ENDINGS,
+            linwanqing: window.LINWANQING_ENDINGS
+        };
+        const endings = endingsMap[charId];
+        if (!endings || !endings[endingType]) return;
+        const ending = endings[endingType];
+        if (ending.achievement) this.showAchievement(ending.achievement);
+        this.showEndingPage(ending.title, ending.text, ending.achievement || '');
+    }
+
+    showEndingPage(title, text, achievement) {
+        document.getElementById('ending-icon').textContent = title.includes('HE') || title.includes('在一起') ? '💕' : title.includes('BE') ? '💔' : '🌸';
+        document.getElementById('ending-title').textContent = title;
+        document.getElementById('ending-text').textContent = text;
+        document.getElementById('ending-stat').textContent = achievement ? `🏆 成就：${achievement}` : '';
+        gameState.gameEnded = true;
+        gameState.save();
+        this.showPage('ending-page');
+        document.getElementById('status-bar').style.display = 'none';
+        document.getElementById('bottom-nav').style.display = 'none';
+    }
+
+    showFinalEnding() {
+        // 收集各角色最终状态
+        const results = Object.keys(CHARACTERS).map(k => ({
+            name: CHARACTERS[k].name,
+            affection: CHARACTERS[k].affection,
+            relation: RELATION_STAGES[this.getRelation(CHARACTERS[k].affection)] || '陌生人'
+        })).sort((a, b) => b.affection - a.affection);
+
+        const best = results[0];
+        const married = results.filter(r => r.affection >= 100);
+        const text = `📅 60天结束\n\n` +
+            results.map(r => `${r.name} · ${r.relation}（好感${r.affection}）`).join('\n') +
+            `\n\n最佳关系：${best.name}（${best.relation}）`;
+
+        this.showEndingPage(
+            married.length > 0 ? `【${married[0].name}·圆满结局】` : '【孤独终老】',
+            text.replace('📅 60天结束\n\n', ''),
+            ''
+        );
+    }
+
+    // ===== 成就 =====
+    showAchievement(name) {
+        const toast_el = document.getElementById('toast');
+        toast_el.innerHTML = `🏆 成就解锁<br><strong>${name}</strong>`;
+        toast_el.className = 'toast achievement show';
+        setTimeout(() => toast_el.className = 'toast', 3000);
+        if (!gameState.achievements.includes(name)) gameState.achievements.push(name);
+    }
+
+    // ===== 进入游戏主界面 =====
+    enterGame() {
+        document.getElementById('status-bar').style.display = 'flex';
+        document.getElementById('bottom-nav').style.display = 'flex';
+        this.updateUI();
+        this.showPage('game-page');
+        gameState.save();
+    }
+
+    // ===== 保存 =====
+    saveGame() {
+        gameState.save();
+        toast('✅ 已保存');
+    }
+}
+
+const game = new GameEngine();
+
+// ===== Toast =====
+function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show';
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => t.className = 'toast', 2500);
+}
+</script>
+
+<!-- 场景数据 -->
+<script src="scenes-data.js"></script>
