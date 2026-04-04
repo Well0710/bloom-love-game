@@ -768,122 +768,8 @@
                 });
             }
             showWarning(msg) {
-            showDialogue(character, text, choices) {
-                const overlay = document.getElementById("dialogue-overlay");
-                if (!overlay) return;
-                document.getElementById("dialogue-character").textContent = character;
-                document.getElementById("dialogue-text").textContent = text;
-                const choicesContainer = document.getElementById("dialogue-choices");
-                choicesContainer.innerHTML = choices.map((choice, i) => 
-                    `<button class="dialogue-choice" onclick="game.handleDialogueChoice(${i})">${choice.text}</button>`
-                ).join("");
-                overlay.classList.add("active");
-                this.currentDialogue = { character, text, choices };
-            }
-            handleDialogueChoice(index) {
-                const choice = this.currentDialogue.choices[index];
-                if (choice.affection) {
-                    const charId = Object.keys(CHARACTERS).find(k => CHARACTERS[k].name === this.currentDialogue.character);
-                    if (charId) this.changeAffection(charId, choice.affection);
-                }
-                document.getElementById("dialogue-overlay").classList.remove("active");
-                if (choice.next) {
-                    const charId = Object.keys(CHARACTERS).find(k => CHARACTERS[k].name === this.currentDialogue.character);
-                    if (charId) {
-                        const scenes = sceneSystem.getScenes(charId);
-                        const nextScene = scenes.find(s => s.id === choice.next);
-                        if (nextScene) sceneSystem.showScene(charId, nextScene);
-                    }
-                }
-                if (choice.ending) {
-                    this.showEnding(this.currentDialogue.character, choice.ending);
-                }
-            }
-            showEnding(character, endingType) {
-                const endings = window[character.toUpperCase().replace(" ", "_") + "_ENDINGS"];
-                if (!endings || !endings[endingType]) return;
-                const ending = endings[endingType];
-                alert(ending.title + "\n\n" + ending.text);
-                if (ending.achievement) this.showAchievement(ending.achievement);
-            }
                 const t = document.getElementById('warning-toast'); t.textContent = msg; t.style.display = 'block';
-            showDialogue(character, text, choices) {
-                const overlay = document.getElementById("dialogue-overlay");
-                if (!overlay) return;
-                document.getElementById("dialogue-character").textContent = character;
-                document.getElementById("dialogue-text").textContent = text;
-                const choicesContainer = document.getElementById("dialogue-choices");
-                choicesContainer.innerHTML = choices.map((choice, i) => 
-                    `<button class="dialogue-choice" onclick="game.handleDialogueChoice(${i})">${choice.text}</button>`
-                ).join("");
-                overlay.classList.add("active");
-                this.currentDialogue = { character, text, choices };
-            }
-            handleDialogueChoice(index) {
-                const choice = this.currentDialogue.choices[index];
-                if (choice.affection) {
-                    const charId = Object.keys(CHARACTERS).find(k => CHARACTERS[k].name === this.currentDialogue.character);
-                    if (charId) this.changeAffection(charId, choice.affection);
-                }
-                document.getElementById("dialogue-overlay").classList.remove("active");
-                if (choice.next) {
-                    const charId = Object.keys(CHARACTERS).find(k => CHARACTERS[k].name === this.currentDialogue.character);
-                    if (charId) {
-                        const scenes = sceneSystem.getScenes(charId);
-                        const nextScene = scenes.find(s => s.id === choice.next);
-                        if (nextScene) sceneSystem.showScene(charId, nextScene);
-                    }
-                }
-                if (choice.ending) {
-                    this.showEnding(this.currentDialogue.character, choice.ending);
-                }
-            }
-            showEnding(character, endingType) {
-                const endings = window[character.toUpperCase().replace(" ", "_") + "_ENDINGS"];
-                if (!endings || !endings[endingType]) return;
-                const ending = endings[endingType];
-                alert(ending.title + "\n\n" + ending.text);
-                if (ending.achievement) this.showAchievement(ending.achievement);
-            }
                 setTimeout(() => t.style.display = 'none', 2500);
-            showDialogue(character, text, choices) {
-                const overlay = document.getElementById("dialogue-overlay");
-                if (!overlay) return;
-                document.getElementById("dialogue-character").textContent = character;
-                document.getElementById("dialogue-text").textContent = text;
-                const choicesContainer = document.getElementById("dialogue-choices");
-                choicesContainer.innerHTML = choices.map((choice, i) => 
-                    `<button class="dialogue-choice" onclick="game.handleDialogueChoice(${i})">${choice.text}</button>`
-                ).join("");
-                overlay.classList.add("active");
-                this.currentDialogue = { character, text, choices };
-            }
-            handleDialogueChoice(index) {
-                const choice = this.currentDialogue.choices[index];
-                if (choice.affection) {
-                    const charId = Object.keys(CHARACTERS).find(k => CHARACTERS[k].name === this.currentDialogue.character);
-                    if (charId) this.changeAffection(charId, choice.affection);
-                }
-                document.getElementById("dialogue-overlay").classList.remove("active");
-                if (choice.next) {
-                    const charId = Object.keys(CHARACTERS).find(k => CHARACTERS[k].name === this.currentDialogue.character);
-                    if (charId) {
-                        const scenes = sceneSystem.getScenes(charId);
-                        const nextScene = scenes.find(s => s.id === choice.next);
-                        if (nextScene) sceneSystem.showScene(charId, nextScene);
-                    }
-                }
-                if (choice.ending) {
-                    this.showEnding(this.currentDialogue.character, choice.ending);
-                }
-            }
-            showEnding(character, endingType) {
-                const endings = window[character.toUpperCase().replace(" ", "_") + "_ENDINGS"];
-                if (!endings || !endings[endingType]) return;
-                const ending = endings[endingType];
-                alert(ending.title + "\n\n" + ending.text);
-                if (ending.achievement) this.showAchievement(ending.achievement);
-            }
             }
             showDialogue(character, text, choices) {
                 const overlay = document.getElementById("dialogue-overlay");
@@ -2544,4 +2430,3 @@ window.LINWANQING_ENDINGS = {
     </script>
 </body>
 </html>
-<!-- scenes-integrated-1775310110 -->
