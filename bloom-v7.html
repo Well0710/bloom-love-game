@@ -673,7 +673,7 @@
                 document.getElementById(id).classList.add('active');
                 if (id === 'contact-page') this.renderContact();
             }
-            renderChars() {
+            renderChars() { const grid = document.getElementById('character-grid'); if (!grid) return;
                 document.getElementById('character-grid').innerHTML = Object.keys(CHARACTERS).map(k => {
                     const c = CHARACTERS[k], days = c.lastContact > 0 ? gameState.day - c.lastContact : 0;
                     return `<div class="character-card ${c.unlocked ? '' : 'locked'}">
