@@ -1,0 +1,147 @@
+/* 场景占位背景 - CSS渐变版本 */
+/* 这些是临时的CSS背景，等待AI生成的图片 */
+
+/* 宅家 - 温暖的公寓 */
+.stay-home-bg {
+    background: linear-gradient(135deg, 
+        #8b4513 0%, /* 木地板 */
+        #deb887 25%, /* 暖黄色调 */
+        #f5deb3 50%, /* 桌面灯光 */
+        #1a237e 75%, /* 夜空 */
+        #0d47a1 100% /* 城市灯光 */
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+}
+
+/* 健身房 - 现代商业 */
+.gym-bg {
+    background: linear-gradient(135deg,
+        #2c3e50 0%, /* 深蓝灰 */
+        #34495e 25%, /* 器械金属色 */
+        #e67e22 50%, /* 日落橙色 */
+        #9b59b6 75%, /* 傍晚紫色 */
+        #2c3e50 100%
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 12s ease infinite;
+}
+
+/* 公园 - 自然黄昏 */
+.park-bg {
+    background: linear-gradient(135deg,
+        #2e8b57 0%, /* 深绿草地 */
+        #228b22 25%, /* 树木绿色 */
+        #daa520 50%, /* 金色阳光 */
+        #ff8c00 75%, /* 黄昏橙色 */
+        #8b4513 100% /* 长椅木色 */
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 20s ease infinite;
+}
+
+/* 餐厅 - 优雅烛光 */
+.dinner-bg {
+    background: radial-gradient(circle at 30% 30%,
+        #8b0000 0%, /* 深红 */
+        #b22222 25%, /* 酒红色 */
+        #ff8c00 50%, /* 烛光 */
+        #f5deb3 75%, /* 桌布 */
+        #fffaf0 100% /* 餐具白色 */
+    );
+    background-size: 200% 200%;
+    animation: gradientPulse 10s ease infinite;
+}
+
+/* 加班 - 深夜办公室 */
+.overtime-bg {
+    background: linear-gradient(to bottom right,
+        #0a192f 0%, /* 深夜天空 */
+        #112240 25%, /* 办公室暗调 */
+        #172a46 50%, /* 冷色调 */
+        #64ffda 75%, /* 电脑屏幕光 */
+        #0a192f 100%
+    );
+    background-size: 300% 300%;
+    animation: gradientShift 18s ease infinite;
+}
+
+/* 咖啡馆 - 温暖木质 */
+.cafe-bg {
+    background: linear-gradient(135deg,
+        #8b4513 0%, /* 深木色 */
+        #a0522d 25%, /* 家具木色 */
+        #d2691e 50%, /* 暖灯光 */
+        #f4a460 75%, /* 柔和黄光 */
+        #ffebcd 100% /* 书籍纸张色 */
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+}
+
+/* 林婉清办公室 - 总裁奢华 */
+.linwanqing-office-bg {
+    background: linear-gradient(135deg,
+        #191970 0%, /* 午夜蓝 */
+        #000080 25%, /* 深海军蓝 */
+        #483d8b 50%, /* 豪华深紫 */
+        #6a5acd 75%, /* 柔和紫色 */
+        #9370db 100% /* 月光色 */
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+}
+
+/* 温雅画室 - 艺术工作室 */
+.wenya-artroom-bg {
+    background: linear-gradient(135deg,
+        #f8f8ff 0%, /* 白色墙壁 */
+        #e6e6fa 25%, /* 淡紫色背景 */
+        #9370db 50%, /* 紫色颜料 */
+        #ba55d3 75%, /* 深紫色 */
+        #da70d6 100% /* 粉色花朵 */
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 20s ease infinite;
+}
+
+/* 动画效果 */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes gradientPulse {
+    0%, 100% { background-position: center center; background-size: 100% 100%; }
+    50% { background-position: center center; background-size: 150% 150%; }
+}
+
+/* 图片容器的CSS类 */
+.scene-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.scene-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+.scene-content {
+    position: relative;
+    z-index: 2;
+    padding: 20px;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
