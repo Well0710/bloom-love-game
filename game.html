@@ -5,21 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bloom - 60天恋爱故事</title>
     <style>
+        /* ===== CSS变量定义（恋与深空风格） ===== */
+        :root {
+            --bg-deep: #0d0d1a;
+            --bg-deep-purple: #12102b;
+            --bg-night: #1a0a2e;
+            --gradient-primary: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+            --gradient-secondary: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+            --gradient-warm: linear-gradient(135deg, #fb923c 0%, #f472b6 100%);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-highlight: rgba(255, 255, 255, 0.25);
+            --shadow-glow-purple: 0 0 30px rgba(168, 85, 247, 0.3);
+            --shadow-glow-pink: 0 0 30px rgba(236, 72, 153, 0.3);
+            --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+            /* 角色专属色 */
+            --char-wenya: #c084fc;
+            --char-xiayang: #fb923c;
+            --char-sujingyi: #34d399;
+            --char-luxiao: #f43f5e;
+            --char-linwanqing: #60a5fa;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'PingFang SC', 'Helvetica Neue', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: var(--bg-deep);
+            background: radial-gradient(ellipse at bottom, var(--bg-night) 0%, var(--bg-deep) 50%, #05050a 100%);
             height: 100vh; overflow: hidden;
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
             color: #fff;
         }
+
+        /* ===== 星空粒子背景 ===== */
+        #starry-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+        .stars-layer-1 {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image:
+                radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.8) 1px, transparent 1px),
+                radial-gradient(1px 1px at 30% 40%, rgba(255,255,255,0.6) 1px, transparent 1px),
+                radial-gradient(1.5px 1.5px at 50% 10%, rgba(255,255,255,0.9) 1px, transparent 1px),
+                radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.7) 1px, transparent 1px),
+                radial-gradient(1px 1px at 90% 30%, rgba(255,255,255,0.5) 1px, transparent 1px),
+                radial-gradient(1.5px 1.5px at 15% 70%, rgba(255,255,255,0.8) 1px, transparent 1px),
+                radial-gradient(1px 1px at 45% 80%, rgba(255,255,255,0.6) 1px, transparent 1px),
+                radial-gradient(1px 1px at 85% 85%, rgba(255,255,255,0.7) 1px, transparent 1px),
+                radial-gradient(1.5px 1.5px at 25% 55%, rgba(255,255,255,0.5) 1px, transparent 1px),
+                radial-gradient(1px 1px at 65% 25%, rgba(255,255,255,0.8) 1px, transparent 1px);
+            background-size: 200px 200px;
+            animation: twinkle 4s ease-in-out infinite;
+        }
+        .stars-layer-2 {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image:
+                radial-gradient(2px 2px at 20% 15%, rgba(168, 85, 247, 0.9) 2px, transparent 2px),
+                radial-gradient(2px 2px at 55% 35%, rgba(236, 72, 153, 0.8) 2px, transparent 2px),
+                radial-gradient(2px 2px at 80% 55%, rgba(168, 85, 247, 0.7) 2px, transparent 2px),
+                radial-gradient(2.5px 2.5px at 35% 75%, rgba(236, 72, 153, 0.9) 2px, transparent 2px),
+                radial-gradient(2px 2px at 95% 45%, rgba(168, 85, 247, 0.6) 2px, transparent 2px);
+            background-size: 300px 300px;
+            animation: twinkle 6s ease-in-out infinite;
+        }
+        .stars-layer-3 {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image:
+                radial-gradient(3px 3px at 12% 42%, rgba(255,255,255,1) 3px, transparent 3px),
+                radial-gradient(3px 3px at 38% 18%, rgba(255,255,255,0.9) 3px, transparent 3px),
+                radial-gradient(3px 3px at 68% 62%, rgba(255,255,255,1) 3px, transparent 3px),
+                radial-gradient(3px 3px at 88% 78%, rgba(255,255,255,0.8) 3px, transparent 3px),
+                radial-gradient(2.5px 2.5px at 52% 88%, rgba(255,255,255,0.9) 2px, transparent 2px);
+            background-size: 400px 400px;
+            animation: twinkle 8s ease-in-out infinite;
+        }
+        .shooting-star {
+            position: absolute; width: 100px; height: 2px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.8), transparent);
+            opacity: 0; animation: shooting 3s ease-in-out infinite;
+        }
+        .shooting-star:nth-child(4) { top: 20%; left: 10%; animation-delay: 0s; }
+        .shooting-star:nth-child(5) { top: 40%; left: 60%; animation-delay: 1.5s; }
+        .shooting-star:nth-child(6) { top: 15%; left: 80%; animation-delay: 2.5s; }
+        @keyframes twinkle { 0%,100%{opacity:0.7} 50%{opacity:1} }
+        @keyframes shooting { 0%{opacity:0;transform:translateX(0) translateY(0)} 10%{opacity:1} 30%{opacity:0;transform:translateX(150px) translateY(50px)} 100%{opacity:0} }
+        @keyframes titleGlow { 0%,100%{filter:drop-shadow(0 0 10px rgba(168,85,247,0.5))} 50%{filter:drop-shadow(0 0 25px rgba(236,72,153,0.7))} }
+
         /* ===== 顶部状态栏 ===== */
         .status-bar {
             position: fixed; top: 0; left: 0; right: 0; height: 50px;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(20px);
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             display: flex; justify-content: space-between; align-items: center;
             padding: 0 16px; z-index: 1000;
+            border-bottom: 1px solid var(--glass-border);
         }
         .status-left { display: flex; align-items: center; gap: 12px; }
         .status-day { font-size: 0.85rem; font-weight: 700; color: #e2e2e2; }
@@ -29,91 +112,119 @@
         .action-dot {
             width: 10px; height: 10px; border-radius: 50%;
             border: 2px solid rgba(255,255,255,0.6);
-            transition: all 0.3s;
+            transition: all var(--transition-normal);
         }
         .action-dot.used { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.2); }
-        .action-dot.available { background: #f093fb; border-color: #f093fb; box-shadow: 0 0 6px rgba(240,147,251,0.6); }
+        .action-dot.available { background: #a855f7; border-color: #a855f7; box-shadow: 0 0 6px rgba(168,85,247,0.6); }
+
         /* ===== 页面容器 ===== */
-        .page { display: none; height: 100vh; flex-direction: column; }
+        .page { display: none; height: 100vh; flex-direction: column; position: relative; z-index: 1; }
         .page.active { display: flex; }
+
         /* ===== 首页 ===== */
-        #home-page { justify-content: center; align-items: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+        #home-page { justify-content: center; align-items: center; background: transparent; }
         .home-logo { text-align: center; margin-bottom: 32px; }
         .home-logo .bloom-icon { font-size: 4rem; margin-bottom: 8px; animation: float 3s ease-in-out infinite; }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        .home-logo h1 { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg,#f093fb,#f5576c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .home-logo p { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 4px; }
+        .home-logo h1 {
+            font-size: 2.2rem; font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+        .home-logo p { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 4px; letter-spacing: 0.3em; }
         .home-card {
-            background: rgba(255,255,255,0.08); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.12); border-radius: 20px;
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 20px;
             padding: 24px 20px; margin: 0 20px; width: 100%; max-width: 340px;
+            box-shadow: var(--shadow-soft);
+            transition: all var(--transition-normal);
         }
         .home-tags { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
         .home-tag { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; color: rgba(255,255,255,0.7); }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
-        .btn-primary { background: linear-gradient(135deg, #f093fb, #f5576c); color: #fff; box-shadow: 0 4px 15px rgba(245,87,108,0.4); }
+        .btn {
+            width: 100%; padding: 14px; border: none; border-radius: 14px;
+            font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: inherit;
+            transition: all var(--transition-normal); position: relative; overflow: hidden;
+        }
+        .btn-primary {
+            background: var(--gradient-primary); color: #fff;
+            box-shadow: var(--shadow-glow-purple);
+        }
         .btn-primary:active { transform: scale(0.97); }
         .btn-secondary { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); margin-top: 10px; border: 1px solid rgba(255,255,255,0.2); }
         .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
+
         /* ===== 角色创建页 ===== */
-        #create-page { justify-content: flex-start; align-items: center; padding: 70px 20px 20px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); overflow-y: auto; }
-        .create-title { font-size: 1.4rem; font-weight: 800; text-align: center; margin-bottom: 24px; color: #fff; }
+        #create-page { justify-content: flex-start; align-items: center; padding: 70px 20px 20px; background: transparent; overflow-y: auto; }
+        .create-title {
+            font-size: 1.4rem; font-weight: 300; text-align: center; margin-bottom: 24px; color: #fff;
+            background: var(--gradient-primary); -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            letter-spacing: 0.1em;
+        }
         .create-subtitle { font-size: 0.75rem; color: rgba(255,255,255,0.5); text-align: center; margin-top: 4px; margin-bottom: 20px; }
         .create-section { width: 100%; max-width: 340px; margin-bottom: 20px; }
         .create-label { font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
         .create-input {
-            width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem; font-family: inherit;
-            outline: none; transition: border 0.2s;
+            width: 100%; padding: 14px 20px; border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg); color: #fff; font-size: 0.9rem; font-family: inherit;
+            outline: none; transition: all var(--transition-normal);
+            backdrop-filter: blur(10px);
         }
-        .create-input:focus { border-color: #f093fb; }
+        .create-input:focus { border-color: #a855f7; box-shadow: 0 0 20px rgba(168,85,247,0.3); }
         .create-input::placeholder { color: rgba(255,255,255,0.3); }
+
         /* MBTI选择卡片 */
         .mbti-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
         .mbti-card {
-            background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15);
+            background: var(--glass-bg); border: 2px solid var(--glass-border);
             border-radius: 10px; padding: 8px 4px; text-align: center; cursor: pointer;
-            transition: all 0.2s; font-size: 0.7rem; color: rgba(255,255,255,0.7);
+            transition: all var(--transition-normal); font-size: 0.7rem; color: rgba(255,255,255,0.7);
+            backdrop-filter: blur(10px);
         }
-        .mbti-card:hover { border-color: rgba(255,255,255,0.4); }
-        .mbti-card.selected { border-color: #f093fb; background: rgba(240,147,251,0.15); color: #f093fb; }
+        .mbti-card:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); }
+        .mbti-card.selected { border-color: #a855f7; background: var(--gradient-primary); color: #fff; box-shadow: var(--shadow-glow-purple); }
         .mbti-card .mbti-type { font-size: 0.8rem; font-weight: 700; margin-bottom: 2px; }
+
         /* MBTI测试题 */
         .mbti-test { display: none; }
-        .mbti-question { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        .mbti-q-num { font-size: 0.7rem; color: #f093fb; font-weight: 700; margin-bottom: 8px; }
+        .mbti-question { background: var(--glass-bg); border-radius: 16px; padding: 20px; margin-bottom: 12px; border: 1px solid var(--glass-border); backdrop-filter: blur(20px); }
+        .mbti-q-num { font-size: 0.7rem; color: #a855f7; font-weight: 700; margin-bottom: 8px; }
         .mbti-q-text { font-size: 0.85rem; color: #fff; margin-bottom: 14px; line-height: 1.5; }
-        .mbti-opt { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); font-size: 0.8rem; font-family: inherit; cursor: pointer; text-align: left; margin-bottom: 6px; transition: all 0.2s; }
-        .mbti-opt:hover { border-color: #f093fb; color: #fff; }
-        .mbti-opt.selected { border-color: #f093fb; background: rgba(240,147,251,0.2); color: #fff; }
+        .mbti-opt { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: rgba(255,255,255,0.7); font-size: 0.8rem; font-family: inherit; cursor: pointer; text-align: left; margin-bottom: 6px; transition: all var(--transition-normal); }
+        .mbti-opt:hover { border-color: #a855f7; color: #fff; transform: translateX(5px); }
+        .mbti-opt.selected { border-color: #a855f7; background: rgba(168,85,247,0.2); color: #fff; }
         .mbti-nav { display: flex; gap: 8px; margin-top: 16px; }
         .mbti-nav .btn { flex: 1; }
         .btn-back { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
-        .mbti-result { display: none; text-align: center; padding: 20px; background: rgba(240,147,251,0.15); border-radius: 16px; border: 2px solid #f093fb; }
-        .mbti-result-type { font-size: 2rem; font-weight: 800; color: #f093fb; margin-bottom: 8px; }
+        .mbti-result { display: none; text-align: center; padding: 20px; background: rgba(168,85,247,0.15); border-radius: 16px; border: 2px solid #a855f7; }
+        .mbti-result-type { font-size: 2rem; font-weight: 800; color: #a855f7; margin-bottom: 8px; }
         .mbti-result-name { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
         .mbti-result-desc { font-size: 0.75rem; color: rgba(255,255,255,0.5); line-height: 1.5; }
+
         /* ===== 开场5人亮相 ===== */
-        #intro-page { justify-content: center; align-items: center; padding: 60px 16px 20px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); overflow-y: auto; }
+        #intro-page { justify-content: center; align-items: center; padding: 60px 16px 20px; background: transparent; overflow-y: auto; }
         .intro-title { font-size: 1.2rem; font-weight: 800; text-align: center; margin-bottom: 6px; }
         .intro-sub { font-size: 0.7rem; color: rgba(255,255,255,0.4); text-align: center; margin-bottom: 20px; }
         .intro-cards { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 10px; }
         .intro-card {
-            background: rgba(255,255,255,0.08); backdrop-filter: blur(20px);
-            border: 2px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 14px 16px;
-            cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px;
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 2px solid var(--glass-border); border-radius: 16px; padding: 14px 16px;
+            cursor: pointer; transition: all var(--transition-normal); display: flex; align-items: center; gap: 12px;
             opacity: 0; transform: translateY(20px);
         }
-        .intro-card.show { opacity: 1; transform: translateY(0); }
-        .intro-card:hover { border-color: rgba(255,255,255,0.4); transform: translateX(4px); }
+        .intro-card.show { opacity: 1; transform: translateY(0); animation: slideInUp 0.4s cubic-bezier(0.16,1,0.3,1) forwards; }
+        .intro-card:hover { border-color: var(--glass-highlight); transform: translateX(4px); background: rgba(255,255,255,0.12); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
         .intro-card:active { transform: scale(0.98); }
         .intro-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
         .intro-info { flex: 1; min-width: 0; }
         .intro-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
         .intro-meta { font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-bottom: 3px; }
-        .intro-mbti { display: inline-block; background: rgba(255,255,255,0.1); border-radius: 6px; padding: 1px 6px; font-size: 0.6rem; color: #f093fb; }
+        .intro-mbti { display: inline-block; background: rgba(168,85,247,0.2); border-radius: 6px; padding: 1px 6px; font-size: 0.6rem; color: #a855f7; }
         .intro-quote { font-size: 0.7rem; color: rgba(255,255,255,0.4); font-style: italic; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .intro-arrow { color: rgba(255,255,255,0.3); font-size: 1rem; }
+
         /* ===== 游戏主页面 ===== */
         #game-page { padding: 60px 12px 80px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
         .day-theme { text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-bottom: 2px; }
@@ -122,33 +233,40 @@
         .known-bar-label { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-bottom: 8px; font-weight: 600; }
         .chars-grid { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
         .char-mini {
-            flex-shrink: 0; width: 56px; background: rgba(255,255,255,0.08); border-radius: 14px;
+            flex-shrink: 0; width: 56px; background: var(--glass-bg); border-radius: 14px;
             padding: 8px 4px; text-align: center; cursor: pointer; border: 2px solid transparent;
-            transition: all 0.2s; position: relative;
+            transition: all var(--transition-normal); position: relative;
+            backdrop-filter: blur(10px);
         }
-        .char-mini:hover { background: rgba(255,255,255,0.14); }
-        .char-mini.glow { border-color: rgba(240,147,251,0.5); box-shadow: 0 0 10px rgba(240,147,251,0.2); }
+        .char-mini:hover { background: rgba(255,255,255,0.14); border-color: var(--glass-highlight); transform: translateY(-2px); }
+        .char-mini.glow { border-color: rgba(168,85,247,0.5); box-shadow: 0 0 15px rgba(168,85,247,0.3); }
         .char-mini-icon { font-size: 1.3rem; margin-bottom: 3px; }
         .char-mini-name { font-size: 0.6rem; font-weight: 700; color: rgba(255,255,255,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .char-mini-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
         .char-mini-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
-        .char-badge { position: absolute; top: -4px; right: -4px; font-size: 0.5rem; background: #f5576c; border-radius: 6px; padding: 1px 4px; color: #fff; font-weight: 700; }
+        .char-badge { position: absolute; top: -4px; right: -4px; font-size: 0.5rem; background: #f43f5e; border-radius: 6px; padding: 1px 4px; color: #fff; font-weight: 700; }
 
         /* 活动选择区 */
-        .activity-section { background: rgba(255,255,255,0.06); border-radius: 20px; padding: 16px; border: 1px solid rgba(255,255,255,0.1); }
+        .activity-section { background: var(--glass-bg); border-radius: 20px; padding: 16px; border: 1px solid var(--glass-border); backdrop-filter: blur(20px); }
         .activity-label { font-size: 0.85rem; font-weight: 700; margin-bottom: 12px; color: rgba(255,255,255,0.9); }
         .action-remain { font-size: 0.65rem; font-weight: 400; color: rgba(255,255,255,0.4); margin-left: 8px; }
         .activity-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         .activity-btn {
-            background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.15);
+            background: var(--glass-bg); border: 1.5px solid var(--glass-border);
             border-radius: 16px; padding: 14px 10px; color: #fff; cursor: pointer;
-            font-family: inherit; text-align: center; transition: all 0.2s;
+            font-family: inherit; text-align: center; transition: all var(--transition-normal);
             display: flex; flex-direction: column; align-items: center; gap: 6px;
             position: relative; overflow: hidden;
+            backdrop-filter: blur(10px);
         }
+        .activity-btn::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: var(--gradient-primary); opacity: 0.8;
+        }
+        .activity-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 35px rgba(0,0,0,0.35); border-color: var(--glass-highlight); }
         .activity-btn:active { transform: scale(0.96); }
         .activity-btn.used { opacity: 0.35; cursor: not-allowed; }
-        .activity-btn.unlocked-glow { border-color: rgba(240,147,251,0.5); background: rgba(240,147,251,0.1); }
+        .activity-btn.unlocked-glow { border-color: rgba(168,85,247,0.5); background: rgba(168,85,247,0.1); box-shadow: 0 0 20px rgba(168,85,247,0.2); }
         .activity-icon { font-size: 1.6rem; }
         .activity-name { font-size: 0.8rem; font-weight: 700; }
         .activity-hint { font-size: 0.6rem; color: rgba(255,255,255,0.4); line-height: 1.3; }
@@ -157,42 +275,47 @@
 
         /* 睡觉大按钮 */
         .sleep-big-btn {
-            background: linear-gradient(135deg, rgba(240,147,251,0.2), rgba(245,87,108,0.2));
-            border: 1px solid rgba(240,147,251,0.3); border-radius: 16px; padding: 16px;
+            background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(236,72,153,0.2));
+            border: 1px solid rgba(168,85,247,0.3); border-radius: 16px; padding: 16px;
             color: rgba(255,255,255,0.8); font-family: inherit; font-size: 0.9rem; font-weight: 700;
             cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: all 0.2s;
+            transition: all var(--transition-normal);
+            backdrop-filter: blur(10px);
         }
         .sleep-big-btn:active { transform: scale(0.98); }
 
         /* 每日提示 */
         .daily-tip { font-size: 0.7rem; color: rgba(255,255,255,0.3); text-align: center; }
+
         /* ===== 联系界面 ===== */
         #contact-page { padding: 60px 12px 20px; overflow-y: auto; }
         .contact-list { display: flex; flex-direction: column; gap: 8px; }
         .contact-item {
-            background: rgba(255,255,255,0.08); border-radius: 14px; padding: 14px;
-            border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center;
-            gap: 12px; cursor: pointer; transition: all 0.2s;
+            background: var(--glass-bg); border-radius: 14px; padding: 14px;
+            border: 1px solid var(--glass-border); display: flex; align-items: center;
+            gap: 12px; cursor: pointer; transition: all var(--transition-normal);
+            backdrop-filter: blur(10px);
         }
-        .contact-item:hover { background: rgba(255,255,255,0.12); }
+        .contact-item:hover { background: rgba(255,255,255,0.12); border-color: var(--glass-highlight); transform: translateX(3px); }
         .contact-item:active { transform: scale(0.98); }
         .contact-item.disabled { opacity: 0.4; cursor: not-allowed; }
         .contact-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
         .contact-info { flex: 1; min-width: 0; }
         .contact-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
-        .contact-tag { font-size: 0.55rem; background: rgba(240,147,251,0.3); border-radius: 6px; padding: 1px 5px; color: #f093fb; }
-        .contact-tag.lover { background: rgba(245,87,108,0.4); color: #f5576c; }
+        .contact-tag { font-size: 0.55rem; background: rgba(168,85,247,0.3); border-radius: 6px; padding: 1px 5px; color: #a855f7; }
+        .contact-tag.lover { background: rgba(236,72,153,0.4); color: #ec4899; }
         .contact-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
         .contact-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
         .contact-mode { display: flex; gap: 6px; margin-left: auto; }
         .mode-btn { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 10px; font-size: 0.65rem; color: rgba(255,255,255,0.7); cursor: pointer; border: none; font-family: inherit; }
         .mode-btn:active { background: rgba(255,255,255,0.2); }
+
         /* ===== 回顾关系页 ===== */
         #review-page { padding: 60px 16px 20px; overflow-y: auto; }
         .review-title { font-size: 1rem; font-weight: 700; text-align: center; margin-bottom: 16px; }
         .review-cards { display: flex; flex-direction: column; gap: 10px; }
-        .review-card { background: rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; border: 1px solid rgba(255,255,255,0.1); }
+        .review-card { background: var(--glass-bg); border-radius: 14px; padding: 14px; border: 1px solid var(--glass-border); backdrop-filter: blur(10px); transition: all var(--transition-normal); }
+        .review-card:hover { background: rgba(255,255,255,0.12); border-color: var(--glass-highlight); }
         .review-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .review-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
         .review-name { font-size: 0.85rem; font-weight: 700; }
@@ -200,6 +323,7 @@
         .review-bar-wrap { background: rgba(255,255,255,0.1); border-radius: 4px; height: 6px; overflow: hidden; margin-bottom: 4px; }
         .review-bar { height: 100%; border-radius: 4px; transition: width 0.4s; }
         .review-num { font-size: 0.65rem; color: rgba(255,255,255,0.4); display: flex; justify-content: space-between; }
+
         /* ===== 对话遮罩 ===== */
         .dialogue-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -208,60 +332,111 @@
         }
         .dialogue-overlay.active { display: flex; }
         .dialogue-box {
-            background: rgba(20,20,35,0.98); border-radius: 20px 20px 0 0;
-            padding: 20px 16px; width: 100%; max-height: 72vh; overflow-y: auto;
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(13,13,26,0.98); border-radius: 24px 24px 0 0;
+            padding: 24px 20px; width: 100%; max-height: 72vh; overflow-y: auto;
+            border: 1px solid var(--glass-border);
+            border-bottom: none;
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
+            animation: dialogueSlideIn 0.4s cubic-bezier(0.16,1,0.3,1);
         }
+        @keyframes dialogueSlideIn { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
         .dialogue-char { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .dialogue-char-avatar { font-size: 1.4rem; }
-        .dialogue-char-name { font-size: 0.85rem; font-weight: 700; color: #f093fb; }
+        .dialogue-char-name { font-size: 0.85rem; font-weight: 700; color: #a855f7; }
         .dialogue-char-mbti { font-size: 0.6rem; color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); border-radius: 6px; padding: 1px 6px; }
-        .dialogue-text { font-size: 0.85rem; color: rgba(255,255,255,0.9); line-height: 1.7; margin-bottom: 16px; white-space: pre-wrap; }
+        .dialogue-text { font-size: 0.85rem; color: rgba(255,255,255,0.9); line-height: 1.8; margin-bottom: 16px; white-space: pre-wrap; }
         .dialogue-choices { display: flex; flex-direction: column; gap: 8px; }
         .dialogue-choice {
-            padding: 13px 16px; font-size: 0.82rem; border: 2px solid rgba(255,255,255,0.15);
-            border-radius: 12px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85);
-            cursor: pointer; font-family: inherit; text-align: left; transition: all 0.2s;
+            padding: 13px 16px; font-size: 0.82rem; border: 1px solid var(--glass-border);
+            border-radius: 14px; background: var(--glass-bg); color: rgba(255,255,255,0.85);
+            cursor: pointer; font-family: inherit; text-align: left; transition: all var(--transition-normal);
+            position: relative; overflow: hidden;
+            backdrop-filter: blur(10px);
         }
-        .dialogue-choice:hover { border-color: #f093fb; background: rgba(240,147,251,0.15); color: #fff; }
-        .dialogue-choice:active { transform: scale(0.98); }
+        .dialogue-choice::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+            background: var(--gradient-primary); opacity: 0; transition: opacity var(--transition-normal);
+        }
+        .dialogue-choice:hover { border-color: var(--glass-highlight); background: rgba(255,255,255,0.12); color: #fff; transform: translateX(6px); }
+        .dialogue-choice:hover::before { opacity: 1; }
+        .dialogue-choice:active { transform: scale(0.98) translateX(6px); }
         .dialogue-close { margin-top: 12px; text-align: center; }
         .dialogue-close-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; color: rgba(255,255,255,0.5); font-size: 0.75rem; cursor: pointer; font-family: inherit; width: 100%; }
+
         /* ===== 底部导航 ===== */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(20px);
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             display: flex; justify-content: space-around; align-items: center;
             padding: 0 10px calc(5px + env(safe-area-inset-bottom)); z-index: 1000;
+            border-top: 1px solid var(--glass-border);
         }
-        .nav-btn { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 12px; border-radius: 10px; transition: all 0.2s; }
-        .nav-btn.active { color: #f093fb; }
+        .nav-btn { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 12px; border-radius: 10px; transition: all var(--transition-normal); }
+        .nav-btn.active { color: #a855f7; }
         .nav-btn:active { background: rgba(255,255,255,0.1); }
         .nav-icon { font-size: 1.1rem; }
         .nav-label { font-size: 0.6rem; font-weight: 600; }
+
         /* ===== Toast提示 ===== */
         .toast {
             position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-            background: rgba(20,20,35,0.95); color: #fff; padding: 10px 20px;
+            background: rgba(13,13,26,0.95); color: #fff; padding: 10px 20px;
             border-radius: 20px; font-size: 0.75rem; font-weight: 600; z-index: 5000;
             display: none; max-width: 90%; text-align: center;
-            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border: 1px solid var(--glass-border); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
         .toast.show { display: block; animation: toastIn 0.3s ease; }
         @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        .toast.achievement { background: rgba(240,147,251,0.9); }
+        .toast.achievement { background: rgba(168,85,247,0.9); }
+
         /* ===== 结局页 ===== */
-        #ending-page { justify-content: center; align-items: center; padding: 40px 20px; background: linear-gradient(135deg, #1a1a2e, #16213e); overflow-y: auto; }
-        .ending-card { background: rgba(255,255,255,0.08); border-radius: 20px; padding: 28px 20px; border: 1px solid rgba(255,255,255,0.1); max-width: 340px; width: 100%; text-align: center; }
+        #ending-page { justify-content: center; align-items: center; padding: 40px 20px; background: transparent; overflow-y: auto; }
+        .ending-card { background: var(--glass-bg); border-radius: 20px; padding: 28px 20px; border: 1px solid var(--glass-border); max-width: 340px; width: 100%; text-align: center; backdrop-filter: blur(20px); box-shadow: var(--shadow-soft); }
         .ending-icon { font-size: 3rem; margin-bottom: 16px; }
-        .ending-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 12px; background: linear-gradient(135deg,#f093fb,#f5576c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .ending-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 12px; background: var(--gradient-primary); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
         .ending-text { font-size: 0.82rem; color: rgba(255,255,255,0.7); line-height: 1.8; margin-bottom: 20px; white-space: pre-wrap; }
         .ending-stat { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
-        /* ===== 滚动条 ===== */
-        ::-webkit-scrollbar { width: 0; height: 0; }
+
+        /* ===== 动画增强 ===== */
+        @keyframes slideInUp { from{opacity:0;transform:translateY(25px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes fadeOut { from{opacity:1} to{opacity:0} }
+        @keyframes barShine { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+        .slide-in-up { animation: slideInUp 0.4s cubic-bezier(0.16,1,0.3,1) forwards; }
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
+        .fade-out { animation: fadeOut 0.3s ease forwards; }
+
+        /* ===== 滚动条美化 ===== */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(168,85,247,0.5); }
+
+        /* ===== BGM音量控制 ===== */
+        .bgm-toggle {
+            position: fixed; top: 56px; right: 12px; z-index: 999;
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            border-radius: 20px; padding: 4px 12px; font-size: 0.7rem;
+            color: rgba(255,255,255,0.6); cursor: pointer; font-family: inherit;
+            backdrop-filter: blur(10px); transition: all var(--transition-normal);
+        }
+        .bgm-toggle:hover { color: #fff; border-color: #a855f7; }
     </style>
 </head>
 <body>
+
+<!-- ===== 星空粒子背景（恋与深空风格）===== -->
+<div id="starry-bg">
+    <div class="stars-layer-1"></div>
+    <div class="stars-layer-2"></div>
+    <div class="stars-layer-3"></div>
+    <div class="shooting-star"></div>
+    <div class="shooting-star"></div>
+    <div class="shooting-star"></div>
+</div>
+
+<!-- ===== BGM开关 ===== -->
+<button class="bgm-toggle" id="bgm-toggle" onclick="BloomAudio.toggleMute()" style="display:none;">🎵 BGM</button>
 
 <!-- ==================== 顶部状态栏 ==================== -->
 <div class="status-bar" id="status-bar" style="display:none;">
@@ -429,6 +604,339 @@
 <!-- WENYA_ENDINGS, XIAYANG_ENDINGS, SUJINGYI_ENDINGS, LUXIAO_ENDINGS, LINWANQING_ENDINGS -->
 <!-- ===== 脚本开始 ===== -->
 <script>
+// ===== BGM 音频系统（程序化合成，无需外部音频文件）=====
+const BloomAudio = (function() {
+  let audioContext = null;
+  let masterGain = null;
+  let currentBgm = null;
+  let currentBgmNodes = [];
+  let isInitialized = false;
+  let isMuted = false;
+  let fadeTime = 0.5;
+
+  const NOTES = {
+    C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00, A3: 220.00, B3: 246.94,
+    C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
+    C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.00, B5: 987.77,
+    C6: 1046.50,
+    Cs3: 138.59, Ds3: 155.56, Fs3: 185.00, Gs3: 207.65, As3: 233.08,
+    Cs4: 277.18, Ds4: 311.13, Fs4: 369.99, Gs4: 415.30, As4: 466.16,
+    Cs5: 554.37, Ds5: 622.25, Fs5: 739.99, Gs5: 830.61, As5: 932.33,
+  };
+
+  function createOscillator(type, frequency, startTime, duration, volume) {
+    if (!audioContext || isMuted) return null;
+    volume = volume || 0.3;
+    var osc = audioContext.createOscillator();
+    var gain = audioContext.createGain();
+    osc.type = type;
+    osc.frequency.value = frequency;
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(volume, startTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    osc.connect(gain);
+    gain.connect(masterGain);
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.1);
+    return { osc: osc, gain: gain };
+  }
+
+  function playPianoNote(freq, time, duration, vol) {
+    if (!audioContext || isMuted) return;
+    duration = duration || 1; vol = vol || 0.25;
+    var osc1 = audioContext.createOscillator();
+    var osc2 = audioContext.createOscillator();
+    var gain = audioContext.createGain();
+    var filter = audioContext.createBiquadFilter();
+    osc1.type = 'sine'; osc2.type = 'triangle';
+    osc1.frequency.value = freq; osc2.frequency.value = freq * 2;
+    filter.type = 'lowpass'; filter.frequency.value = 2000;
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(vol, time + 0.01);
+    gain.gain.exponentialRampToValueAtTime(vol * 0.6, time + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+    osc1.connect(filter); osc2.connect(filter);
+    filter.connect(gain); gain.connect(masterGain);
+    osc1.start(time); osc2.start(time);
+    osc1.stop(time + duration + 0.1); osc2.stop(time + duration + 0.1);
+  }
+
+  function playPadChord(frequencies, time, duration, vol) {
+    if (!audioContext || isMuted) return;
+    duration = duration || 4; vol = vol || 0.15;
+    frequencies.forEach(function(freq) {
+      var osc = audioContext.createOscillator();
+      var gain = audioContext.createGain();
+      var filter = audioContext.createBiquadFilter();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      filter.type = 'lowpass'; filter.frequency.value = 800;
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(vol, time + 0.3);
+      gain.gain.setValueAtTime(vol, time + duration - 0.5);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+      osc.connect(filter); filter.connect(gain); gain.connect(masterGain);
+      osc.start(time); osc.stop(time + duration + 0.1);
+    });
+  }
+
+  function playGuitarNote(freq, time, duration, vol) {
+    if (!audioContext || isMuted) return;
+    duration = duration || 0.8; vol = vol || 0.2;
+    var harmonics = [1, 2, 3, 4, 5];
+    var harmonicVols = [1, 0.5, 0.25, 0.125, 0.0625];
+    harmonics.forEach(function(h, i) {
+      var osc = audioContext.createOscillator();
+      var gain = audioContext.createGain();
+      osc.type = i === 0 ? 'triangle' : 'sine';
+      osc.frequency.value = freq * h;
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(vol * harmonicVols[i], time + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + duration * (1 - i * 0.15));
+      osc.connect(gain); gain.connect(masterGain);
+      osc.start(time); osc.stop(time + duration + 0.1);
+    });
+  }
+
+  function playElectronicNote(freq, time, duration, vol) {
+    if (!audioContext || isMuted) return;
+    duration = duration || 0.3; vol = vol || 0.2;
+    var osc = audioContext.createOscillator();
+    var gain = audioContext.createGain();
+    var filter = audioContext.createBiquadFilter();
+    osc.type = 'sawtooth'; osc.frequency.value = freq;
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(2000, time);
+    filter.frequency.exponentialRampToValueAtTime(200, time + duration);
+    filter.Q.value = 5;
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(vol, time + 0.01);
+    gain.gain.setValueAtTime(vol * 0.8, time + duration * 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+    osc.connect(filter); filter.connect(gain); gain.connect(masterGain);
+    osc.start(time); osc.stop(time + duration + 0.1);
+  }
+
+  function playEnvelopeTone(freq, duration, attack, decay, sustain, release, type, vol) {
+    if (!audioContext || isMuted) return;
+    type = type || 'sine'; vol = vol || 0.3;
+    var osc = audioContext.createOscillator();
+    var gain = audioContext.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    var now = audioContext.currentTime;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(vol, now + attack);
+    gain.gain.linearRampToValueAtTime(vol * sustain, now + attack + decay);
+    gain.gain.setValueAtTime(vol * sustain, now + duration - release);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    osc.connect(gain); gain.connect(masterGain);
+    osc.start(now); osc.stop(now + duration + 0.1);
+  }
+
+  // ===== BGM 生成器 =====
+  function startMenuBgm() {
+    var bpm = 70, beatDuration = 60 / bpm, step = 0;
+    function playStep() {
+      if (!currentBgm || currentBgm !== 'menu') return;
+      var time = audioContext.currentTime;
+      if (step % 4 === 0) playPadChord([NOTES.C4, NOTES.E4, NOTES.G4], time, beatDuration * 3.8, 0.08);
+      var melody = [NOTES.C5, NOTES.E5, NOTES.G5, NOTES.E5, NOTES.F5, NOTES.A5, NOTES.G5, NOTES.E5];
+      playPianoNote(melody[step % 8], time, beatDuration * 0.9, 0.2);
+      var bass = [NOTES.C3, NOTES.C3, NOTES.G3, NOTES.G3, NOTES.F3, NOTES.F3, NOTES.C4, NOTES.C4];
+      playPianoNote(bass[step % 8], time, beatDuration * 0.8, 0.15);
+      step++;
+      currentBgmNodes.push(setTimeout(playStep, beatDuration * 1000));
+    }
+    playStep();
+  }
+
+  function startDailyBgm() {
+    var bpm = 90, beatDuration = 60 / bpm, step = 0;
+    function playStep() {
+      if (!currentBgm || currentBgm !== 'daily') return;
+      var time = audioContext.currentTime;
+      var melody = [NOTES.C4, NOTES.E4, NOTES.G4, NOTES.C5, NOTES.D4, NOTES.F4, NOTES.A4, NOTES.D5,
+                    NOTES.E4, NOTES.G4, NOTES.B4, NOTES.E5, NOTES.F4, NOTES.A4, NOTES.C5, NOTES.F5];
+      playPianoNote(melody[step % 16], time, beatDuration * 0.7, 0.18);
+      if (step % 2 === 0) {
+        var chords = [[NOTES.C4,NOTES.E4,NOTES.G4],[NOTES.F4,NOTES.A4,NOTES.C5],[NOTES.G4,NOTES.B4,NOTES.D5],[NOTES.A4,NOTES.C5,NOTES.E5]];
+        var ci = Math.floor(step / 2) % 4;
+        playGuitarNote(chords[ci][0], time, beatDuration * 1.8, 0.12);
+        playGuitarNote(chords[ci][1], time + 0.1, beatDuration * 1.6, 0.1);
+        playGuitarNote(chords[ci][2], time + 0.2, beatDuration * 1.4, 0.08);
+      }
+      var bassArr = [NOTES.C3, NOTES.F3, NOTES.G3, NOTES.A3];
+      if (step % 4 === 0) playPianoNote(bassArr[Math.floor(step / 4) % 4], time, beatDuration * 1.5, 0.15);
+      step++;
+      currentBgmNodes.push(setTimeout(playStep, beatDuration * 1000));
+    }
+    playStep();
+  }
+
+  function startRomanticBgm() {
+    var bpm = 65, beatDuration = 60 / bpm, step = 0;
+    function playStep() {
+      if (!currentBgm || currentBgm !== 'romantic') return;
+      var time = audioContext.currentTime;
+      var melody = [NOTES.C5, NOTES.E5, NOTES.G5, NOTES.E5, NOTES.A4, NOTES.C5, NOTES.E5, NOTES.D5,
+                    NOTES.B4, NOTES.D5, NOTES.F5, NOTES.E5, NOTES.G4, NOTES.B4, NOTES.D5, NOTES.C5];
+      if (step % 2 === 0) {
+        var chords = [[NOTES.C4,NOTES.E4,NOTES.G4,NOTES.B4],[NOTES.A3,NOTES.C4,NOTES.E4,NOTES.G4],
+                      [NOTES.F3,NOTES.A3,NOTES.C4,NOTES.E4],[NOTES.G3,NOTES.B3,NOTES.D4,NOTES.G4]];
+        playPadChord(chords[Math.floor(step / 2) % 4], time, beatDuration * 1.8, 0.12);
+      }
+      playPianoNote(melody[step % 16], time, beatDuration * 1.2, 0.22);
+      step++;
+      currentBgmNodes.push(setTimeout(playStep, beatDuration * 1000));
+    }
+    playStep();
+  }
+
+  function startTenseBgm() {
+    var bpm = 110, beatDuration = 60 / bpm, step = 0;
+    function playStep() {
+      if (!currentBgm || currentBgm !== 'tense') return;
+      var time = audioContext.currentTime;
+      var motif = [NOTES.Cs4, NOTES.Ds4, NOTES.Fs4, NOTES.Gs4];
+      playElectronicNote(motif[step % 4], time, beatDuration * 0.4, 0.2);
+      if (step % 2 === 0) createOscillator('sawtooth', NOTES.Cs3, time, beatDuration * 0.8, 0.15);
+      if (step % 2 === 1) createOscillator('square', 6000, time, 0.03, 0.08);
+      step++;
+      currentBgmNodes.push(setTimeout(playStep, beatDuration * 1000));
+    }
+    playStep();
+  }
+
+  function startEndingGoodBgm() {
+    var bpm = 75, beatDuration = 60 / bpm, step = 0;
+    function playStep() {
+      if (!currentBgm || currentBgm !== 'ending_good') return;
+      var time = audioContext.currentTime;
+      var melody = [NOTES.C4, NOTES.E4, NOTES.G4, NOTES.C5, NOTES.D4, NOTES.F4, NOTES.A4, NOTES.D5,
+                    NOTES.E4, NOTES.G4, NOTES.B4, NOTES.E5, NOTES.G4, NOTES.B4, NOTES.D5, NOTES.G5];
+      if (step % 4 === 0) {
+        var chords = [[NOTES.C4,NOTES.E4,NOTES.G4,NOTES.C5],[NOTES.F4,NOTES.A4,NOTES.C5,NOTES.F5],
+                      [NOTES.G4,NOTES.B4,NOTES.D5,NOTES.G5],[NOTES.C4,NOTES.E4,NOTES.G4,NOTES.C5]];
+        playPadChord(chords[Math.floor(step / 4) % 4], time, beatDuration * 3.5, 0.15);
+      }
+      playPianoNote(melody[step % 16], time, beatDuration * 1.5, 0.25);
+      step++;
+      currentBgmNodes.push(setTimeout(playStep, beatDuration * 1000));
+    }
+    playStep();
+  }
+
+  function startEndingBadBgm() {
+    var bpm = 55, beatDuration = 60 / bpm, step = 0;
+    function playStep() {
+      if (!currentBgm || currentBgm !== 'ending_bad') return;
+      var time = audioContext.currentTime;
+      var melody = [NOTES.E5, NOTES.D5, NOTES.C5, NOTES.B4, NOTES.A4, NOTES.G4, NOTES.F4, NOTES.E4,
+                    NOTES.D4, NOTES.C4, NOTES.B3, NOTES.A3, NOTES.G3, NOTES.F3, NOTES.E3, NOTES.D3];
+      if (step % 4 === 0) {
+        var chords = [[NOTES.A3,NOTES.C4,NOTES.E4],[NOTES.F3,NOTES.A3,NOTES.C4],[NOTES.E3,NOTES.G3,NOTES.B3],[NOTES.D3,NOTES.F3,NOTES.A3]];
+        playPadChord(chords[Math.floor(step / 4) % 4], time, beatDuration * 3.5, 0.1);
+      }
+      playPianoNote(melody[step % 16], time, beatDuration * 2, 0.2);
+      step++;
+      currentBgmNodes.push(setTimeout(playStep, beatDuration * 1000));
+    }
+    playStep();
+  }
+
+  // ===== UI 音效 =====
+  function soundClick() {
+    playEnvelopeTone(800, 0.1, 0.005, 0.02, 0.3, 0.05, 'sine', 0.25);
+    playEnvelopeTone(1200, 0.08, 0.005, 0.015, 0.2, 0.03, 'sine', 0.15);
+  }
+  function soundUnlock() {
+    var notes = [NOTES.C5, NOTES.E5, NOTES.G5, NOTES.C6];
+    notes.forEach(function(note, i) { setTimeout(function() { playEnvelopeTone(note, 0.3, 0.01, 0.05, 0.5, 0.1, 'sine', 0.3); }, i * 100); });
+  }
+  function soundAffectionUp() {
+    playEnvelopeTone(NOTES.E5, 0.25, 0.01, 0.03, 0.4, 0.1, 'sine', 0.25);
+    setTimeout(function() { playEnvelopeTone(NOTES.G5, 0.3, 0.01, 0.03, 0.5, 0.15, 'sine', 0.2); }, 80);
+  }
+  function soundAffectionDown() {
+    playEnvelopeTone(NOTES.G4, 0.3, 0.01, 0.05, 0.3, 0.1, 'triangle', 0.2);
+    setTimeout(function() { playEnvelopeTone(NOTES.E4, 0.35, 0.01, 0.05, 0.3, 0.15, 'triangle', 0.15); }, 100);
+  }
+  function soundSleep() {
+    if (!audioContext || isMuted) return;
+    var time = audioContext.currentTime;
+    var osc = audioContext.createOscillator();
+    var gain = audioContext.createGain();
+    var filter = audioContext.createBiquadFilter();
+    osc.type = 'sine'; osc.frequency.setValueAtTime(NOTES.C5, time); osc.frequency.exponentialRampToValueAtTime(NOTES.C3, time + 1.5);
+    filter.type = 'lowpass'; filter.frequency.value = 1000;
+    gain.gain.setValueAtTime(0.2, time); gain.gain.exponentialRampToValueAtTime(0.001, time + 1.5);
+    osc.connect(filter); filter.connect(gain); gain.connect(masterGain);
+    osc.start(time); osc.stop(time + 1.6);
+  }
+  function soundDayStart() {
+    var notes = [NOTES.C5, NOTES.E5, NOTES.G5, NOTES.C6, NOTES.E6];
+    notes.forEach(function(note, i) { setTimeout(function() {
+      if (!audioContext || isMuted) return;
+      var osc = audioContext.createOscillator(); var gain = audioContext.createGain();
+      osc.type = 'sine'; osc.frequency.value = note;
+      var now = audioContext.currentTime;
+      gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.2, now + 0.01); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+      osc.connect(gain); gain.connect(masterGain); osc.start(now); osc.stop(now + 0.85);
+    }, i * 120); });
+  }
+
+  var bgmStarters = {
+    menu: startMenuBgm, daily: startDailyBgm, romantic: startRomanticBgm,
+    tense: startTenseBgm, ending_good: startEndingGoodBgm, ending_bad: startEndingBadBgm
+  };
+  var sounds = {
+    click: soundClick, unlock: soundUnlock, affection_up: soundAffectionUp,
+    affection_down: soundAffectionDown, sleep: soundSleep, day_start: soundDayStart
+  };
+
+  return {
+    init: function() {
+      if (isInitialized) return;
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = audioContext.createGain();
+        masterGain.gain.value = 0.5;
+        masterGain.connect(audioContext.destination);
+        isInitialized = true;
+        console.log('BloomAudio initialized');
+      } catch(e) { console.warn('AudioContext not supported'); }
+    },
+    playBgm: function(scene) {
+      if (!isInitialized || isMuted) return;
+      this.stopBgm();
+      currentBgm = scene;
+      if (bgmStarters[scene]) bgmStarters[scene]();
+    },
+    stopBgm: function() {
+      currentBgmNodes.forEach(function(t) { clearTimeout(t); });
+      currentBgmNodes = [];
+      if (masterGain && audioContext) {
+        var now = audioContext.currentTime;
+        masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+        masterGain.gain.linearRampToValueAtTime(isMuted ? 0 : 0.5, now + fadeTime);
+      }
+      currentBgm = null;
+    },
+    playSound: function(name) {
+      if (!isInitialized || isMuted) return;
+      if (sounds[name]) sounds[name]();
+    },
+    setVolume: function(vol) { if (masterGain) masterGain.gain.value = Math.max(0, Math.min(1, vol)); },
+    getCurrentBgm: function() { return currentBgm; },
+    isReady: function() { return isInitialized; },
+    toggleMute: function() {
+      isMuted = !isMuted;
+      var btn = document.getElementById('bgm-toggle');
+      if (btn) btn.textContent = isMuted ? '🔇 静音' : '🎵 BGM';
+      if (isMuted) { this.stopBgm(); } else { var bgm = currentBgm; currentBgm = null; if (bgm) this.playBgm(bgm); }
+    }
+  };
+})();
+
 // ===== 角色基础数据 =====
 const CHARACTERS = {
     wenya: {
@@ -782,6 +1290,10 @@ class GameEngine {
         if (!name) { toast('请输入你的名字~'); return; }
         if (!gameState.playerMBTI) { toast('请选择或测试你的MBTI~'); return; }
 
+        // 初始化BGM音频系统（需用户交互后调用）
+        BloomAudio.init();
+        document.getElementById('bgm-toggle').style.display = 'block';
+
         gameState.playerName = name;
         // 所有角色初始好感0，未解锁
         Object.keys(CHARACTERS).forEach(k => {
@@ -790,6 +1302,8 @@ class GameEngine {
         });
         document.getElementById('bottom-nav').style.display = 'flex';
         this.showPage('game-page');
+        BloomAudio.playBgm('daily');
+        BloomAudio.playSound('day_start');
         this.updateUI();
         // 第一天提示
         setTimeout(() => {
@@ -934,265 +1448,9 @@ class GameEngine {
     // 每天每个活动限用1次；每次推进一个节点
     getActivityStory(activityId) {
         const name = gameState.playerName || '你';
-        // story[n] = {text, choices, charId(可选覆盖), affection(首次遇见初始值)}
-        const stories = {
-            stay_home: [
-                // 第1次：搬来第一天，宅在家
-                {
-                    text: `第一天，你把最后一个纸箱拆完，坐在空荡荡的出租屋里。\n\n外卖软件上点了份炒饭，顺手打开了一集剧。\n\n走廊里有人经过，你听到轻轻的脚步声。`,
-                    choices: [
-                        { text: '「继续追剧，不在意」', affection: 0 },
-                        { text: '「起身看看是不是邻居」', affection: 0, _nextMeet: true }
-                    ],
-                    charId: null // 第一次不强制遇见
-                },
-                // 第2次：拿外卖遇见温雅
-                {
-                    text: `上午十一点，你懒洋洋地打开门拿外卖。\n\n走廊里站着一个抱着画稿的女孩，正准备按你隔壁的门铃。\n\n她愣了一下，有些不好意思地看着你。\n\n温雅：「你是……新搬来的邻居？快递员把我们的外卖一起放在你门口了……」`,
-                    charId: 'wenya', firstMeet: true,
-                    choices: [
-                        { text: `「你好，我叫${name}，刚搬来上海。」`, affection: 5 },
-                        { text: '「哦，好的，这是你的。」（递过去）', affection: 3 },
-                        { text: '「……（点头，没多说）」', affection: 2 }
-                    ]
-                },
-                // 第3次
-                {
-                    text: `你在沙发上看书，窗外的夕阳把房间染成金色。\n\n隔壁偶尔传来轻轻的音乐声，古典钢琴曲。\n\n你发了一下呆。`,
-                    choices: [
-                        { text: '「继续看书，享受安静」', affection: 0 },
-                        { text: '「敲门，问温雅放的是什么曲子」', affection: 3, charId: 'wenya' }
-                    ]
-                },
-                // 第4次
-                {
-                    text: `你发现家附近有一家24小时便利店。\n\n深夜，你去买泡面，碰到温雅也在货架前挑东西。\n\n温雅：「……你也睡不着？」`,
-                    charId: 'wenya',
-                    choices: [
-                        { text: '「有点睡不着，你呢？」', affection: 5 },
-                        { text: '「没，就是饿了。」', affection: 2 },
-                        { text: '「嗯。」（点头，各买各的）', affection: 1 }
-                    ]
-                },
-                // 第5次+
-                {
-                    text: `你在家打开窗，楼下的老奶奶在浇花。\n\n这座城市开始有了一点点熟悉的感觉。`,
-                    choices: [
-                        { text: '「静静待着，感受上海的节奏」', affection: 0 }
-                    ]
-                }
-            ],
-            gym: [
-                // 第1次：空白的健身房初体验
-                {
-                    text: `你办了一张附近健身房的月卡。\n\n第一天到了，环境还不错，器械齐全。\n\n跑步机区的那个马尾辫女生跑得飞快，音乐外放，完全不在意别人。`,
-                    choices: [
-                        { text: '「找台跑步机热身，不去打扰她」', affection: 0 },
-                        { text: '「找旁边那台，顺便打个招呼」', affection: 0, _nextMeet: true }
-                    ],
-                    charId: null
-                },
-                // 第2次：遇见夏阳
-                {
-                    text: `你在器械区练了一会儿，听到一句：\n\n夏阳：「哎，你的深蹲姿势不对！腰要直，膝盖别超过脚尖。」\n\n马尾辫女生不知道什么时候走到你旁边，直接帮你纠正动作，完全没问你愿不愿意。`,
-                    charId: 'xiayang', firstMeet: true,
-                    choices: [
-                        { text: '「谢谢！你是教练吗？」', affection: 5 },
-                        { text: '「……好的，谢谢。」', affection: 3 },
-                        { text: '「我自己会，不用管。」', affection: -1 }
-                    ]
-                },
-                // 第3次
-                {
-                    text: `今天状态不好，你在跑步机上只撑了二十分钟就下来了。\n\n夏阳从背后冒出来：「今天怎么这么快结束？」`,
-                    charId: 'xiayang',
-                    choices: [
-                        { text: '「昨天没睡好，状态差。」', affection: 4 },
-                        { text: '「不想练了。」', affection: 1 },
-                        { text: '「……没什么，就是累了。」', affection: 2 }
-                    ]
-                },
-                // 第4次
-                {
-                    text: `夏阳今天帮你制定了一份训练计划，写在手机备忘录里发给你。\n\n夏阳：「你的基础不错，照这个练两周，体脂能降三个点。」\n\n她说的很认真，好像是个私教。`,
-                    charId: 'xiayang',
-                    choices: [
-                        { text: '「你是学运动科学的吗？」', affection: 5 },
-                        { text: '「好，我试试。」', affection: 3 },
-                        { text: '「……谢谢，我参考一下。」', affection: 2 }
-                    ]
-                },
-                // 第5次+
-                {
-                    text: `你已经习惯了来这里。\n\n汗水、器械的声音，还有某个人的马尾辫在视线边缘晃动。`,
-                    choices: [
-                        { text: '「专心训练，让身体记住节奏」', affection: 0 }
-                    ]
-                }
-            ],
-            park: [
-                // 第1次
-                {
-                    text: `工作压力太大，你决定去附近的公园走走。\n\n一张长椅上，一个女人正在安静地看书，白大褂搭在腿上，大概是刚下班。\n\n她没有抬头。`,
-                    choices: [
-                        { text: '「找另一张椅子坐下，享受安静」', affection: 0 },
-                        { text: '「在她旁边坐下」', affection: 0, _nextMeet: true }
-                    ],
-                    charId: null
-                },
-                // 第2次：遇见苏静怡
-                {
-                    text: `你又来公园了。\n\n长椅上的女人还在，今天没带书，只是看着远处。\n\n她突然开口，没有抬头：\n\n苏静怡：「你最近睡眠怎么样？」\n\n你愣了一下。她职业性地扫了你一眼。\n\n苏静怡：「眼睛下面有阴影，下午三点来散步，说明你前一晚没睡好。」`,
-                    charId: 'sujingyi', firstMeet: true,
-                    choices: [
-                        { text: '「被看穿了……确实睡不着。」', affection: 5 },
-                        { text: '「我只是来散步。」', affection: 2 },
-                        { text: '「你是医生吗？」', affection: 4 }
-                    ]
-                },
-                // 第3次
-                {
-                    text: `今天公园里有人在放风筝。\n\n苏静怡也在，手里拿着一袋猫粮，正往草坪边招一只橘猫。\n\n苏静怡：「……你喜欢猫吗？」\n\n她的语气很淡，像是随口问的。`,
-                    charId: 'sujingyi',
-                    choices: [
-                        { text: '「喜欢，我以前也养过。」', affection: 5 },
-                        { text: '「还好，不算讨厌。」', affection: 2 },
-                        { text: '「不太喜欢，怕过敏。」', affection: 1 }
-                    ]
-                },
-                // 第4次
-                {
-                    text: `苏静怡今天拿着一本厚厚的医学资料，皱着眉头看。\n\n你在旁边坐下，她似乎没意识到，嘴里咕哝：\n\n苏静怡：「……案例还是对不上。」\n\n然后她抬头，看到你，顿了一秒。\n\n苏静怡：「……你每次都来这个点。」`,
-                    charId: 'sujingyi',
-                    choices: [
-                        { text: '「你也是，反正固定时间碰到了。」', affection: 5 },
-                        { text: '「这个时候公园比较安静。」', affection: 3 },
-                        { text: '「……没注意。」', affection: 2 }
-                    ]
-                },
-                // 第5次+
-                {
-                    text: `风吹过来，树叶哗哗的响。\n\n公园里这条小路已经走熟了，你甚至记得哪块砖是松的。`,
-                    choices: [
-                        { text: '「慢慢走，脑子里什么都不想」', affection: 0 }
-                    ]
-                }
-            ],
-            dinner: [
-                // 第1次
-                {
-                    text: `老朋友说上海有家法餐厅很好，帮你订了位子。\n\n你到的时候他还没来，你只好先进去等。\n\n餐厅装修很精致，吧台后面站着一个女人，正在整理酒杯。\n\n她看了你一眼，没有说话。`,
-                    choices: [
-                        { text: '「找个角落座位坐下，低调等人」', affection: 0 },
-                        { text: '「走过去坐在吧台，看看菜单」', affection: 0, _nextMeet: true }
-                    ],
-                    charId: null
-                },
-                // 第2次：遇见陆潇
-                {
-                    text: `你再次来到这家餐厅。\n\n吧台后的女主理人走过来，声音平静，眼神锐利。\n\n陆潇：「你上次吃了什么，这次来还点？」\n\n她不像在问，更像是一种审视。`,
-                    charId: 'luxiao', firstMeet: true,
-                    choices: [
-                        { text: '「想听听你的推荐。」', affection: 5 },
-                        { text: '「随便，你觉得好就行。」', affection: 3 },
-                        { text: '「上次那个鸭胸，还是那个。」', affection: 2 }
-                    ]
-                },
-                // 第3次
-                {
-                    text: `你坐在吧台等菜的时候，陆潇放下一小杯东西：\n\n陆潇：「送你试试。今天新研发的开胃酒。」\n\n她语气很淡，好像只是完成一件工作。\n\n酒的味道很好，偏甜，带一点果香。`,
-                    charId: 'luxiao',
-                    choices: [
-                        { text: '「很好喝，你怎么知道我喜欢偏甜的？」', affection: 6 },
-                        { text: '「谢谢，确实不错。」', affection: 3 },
-                        { text: '「……你记得上次我说的？」', affection: 5 }
-                    ]
-                },
-                // 第4次
-                {
-                    text: `今天餐厅没什么客人。\n\n陆潇把一张纸放到你面前：\n\n陆潇：「新季菜单，帮我看看。你来的次数够多，有资格提意见。」\n\n她说的理所当然，不是在请求，是在命令。`,
-                    charId: 'luxiao',
-                    choices: [
-                        { text: '「我挺喜欢这道的，这个太复杂了……」（认真给意见）', affection: 6 },
-                        { text: '「我觉得都挺好的。」', affection: 1 },
-                        { text: '「你是主理人，你说了算。」', affection: 2 }
-                    ]
-                },
-                // 第5次+
-                {
-                    text: `你已经把这里当作固定的下班饭点了。\n\n陆潇每次看到你，都只是淡淡地点个头，但会提前帮你留你常坐的那个位置。`,
-                    choices: [
-                        { text: '「静静地享受晚餐」', affection: 0 }
-                    ]
-                }
-            ],
-            overtime: [
-                // 第1次
-                {
-                    text: `你决定在公司多待一会儿，把进度赶一赶。\n\n大楼里安静得出奇，走廊灯光昏黄。\n\n电梯下来，走进来一个穿着干练的女人，手机放着耳边，直接开口：\n\n「项目方案下午我看了，不够精准。」\n\n她说完才发现你不是她要说话的人，顿了一秒。\n\n林婉清：「……你是哪个团队的？」`,
-                    charId: 'linwanqing', firstMeet: true,
-                    choices: [
-                        { text: '「XXX咨询，顾问组的。」', affection: 4 },
-                        { text: '「……您好，我是顾问。您说的哪个方案？」', affection: 5 },
-                        { text: '「……（沉默，等她说完）」', affection: 2 }
-                    ]
-                },
-                // 第2次
-                {
-                    text: `你在工位上整理文件，林婉清出现在走廊里，大概是开完会出来的。\n\n她停下来，看了一眼你屏幕上的图表：\n\n林婉清：「数据来源有问题，这个季度的基准值用的哪一期？」`,
-                    charId: 'linwanqing',
-                    choices: [
-                        { text: '「Q3的年化数据，有什么问题？」', affection: 5 },
-                        { text: '「……我查一下再确认。」', affection: 3 },
-                        { text: '「您要看原始数据吗？」', affection: 4 }
-                    ]
-                },
-                // 第3次
-                {
-                    text: `深夜，楼层只剩你一个人。\n\n林婉清突然推开办公室的玻璃门，看到你，停了一下。\n\n林婉清：「还没走？」\n\n语气不算冷，但也没有多余的温度。`,
-                    charId: 'linwanqing',
-                    choices: [
-                        { text: '「方案没做完，不想凑合。」', affection: 6 },
-                        { text: '「习惯了，不加班睡不着。」', affection: 3 },
-                        { text: '「快了，再半小时。」', affection: 2 }
-                    ]
-                },
-                // 第4次
-                {
-                    text: `林婉清路过你工位，把一个咖啡杯放下来，没有停步：\n\n林婉清：「加班的人都要喝咖啡。」\n\n她没有回头，直接走了。\n\n你看着那杯咖啡，愣了两秒。`,
-                    charId: 'linwanqing',
-                    choices: [
-                        { text: "「起身道谢，追上去说了句'谢谢'」", affection: 6 },
-                        { text: '「端起来喝了一口，专注回到工作」', affection: 3 },
-                        { text: '「……（看着咖啡杯发呆）」', affection: 2 }
-                    ]
-                },
-                // 第5次+
-                {
-                    text: `你越来越习惯这个节奏了。\n\n加班到深夜，安静的楼层，偶尔的脚步声和文件翻动的声音。\n\n有时候你会想，她今天还在吗。`,
-                    choices: [
-                        { text: '「专心工作，把手头的事情做完」', affection: 0 }
-                    ]
-                }
-            ],
-            cafe: [
-                // 第1次：纯咖啡馆体验
-                {
-                    text: `你找了一家安静的咖啡馆，点了杯美式，打开电脑。\n\n周围的低语声和背景音乐刚好填满了脑子里的空白。\n\n这里还不错。`,
-                    choices: [
-                        { text: '「专心工作，进入状态」', affection: 0 }
-                    ],
-                    charId: null
-                },
-                // 第2次+：随机遇见已认识的人
-                {
-                    text: null, // 动态生成
-                    charId: '_random_known',
-                    choices: null // 动态生成
-                }
-            ]
-        };
-        return stories[activityId] || [];
+        const stories = (typeof ACTIVITY_STORIES !== 'undefined') ? ACTIVITY_STORIES : null;
+        if (!stories || !stories[activityId]) return [];
+        return stories[activityId];
     }
 
     // ===== 活动系统（核心入口）=====
@@ -1437,6 +1695,16 @@ class GameEngine {
 
     // ===== 对话系统 =====
     showDialogue(char, text, choices, closeable = true) {
+        // 根据角色切换BGM（如果当前BGM不是该角色的则切换）
+        if (BloomAudio.isReady() && char.id && char.id !== '__narrator__') {
+            var charBgmMap = { wenya: 'daily', xiayang: 'daily', sujingyi: 'daily', luxiao: 'romantic', linwanqing: 'daily' };
+            var targetBgm = charBgmMap[char.id] || 'daily';
+            if (char.affection >= 41) targetBgm = 'romantic';
+            if (BloomAudio.getCurrentBgm() !== targetBgm) {
+                BloomAudio.playBgm(targetBgm);
+            }
+        }
+
         document.getElementById('dlg-avatar').textContent = char.avatar;
         document.getElementById('dlg-char-name').textContent = char.name;
         document.getElementById('dlg-char-mbti').textContent = `${char.mbti} · ${MBTI_NAMES[char.mbti] || ''}`;
@@ -1561,11 +1829,16 @@ class GameEngine {
         c.affection = Math.max(0, Math.min(120, c.affection + amount));
         const newR = this.getRelation(c.affection);
 
+        // 好感度变化音效
+        if (amount > 0) BloomAudio.playSound('affection_up');
+        else if (amount < 0) BloomAudio.playSound('affection_down');
+
         if (newR !== c.relation) {
             c.relation = newR;
             if (amount > 0) toast(`${c.name} 关系升级：${RELATION_STAGES[newR]}`);
             if (newR === 'lover' || newR === 'hotlove') {
                 this.showAchievement(`【${c.name}·恋人】`);
+                BloomAudio.playBgm('romantic');
             }
             if (newR === 'cohabiting') this.showAchievement(`【${c.name}·同居】`);
             if (newR === 'married') this.showAchievement(`【${c.name}·结婚】`);
@@ -1574,6 +1847,7 @@ class GameEngine {
         // 解锁检查
         if (old < 20 && c.affection >= 20 && !c.unlocked) {
             c.unlocked = true;
+            BloomAudio.playSound('unlock');
             toast(`🎉 ${c.name} 解锁了！可以主动联系了`);
         }
 
@@ -1632,6 +1906,7 @@ class GameEngine {
 
     // ===== 睡觉/下一天 =====
     sleep() {
+        BloomAudio.playSound('sleep');
         if (gameState.day >= 60) {
             this.showFinalEnding();
             return;
@@ -1776,6 +2051,9 @@ class GameEngine {
     enterGame() {
         document.getElementById('status-bar').style.display = 'flex';
         document.getElementById('bottom-nav').style.display = 'flex';
+        document.getElementById('bgm-toggle').style.display = 'block';
+        BloomAudio.init();
+        BloomAudio.playBgm('daily');
         this.updateUI();
         this.showPage('game-page');
         gameState.save();
@@ -1800,5 +2078,9 @@ function toast(msg) {
 }
 </script>
 
+<!-- 叙事故事数据（v2.0 新增）-->
+<script src="narrative_stories.js"></script>
+
 <!-- 场景数据 -->
 <script src="scenes-data.js"></script>
+<!-- 全面重制版 v2.0 - 叙事/美学/BGM 整合完成 -->
