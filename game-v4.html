@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bloom - 心动60天</title>
+    <style>
+:root{--bg-deep:#0d0d1a;--gradient-primary:linear-gradient(135deg,#a855f7 0%,#ec4899 100%);--glass-bg:rgba(255,255,255,0.08);--glass-border:rgba(255,255,255,0.15)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif;background:var(--bg-deep);color:#fff;min-height:100vh;overflow:hidden}
+#game-container{width:100vw;height:100vh;position:relative;overflow:hidden}
+.starry-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,#0a0a1a 0%,#1a1035 30%,#2d1b4e 60%,#1a1035 100%);z-index:0;overflow:hidden}
+.stars-layer{position:absolute;width:100%;height:100%;background-image:radial-gradient(2px 2px at 20px 30px,#fff,transparent),radial-gradient(2px 2px at 40px 70px,rgba(255,255,255,0.8),transparent),radial-gradient(1px 1px at 90px 40px,#fff,transparent);background-size:200px 200px;animation:twinkle 3s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:1}50%{opacity:0.7}}
+.shooting-star{position:absolute;width:100px;height:2px;background:linear-gradient(90deg,transparent,#fff,transparent);border-radius:50%;transform:rotate(-45deg);animation:shoot 3s linear infinite;opacity:0}
+.shooting-star:nth-child(1){top:20%;left:-100px;animation-delay:0s}
+.shooting-star:nth-child(2){top:40%;left:-100px;animation-delay:1.5s}
+.shooting-star:nth-child(3){top:60%;left:-100px;animation-delay:3s}
+@keyframes shoot{0%{left:-100px;opacity:0}10%{opacity:1}30%{left:100%;opacity:0}}
+#star-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.page{display:none;width:100%;height:100%;position:absolute;top:0;left:0;flex-direction:column;justify-content:center;align-items:center;padding:20px;z-index:1}
+.page.active{display:flex}
+.glass-card{background:var(--glass-bg);backdrop-filter:blur(20px);border-radius:20px;border:1px solid var(--glass-border)}
+.glass-glow{box-shadow:0 0 20px rgba(255,255,255,0.1),0 0 40px rgba(100,200,255,0.1)}
+.landing-content{text-align:center;animation:fadeIn 1s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.game-title{font-size:4rem;font-weight:300;letter-spacing:0.3em;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px}
+.landing-subtitle{font-size:1.2rem;color:rgba(255,255,255,0.6);letter-spacing:0.2em;margin-bottom:40px}
+.intro-box{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:20px;padding:30px 40px;margin-bottom:40px;backdrop-filter:blur(10px);max-width:400px}
+.intro-box p{color:rgba(255,255,255,0.8);line-height:1.8;margin-bottom:10px}
+.menu-buttons{display:flex;flex-direction:column;gap:15px}
+.menu-btn{padding:15px 50px;border:none;border-radius:30px;font-size:1.1rem;cursor:pointer;transition:all 0.3s ease}
+.menu-btn.primary{background:var(--gradient-primary);color:#fff}
+.menu-btn.primary:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(168,85,247,0.5)}
+.menu-btn.secondary{background:var(--glass-bg);border:1px solid var(--glass-border);color:rgba(255,255,255,0.8)}
+.menu-btn:disabled{opacity:0.5;cursor:not-allowed}
+.page-title{font-size:1.8rem;margin-bottom:40px;color:rgba(255,255,255,0.9);text-align:center}
+.mbti-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:30px;max-width:400px}
+.mbti-grid button{padding:15px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;color:#fff;font-size:1.1rem;cursor:pointer;transition:all 0.2s ease}
+.mbti-grid button:hover{background:rgba(255,255,255,0.2)}
+.mbti-grid button.selected{background:var(--gradient-primary);border-color:transparent}
+.confirm-btn{padding:15px 50px;background:var(--gradient-primary);border:none;border-radius:30px;color:#fff;font-size:1.1rem;cursor:pointer}
+.confirm-btn:disabled{opacity:0.5;cursor:not-allowed}
+.test-progress{width:100%;max-width:400px;margin-bottom:30px}
+.progress-text{text-align:center;color:rgba(255,255,255,0.6);margin-bottom:10px}
+.progress-bar{height:4px;background:rgba(255,255,255,0.2);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--gradient-primary);transition:width 0.3s ease}
+.question-box{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:20px;padding:30px;max-width:500px;width:100%;text-align:center}
+.question-text{font-size:1.1rem;margin-bottom:25px;line-height:1.6}
+.options-list{display:flex;flex-direction:column;gap:12px}
+.option-btn{padding:15px 20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#fff;text-align:left;cursor:pointer;transition:all 0.2s ease}
+.option-btn:hover{background:rgba(255,255,255,0.1)}
+.option-btn.selected{background:rgba(168,85,247,0.3);border-color:#a855f7}
+.test-nav{display:flex;justify-content:center;gap:20px;margin-top:30px}
+.nav-btn{padding:12px 30px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:20px;color:#fff;cursor:pointer}
+.nav-btn:disabled{opacity:0.3;cursor:not-allowed}
+.char-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:20px;max-width:800px;width:100%;margin-bottom:30px}
+.char-card{background:var(--glass-bg);border:2px solid var(--glass-border);border-radius:20px;padding:20px;text-align:center;cursor:pointer;transition:all 0.3s ease;position:relative}
+.char-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--char-color)}
+.char-card:hover{transform:translateY(-5px);box-shadow:0 10px 40px rgba(0,0,0,0.3);border-color:var(--char-color)}
+.char-card.selected{border-color:var(--char-color);box-shadow:0 0 30px var(--char-glow)}
+.char-card.locked{opacity:0.5;cursor:not-allowed}
+.char-avatar{width:100px;height:100px;border-radius:50%;margin:0 auto 15px;border:3px solid var(--char-color);display:flex;align-items:center;justify-content:center;font-size:2.5rem;background:var(--glass-bg)}
+.char-name{font-size:1.2rem;font-weight:500;margin-bottom:5px}
+.char-trait{font-size:0.85rem;color:rgba(255,255,255,0.6)}
+.char-affection-bar{height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:10px;overflow:hidden}
+.char-affection-fill{height:100%;background:var(--char-color);transition:width 0.3s ease}
+.start-btn{padding:18px 60px;background:var(--gradient-primary);border:none;border-radius:30px;color:#fff;font-size:1.2rem;cursor:pointer}
+.start-btn:disabled{opacity:0.5;cursor:not-allowed}
+#game-main-page{justify-content:flex-start;padding-top:80px}
+.top-bar{position:fixed;top:0;left:0;right:0;padding:15px 20px;background:rgba(13,13,26,0.95);backdrop-filter:blur(20px);display:flex;justify-content:space-between;align-items:center;z-index:100}
+.day-badge{background:var(--gradient-primary);padding:8px 16px;border-radius:20px;font-weight:600}
+.energy-container{display:flex;align-items:center;gap:8px}
+.energy-icon{font-size:1.2rem}
+.energy-bar{display:flex;gap:4px}
+.energy-point{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s ease}
+.energy-point.available{background:var(--gradient-primary);box-shadow:0 0 10px rgba(168,85,247,0.5)}
+.energy-label{font-size:0.8rem;color:rgba(255,255,255,0.6)}
+.settings-btn{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:50%;width:40px;height:40px;color:#fff;cursor:pointer;font-size:1.2rem;transition:all 0.3s ease}
+.settings-btn:hover{background:rgba(255,255,255,0.2);transform:rotate(30deg)}
+.game-main-content{width:100%;max-width:600px;padding:20px}
+.section-title{font-size:1.1rem;color:rgba(255,255,255,0.7);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.action-remain{font-size:0.9rem;color:rgba(255,255,255,0.5);margin-left:auto}
+.activity-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
+.activity-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:15px;padding:20px;cursor:pointer;transition:all 0.3s ease;position:relative}
+.activity-card:hover{transform:translateY(-3px);background:rgba(255,255,255,0.12)}
+.activity-card.disabled{opacity:0.5;cursor:not-allowed}
+.activity-icon{font-size:2rem;margin-bottom:10px}
+.activity-name{font-size:1rem;font-weight:500;margin-bottom:5px}
+.activity-desc{font-size:0.8rem;color:rgba(255,255,255,0.5)}
+.activity-energy{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.3);padding:3px 8px;border-radius:10px;font-size:0.75rem}
+.bottom-actions{position:fixed;bottom:20px;left:0;right:0;display:flex;justify-content:center;gap:10px}
+.sleep-btn{padding:12px 30px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:20px;color:#fff;cursor:pointer}
+.sleep-btn:hover{background:rgba(255,255,255,0.2)}
+.dialogue-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:200;display:none;flex-direction:column}
+.dialogue-overlay.active{display:flex}
+.scene-area{height:45%;position:relative;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.8) 100%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:20px}
+.scene-stay_home{background:linear-gradient(135deg,#2d1b4e 0%,#1a0a2e 100%)}
+.scene-fitness{background:linear-gradient(135deg,#1e3a5f 0%,#0f172a 100%)}
+.scene-park{background:linear-gradient(135deg,#134e4a 0%,#042f2e 100%)}
+.scene-dinner{background:linear-gradient(135deg,#4a1c1c 0%,#1a0a0a 100%)}
+.scene-overtime{background:linear-gradient(135deg,#1e1b4b 0%,#0f0a1e 100%)}
+.scene-cafe{background:linear-gradient(135deg,#3d2b1f 0%,#1a1410 100%)}
+.scene-art_studio{background:linear-gradient(135deg,#4a3b6b 0%,#2d1b4e 100%)}
+.char-portrait{width:200px;height:280px;object-fit:cover;border-radius:20px;border:3px solid var(--char-color,#a855f7);box-shadow:0 0 40px var(--char-glow,rgba(168,85,247,0.5));position:relative;z-index:1;animation:portraitFloat 3s ease-in-out infinite}
+@keyframes portraitFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.dialogue-content{flex:1;padding:20px;display:flex;flex-direction:column;max-width:800px;margin:0 auto;width:100%}
+.scene-desc{background:rgba(255,255,255,0.1);padding:15px;border-radius:10px;margin-bottom:15px;font-size:0.95rem;line-height:1.6;color:rgba(255,255,255,0.8);font-style:italic}
+.dialogue-area{display:flex;gap:15px;margin-bottom:20px;align-items:flex-start}
+.speaker-avatar{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--char-color,#a855f7);flex-shrink:0}
+.dialogue-area-right{flex:1}
+.speaker-name{font-weight:600;color:var(--char-color,#a855f7);margin-bottom:5px;display:block}
+.dialogue-bubble{background:rgba(20,20,40,0.85);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.2);border-radius:15px;padding:15px;position:relative}
+.dialogue-text{line-height:1.6;min-height:60px}
+.typing-cursor{animation:blink 0.8s infinite;color:#a855f7;font-weight:bold}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+.choices-area{display:flex;flex-direction:column;gap:10px;margin-top:auto}
+.choice-btn{padding:15px 20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:12px;color:#fff;text-align:left;cursor:pointer;transition:all 0.2s ease;font-size:1rem;animation:slideIn 0.3s ease forwards;opacity:0}
+.choice-btn:nth-child(1){animation-delay:0.1s}
+.choice-btn:nth-child(2){animation-delay:0.2s}
+@keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+.choice-btn:hover{background:rgba(168,85,247,0.3);border-color:#a855f7;transform:translateX(5px)}
+.dialogue-controls{position:absolute;top:20px;right:20px;display:flex;gap:10px}
+.control-btn{padding:8px 15px;background:rgba(0,0,0,0.5);border:none;border-radius:15px;color:#fff;cursor:pointer;font-size:0.9rem}
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);padding:20px 40px;border-radius:15px;font-size:1.1rem;z-index:300;display:none;animation:toastIn 0.3s ease}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,-50%) scale(0.9)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.daily-end-content{text-align:center;max-width:400px}
+.end-title{font-size:2rem;margin-bottom:30px;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.change-list{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:15px;padding:20px;margin-bottom:30px}
+.change-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.1)}
+.change-item:last-child{border-bottom:none}
+.next-day-btn{padding:15px 40px;background:var(--gradient-primary);border:none;border-radius:25px;color:#fff;font-size:1.1rem;cursor:pointer}
+.relation-upgrade{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--gradient-primary);padding:15px 30px;border-radius:25px;font-size:1.1rem;z-index:150;animation:slideDown 0.5s ease;display:none}
+@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.exit-warning-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:500;display:none;justify-content:center;align-items:center}
+.exit-warning-overlay.active{display:flex}
+.exit-warning-box{background:var(--glass-bg);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.2);border-radius:25px;padding:30px;max-width:400px;text-align:center}
+.exit-warning-icon{font-size:3rem;margin-bottom:15px}
+.exit-warning-title{font-size:1.3rem;margin-bottom:10px;color:#ffd700}
+.exit-warning-text{color:rgba(255,255,255,0.7);margin-bottom:20px;line-height:1.6}
+.exit-warning-penalty{color:#ff6b6b;font-weight:bold}
+.exit-warning-btns{display:flex;gap:15px;justify-content:center}
+.warning-btn{padding:12px 25px;border:none;border-radius:20px;font-size:1rem;cursor:pointer}
+.warning-btn.continue{background:var(--gradient-primary);color:#fff}
+.warning-btn.quit{background:rgba(255,107,107,0.3);color:#ff6b6b;border:1px solid #ff6b6b}
+.settings-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:400;display:none;justify-content:center;align-items:center}
+.settings-overlay.active{display:flex}
+.settings-box{background:var(--glass-bg);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.2);border-radius:25px;padding:30px;max-width:400px;width:90%}
+.settings-title{font-size:1.3rem;margin-bottom:25px;text-align:center}
+.settings-item{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid rgba(255,255,255,0.1)}
+.toggle-switch{width:50px;height:26px;background:rgba(255,255,255,0.2);border-radius:13px;position:relative;cursor:pointer;transition:all 0.3s ease}
+.toggle-switch.active{background:var(--gradient-primary)}
+.toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:all 0.3s ease}
+.toggle-switch.active::after{left:27px}
+.settings-close{width:100%;margin-top:20px;padding:12px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:15px;color:#fff;cursor:pointer;font-size:1rem}
+.petal-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1000;overflow:hidden;display:none}
+.petal{position:absolute;top:-20px;width:15px;height:15px;background:linear-gradient(135deg,#ffb6c1 0%,#ffc0cb 50%,#fff0f5 100%);border-radius:50% 0 50% 50%;opacity:0.8;animation:petal-fall linear forwards}
+@keyframes petal-fall{0%{transform:translateY(0) translateX(0) rotate(0deg);opacity:0.8}100%{transform:translateY(100vh) translateX(-10px) rotate(360deg);opacity:0}}
+.screen-shake{animation:shake 0.5s ease-in-out}
+@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-3px)}20%,40%,60%,80%{transform:translateX(3px)}}
+.heart-float{position:absolute;font-size:20px;opacity:0;animation:heart-rise 3s ease-out forwards;filter:drop-shadow(0 0 5px rgba(255,100,150,0.8))}
+@keyframes heart-rise{0%{opacity:0;transform:translateY(0) scale(0.5)}20%{opacity:1;transform:translateY(-20px) scale(1)}100%{opacity:0;transform:translateY(-150px) scale(0.3)}}
+.ending-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:250;display:none;justify-content:center;align-items:center;flex-direction:column}
+.ending-overlay.active{display:flex}
+.ending-content{text-align:center;max-width:500px;padding:40px}
+.ending-type{font-size:3rem;margin-bottom:20px}
+.ending-type.he{color:#ffd700}
+.ending-type.ne{color:#60a5fa}
+.ending-type.be{color:#ff6b6b}
+.ending-title{font-size:1.8rem;margin-bottom:20px}
+.ending-text{color:rgba(255,255,255,0.8);line-height:1.8;margin-bottom:30px}
+.ending-btn{padding:15px 40px;background:var(--gradient-primary);border:none;border-radius:25px;color:#fff;font-size:1.1rem;cursor:pointer}
+.guide-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:450;display:none;justify-content:center;align-items:center}
+.guide-overlay.active{display:flex}
+.guide-box{background:var(--glass-bg);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.2);border-radius:25px;padding:30px;max-width:450px;text-align:center}
+.guide-step{font-size:2rem;margin-bottom:15px}
+.guide-title{font-size:1.3rem;margin-bottom:15px;color:#a855f7}
+.guide-text{color:rgba(255,255,255,0.8);line-height:1.6;margin-bottom:25px}
+.guide-btns{display:flex;gap:15px;justify-content:center}
+.guide-btn{padding:12px 25px;background:var(--gradient-primary);border:none;border-radius:20px;color:#fff;cursor:pointer;font-size:1rem}
+.guide-skip{background:rgba(255,255,255,0.1)}
+@media(max-width:768px){.game-title{font-size:2.5rem;letter-spacing:0.2em}.char-grid{grid-template-columns:repeat(2,1fr)}.activity-grid{grid-template-columns:1fr}.char-portrait{width:150px;height:200px}.mbti-grid{grid-template-columns:repeat(2,1fr)}}
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="starry-bg"><div class="stars-layer"></div><div class="shooting-star"></div><div class="shooting-star"></div><div class="shooting-star"></div></div>
+        <canvas id="star-canvas"></canvas>
+        <div id="petal-container" class="petal-container"></div>
+
+        <div id="landing-page" class="page active">
+            <div class="landing-content">
+                <h1 class="game-title">Bloom</h1>
+                <p class="landing-subtitle">心动60天</p>
+                <div class="intro-box glass-card glass-glow">
+                    <p>在60天内，通过日常活动邂逅5位性格迥异的女孩。</p>
+                    <p>你的每一个选择，都会通往不同的故事。</p>
+                    <p>💡 每天有 <strong>3点精力</strong>，谨慎选择你的行动！</p>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-btn primary" onclick="game.startNewStory()">✨ 开始新故事</button>
+                    <button class="menu-btn secondary" id="btn-continue" onclick="game.continueGame()">📖 继续游戏</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mbti-page" class="page">
+            <h2 class="page-title">让我们先了解一下你</h2>
+            <div style="display:flex;flex-direction:column;gap:20px;margin-bottom:30px;">
+                <button class="menu-btn secondary" onclick="game.goToMbtiSelect()">💡 我知道我的MBTI</button>
+                <button class="menu-btn secondary" onclick="game.goToMbtiTest()">📝 帮我测试</button>
+            </div>
+            <button class="nav-btn" onclick="game.skipToCharSelect()">跳过，直接选择角色 →</button>
+        </div>
+
+        <div id="mbti-select-page" class="page">
+            <h2 class="page-title">选择你的MBTI</h2>
+            <div class="mbti-grid" id="mbti-grid"></div>
+            <button class="confirm-btn" onclick="game.confirmMbti()" id="mbti-confirm-btn" disabled>确认选择</button>
+        </div>
+
+        <div id="mbti-test-page" class="page">
+            <div class="test-progress">
+                <span class="progress-text">第 <span id="q-num">1</span> / <span id="q-total">8</span> 题</span>
+                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            </div>
+            <div class="question-box">
+                <p class="question-text" id="question-text"></p>
+                <div class="options-list" id="options-list"></div>
+            </div>
+            <div class="test-nav">
+                <button class="nav-btn" onclick="game.testBack()">← 上一步</button>
+                <button class="nav-btn" id="test-next-btn" onclick="game.testNext()" disabled>下一步 →</button>
+            </div>
+        </div>
+
+        <div id="mbti-result-page" class="page">
+            <h2 class="page-title">你的MBTI是</h2>
+            <div class="result-type" id="result-type" style="font-size:3rem;margin:30px 0;">ISTJ</div>
+            <div style="display:flex;gap:15px;justify-content:center;">
+                <button class="confirm-btn" onclick="game.confirmResult()">✓ 确认并继续</button>
+                <button class="nav-btn" onclick="game.retryTest()">重新测试</button>
+            </div>
+        </div>
+
+        <div id="char-select-page" class="page">
+            <h2 class="page-title">选择你想遇见的她</h2>
+            <p style="color:rgba(255,255,255,0.5);margin-bottom:20px;">💡 点击角色开始你们的相遇故事</p>
+            <div class="char-grid" id="char-grid"></div>
+            <button class="start-btn" onclick="game.startGame()" id="start-game-btn" disabled>开始冒险</button>
+        </div>
+
+        <div id="game-main-page" class="page">
+            <div class="top-bar">
+                <div><span class="day-badge">Day <span id="day-num">1</span></span></div>
+                <div class="energy-container">
+                    <span class="energy-icon">⚡</span>
+                    <div class="energy-bar" id="energy-bar"><div class="energy-point available"></div><div class="energy-point available"></div><div class="energy-point available"></div></div>
+                    <span class="energy-label" id="energy-label">3/3</span>
+                </div>
+                <button class="settings-btn" onclick="game.showSettings()">⚙️</button>
+            </div>
+            <div class="game-main-content">
+                <div class="section-title"><span>🎯 选择活动</span><span class="action-remain" id="action-remain">剩余 <strong>3</strong> 次行动机会</span></div>
+                <div class="activity-grid" id="activity-grid"></div>
+            </div>
+            <div class="bottom-actions"><button class="sleep-btn" onclick="game.sleep()">🌙 结束今天</button></div>
+        </div>
+
+        <div id="dialogue-overlay" class="dialogue-overlay">
+            <div class="scene-area" id="scene-area"><img class="char-portrait" id="char-portrait" src="" alt=""></div>
+            <div class="dialogue-content">
+                <div class="scene-desc" id="scene-desc"></div>
+                <div class="dialogue-area">
+                    <img class="speaker-avatar" id="speaker-avatar" src="" alt="">
+                    <div class="dialogue-area-right">
+                        <span class="speaker-name" id="speaker-name"></span>
+                        <div class="dialogue-bubble">
+                            <div class="dialogue-text" id="dialogue-text"></div>
+                            <span class="typing-cursor" id="typing-cursor" style="display:none;">|</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="choices-area" id="choices-area"></div>
+            </div>
+            <div class="dialogue-controls">
+                <button class="control-btn" onclick="game.skipDialogue()">跳过</button>
+                <button class="control-btn" onclick="game.closeDialogue()">✕</button>
+            </div>
+        </div>
+
+        <div id="daily-end-overlay" class="dialogue-overlay">
+            <div class="daily-end-content">
+                <h2 class="end-title">今日总结</h2>
+                <div class="change-list" id="change-list"></div>
+                <button class="next-day-btn" onclick="game.nextDay()">🌅 进入下一天</button>
+            </div>
+        </div>
+
+        <div id="relation-upgrade" class="relation-upgrade"></div>
+        <div id="toast" class="toast"></div>
+
+        <div id="exit-warning-overlay" class="exit-warning-overlay">
+            <div class="exit-warning-box">
+                <div class="exit-warning-icon">⚠️</div>
+                <h3 class="exit-warning-title">确定要离开吗？</h3>
+                <p class="exit-warning-text">游戏进度将自动保存，但今天未消耗的精力将会清零。<br><br><span class="exit-warning-penalty">⚡ 今日精力将全部扣除</span></p>
+                <div class="exit-warning-btns">
+                    <button class="warning-btn continue" onclick="game.closeExitWarning()">继续游戏</button>
+                    <button class="warning-btn quit" onclick="game.confirmQuit()">确认离开</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-overlay" class="settings-overlay">
+            <div class="settings-box">
+                <h3 class="settings-title">⚙️ 游戏设置</h3>
+                <div class="settings-item">
+                    <div class="settings-label"><span>🎨</span><span>心动特效</span></div>
+                    <div class="toggle-switch active" id="toggle-effects" onclick="game.toggleEffects()"></div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label"><span>📖</span><span>文字速度</span></div>
+                    <select id="text-speed" onchange="game.setTextSpeed()" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:8px 15px;border-radius:10px;">
+                        <option value="50">快</option><option value="100" selected>正常</option><option value="150">慢</option>
+                    </select>
+                </div>
+                <button class="settings-close" onclick="game.closeSettings()">关闭</button>
+            </div>
+        </div>
+
+        <div id="guide-overlay" class="guide-overlay">
+            <div class="guide-box">
+                <div class="guide-step" id="guide-step">🎯</div>
+                <h3 class="guide-title" id="guide-title">欢迎</h3>
+                <p class="guide-text" id="guide-text">...</p>
+                <div class="guide-btns">
+                    <button class="guide-btn" onclick="game.nextGuide()">下一步</button>
+                    <button class="guide-btn guide-skip" onclick="game.closeGuide()">跳过</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="ending-overlay" class="ending-overlay">
+            <div class="ending-content">
+                <div class="ending-type" id="ending-type">💕</div>
+                <h2 class="ending-title" id="ending-title">Happy Ending</h2>
+                <p class="ending-text" id="ending-text"></p>
+                <button class="ending-btn" onclick="game.restartGame()">🔄 重新开始</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+const CONFIG={MAX_DAYS:60,MAX_ENERGY:3,ENERGY_PER_ACTIVITY:1,ATTRACTION_THRESHOLD:80,LOVE_MAINTENANCE_IGNORE_DAYS:3,LOVE_MAINTENANCE_DROP:20,EXIT_PENALTY:15,TEXT_SPEED:50,EFFECTS_ENABLED:true};
+const CHARACTERS={wenya:{id:'wenya',name:'温雅',trait:'画家 · 文艺内敛',color:'#c084fc',colorLight:'#e9d5ff',scene:'art_studio',avatar:'assets/characters/wenya_avatar.png',fullImg:'assets/characters/wenya_full.png',personality:'温柔、敏感',job:'画家',setting:'邻居'},xiayang:{id:'xiayang',name:'夏阳',trait:'健身教练 · 阳光活力',color:'#fb923c',colorLight:'#fed7aa',scene:'fitness',avatar:'assets/characters/xiayang_avatar.png',fullImg:'assets/characters/xiayang_full.png',personality:'开朗、直爽',job:'清华研究生',setting:'健身房'},sujingyi:{id:'sujingyi',name:'苏静怡',trait:'医生 · 冷淡专业',color:'#34d399',colorLight:'#a7f3d0',scene:'park',avatar:'assets/characters/sujingyi_avatar.png',fullImg:'assets/characters/sujingyi_full.png',personality:'冷静、理性',job:'医生',setting:'公园'},luxiao:{id:'luxiao',name:'陆潇',trait:'健身房老板 · 霸气自信',color:'#f43f5e',colorLight:'#fecdd3',scene:'dinner',avatar:'assets/characters/luxiao_avatar.png',fullImg:'assets/characters/luxiao_full.png',personality:'强势、有主见',job:'健身房老板',setting:'高档餐厅'},linwanqing:{id:'linwanqing',name:'林婉清',trait:'公司高管 · 干练优雅',color:'#60a5fa',colorLight:'#bfdbfe',scene:'overtime',avatar:'assets/characters/linwanqing_avatar.png',fullImg:'assets/characters/linwanqing_full.png',personality:'干练、优雅',job:'公司高管',setting:'客户'}};
+const ACTIVITIES={stay_home:{id:'stay_home',name:'宅家',icon:'🏠',desc:'在公寓休息...',energy:1,charId:'wenya',sceneClass:'scene-stay_home'},gym:{id:'gym',name:'健身房',icon:'💪',desc:'去健身房锻炼',energy:1,charId:'xiayang',sceneClass:'scene-fitness'},park:{id:'park',name:'公园',icon:'🌳',desc:'在公园散步',energy:1,charId:'sujingyi',sceneClass:'scene-park'},dinner:{id:'dinner',name:'餐厅',icon:'🍽️',desc:'去高档餐厅',energy:1,charId:'luxiao',sceneClass:'scene-dinner'},overtime:{id:'overtime',name:'加班',icon:'💼',desc:'在公司加班',energy:1,charId:'linwanqing',sceneClass:'scene-overtime'},cafe:{id:'cafe',name:'咖啡厅',icon:'☕',desc:'在咖啡厅放松',energy:1,charId:null,sceneClass:'scene-cafe'}};
+const MBTI_QUESTIONS=[{q:'周末你更想做什么？',options:[{text:'约朋友出去玩',type:'E'},{text:'一个人在家看书',type:'I'}]},{q:'你更在意细节还是整体？',options:[{text:'整体感觉',type:'N'},{text:'具体细节',type:'S'}]},{q:'做决定时，你更看重？',options:[{text:'逻辑和客观分析',type:'T'},{text:'他人感受',type:'F'}]},{q:'你更喜欢怎样的生活方式？',options:[{text:'有计划、有组织',type:'J'},{text:'灵活随性',type:'P'}]},{q:'社交场合中，你通常是？',options:[{text:'主动和别人搭话',type:'E'},{text:'等待别人来接近',type:'I'}]},{q:'面对问题时，你习惯？',options:[{text:'寻找创新的解决方案',type:'N'},{text:'用已知的方法解决',type:'S'}]},{q:'你更愿意被形容为？',options:[{text:'理性、逻辑性强',type:'T'},{text:'富有同理心',type:'F'}]},{q:'工作中，你更喜欢？',options:[{text:'按计划执行',type:'J'},{text:'随时调整',type:'P'}]}];
+const STORY_NODES={wenya:{intro:{scene:'你刚搬进新公寓，正在整理行李。窗外传来悠扬的钢琴声...',dialogue:'（钢琴声突然停了，走廊里传来轻轻的脚步声，在你门口停下了）',choices:[{text:'打开门看看是谁',delta:5,next:'wenya_2_meet'},{text:'继续整理，不理会',delta:0,next:'wenya_2_ignore'}]},wenya_2_meet:{scene:'你打开门，看到一位抱着画稿的女孩，她穿着沾了颜料的围裙',dialogue:'「啊...对不起，我以为这间还没人住。」她的声音轻轻的，眼睛有点躲闪。',choices:[{text:'「没事，我刚搬来。你是画家吗？」',delta:8,next:'wenya_3_interested'},{text:'「嗯。」（点头，没多说）',delta:0,next:'wenya_3_cold'}]},wenya_2_ignore:{scene:'你继续整理行李，但钢琴声又响起来了...而且比刚才更轻',dialogue:'（深夜，隔壁的钢琴声停了，取而代之的是轻轻的叹息声）',choices:[{text:'去敲她的门问问怎么了',delta:5,next:'wenya_3_concern'},{text:'假装没听到，翻身睡觉',delta:-2,next:'wenya_3_ignore'}]},wenya_3_interested:{scene:'温雅的眼睛亮了一下，「你...看得出来？」她下意识地把画稿往怀里收了收',dialogue:'「只是随便画的...不是专业的。你呢？是做什么工作的？」',choices:[{text:'「刚搬来，在熟悉。颜料味很好闻」',delta:8,next:'wenya_4_smell'},{text:'「咨询顾问，刚接手这边的项目」',delta:3,next:'wenya_4_work'}]},wenya_3_cold:{scene:'温雅愣了一下，礼貌地点点头就回屋了。隔壁的钢琴声也停了',dialogue:'（第二天早上，你在楼道里遇到她，她只是匆匆打了个招呼就下楼了）',choices:[{text:'追上去搭话',delta:3,next:'wenya_4_chase'},{text:'算了，各过各的',delta:-3,next:'wenya_4_distance'}]},wenya_3_concern:{scene:'你轻轻敲了敲墙，隔壁的哭声停了。几秒后，传来小心翼翼的声音',dialogue:'「...是你吗？对不起...吵到你了吗？」',choices:[{text:'「没有，弹得很好听。就是想告诉你一声」',delta:10,next:'wenya_4_touched'},{text:'「不吵。其实我一直在听」',delta:8,next:'wenya_4_touched'}]},wenya_3_ignore:{scene:'你翻了个身，迷迷糊糊睡着了。第二天在便利店遇到温雅，她的眼睛下面有淡淡的青黑',dialogue:'「...早。」（她的声音很轻，快步离开）',choices:[{text:'「昨晚睡得不好吗？」',delta:6,next:'wenya_4_care'},{text:'（点头示意，各自离开）',delta:0,next:'wenya_4_distance'}]},wenya_4_smell:{scene:'温雅愣住了，然后笑了——你第一次看到她笑。「你是第一个这么说的人。」',dialogue:'「大多数人闻到的都是颜料味，像松节油那种。」她的眼睛弯起来。',choices:[{text:'「那我可以去看看你的画吗？」',delta:10,next:'wenya_ending_he'},{text:'「我是认真的，画廊那种味道」',delta:8,next:'wenya_ending_he'}]},wenya_4_work:{scene:'温雅若有所思地点点头，「咨询顾问...听起来很忙的样子。」',dialogue:'「我爸以前也是做这行的，后来转行了。」她的眼神有些飘远。',choices:[{text:'「转行做什么了？」',delta:5,next:'wenya_5_family'},{text:'「那你画画是为了...？」',delta:8,next:'wenya_5_art'}]},wenya_4_chase:{scene:'你追到楼下，她正在扔垃圾。转过身时有点惊讶',dialogue:'「...有什么事吗？」她的语气比昨天柔和了一点。',choices:[{text:'「想问问你昨晚弹的是什么曲子，很好听」',delta:8,next:'wenya_5_music'},{text:'「没什么，就是想打个招呼」',delta:3,next:'wenya_5_greet'}]},wenya_4_distance:{scene:'一周过去了。你和温雅几乎没有交集，偶尔在走廊遇到也只是礼貌性地点个头',dialogue:'（隔壁的钢琴声总在深夜响起，但比第一晚轻了很多）',choices:[{text:'...其实有点可惜',delta:2,next:'wenya_5_regret'},{text:'算了，这样也挺好',delta:0,next:'wenya_5_alone'}]},wenya_4_touched:{scene:'隔壁安静了很久。然后门轻轻打开了一条缝。温雅站在门口，眼睛有点红',dialogue:'「你...真的在听吗？我以为没人会在意...弹错了好多遍...」',choices:[{text:'「真的。我不是随便说说」',delta:10,next:'wenya_5_breakthrough'},{text:'「下次可以弹给我听完整版的」',delta:8,next:'wenya_5_breakthrough'}]},wenya_4_care:{scene:'温雅愣了一下，「...你怎么知道？」她的语气有点防备',dialogue:'「我没事，只是...在准备一个画展，有点焦虑。」',choices:[{text:'「要一起出去走走吗？透透气」',delta:10,next:'wenya_ending_he'},{text:'「画展加油！有什么需要帮忙的吗？」',delta:5,next:'wenya_ending_he'}]},wenya_5_family:{scene:'温雅低下头，「我爸妈...离婚了。我爸现在做策展，我妈还在画廊。」',dialogue:'「小时候他们经常一起听我弹琴...后来就不听了。」',choices:[{text:'「所以你弹琴是为了...？」',delta:5,next:'wenya_ending_he'},{text:'「谢谢你告诉我这些」',delta:8,next:'wenya_ending_he'}]},wenya_5_art:{scene:'温雅的眼神变得柔和，「画画的时候...我可以忘记很多事情。」',dialogue:'「不开心的事。让我觉得世界还是安静的。」',choices:[{text:'「那以后可以给我看看你的画吗？」',delta:10,next:'wenya_ending_he'},{text:'「我也是，我搬来就是为了重新开始」',delta:8,next:'wenya_ending_he'}]},wenya_5_music:{scene:'温雅的眼睛亮了，「你...记得？」她的声音有点颤抖',dialogue:'「是肖邦的夜曲第七首。不算热门...我爸以前也弹这首。」',choices:[{text:'「今晚弹给我听完整版？」',delta:10,next:'wenya_ending_he'},{text:'「你爸爸一定很厉害」',delta:8,next:'wenya_ending_he'}]},wenya_5_greet:{scene:'温雅淡淡一笑，「嗯...再见。」（她拎着垃圾快步离开了）',dialogue:'（那天晚上，钢琴声比往常晚了两个小时才开始）',choices:[{text:'去敲墙说晚安',delta:5,next:'wenya_ending_he'},{text:'安静地听着入睡',delta:3,next:'wenya_ending_he'}]},wenya_5_regret:{scene:'凌晨两点，你终于忍不住起身，走到门口。犹豫了很久',dialogue:'（门把手上挂着一幅小画——是新画的，梧桐叶，金黄色）',choices:[{text:'敲门，问她要不要一起吃宵夜',delta:10,next:'wenya_ending_he'},{text:'算了，再等等看',delta:-3,next:'wenya_ending_ne'}]},wenya_5_alone:{scene:'时间一天天过去。你习惯了一个人安静的生活',dialogue:'（有一天，你路过中介，看到一张招租广告。隔壁要换租客了）',choices:[{text:'...（驻足看了很久）',delta:0,next:'wenya_ending_be'},{text:'去问问她是不是要搬走',delta:5,next:'wenya_ending_he'}]},wenya_5_breakthrough:{scene:'那天晚上，你坐在温雅家的小客厅里。墙上挂满了她的画——颜色都很温柔',dialogue:'「我...很久没有在别人面前弹了。」（她的手指落在琴键上）',choices:[{text:'这首曲子...好像有点悲伤',delta:10,next:'wenya_ending_he'},{text:'弹得真好听（安静欣赏）',delta:5,next:'wenya_ending_he'}]},wenya_ending_he:{scene:'温雅伸出手，握住了你的手。她的手有点凉，但握得很紧',dialogue:'「那...我们试试看。」（她的眼眶红了，但嘴角是弯的）',choices:[{text:'温雅，我喜欢你',delta:0,next:'wenya_final',isEnding:true}]},wenya_final:{scene:'一年后，你们的画廊开业了。就在老弄堂的梧桐树下',dialogue:'「你知道吗，这首曲子叫《Bloom》。谢谢你，让我愿意试试看。」',choices:[]},wenya_ending_ne:{scene:'你们偶尔会在走廊里遇到。温雅还是会给你送曲奇',dialogue:'（你们的关系停在了"最好的朋友"这个位置。有时候你会想，如果当初勇敢一点...）',choices:[]},wenya_ending_be:{scene:'你一个人站在走廊里。隔壁的灯灭了。钢琴声也消失了',dialogue:'（梧桐叶还在落，但再也没有人为你弹那首夜曲了）',choices:[]}},xiayang:{intro:{scene:'你办了一张附近健身房的月卡。第一天到了，你有点紧张',dialogue:'角落里，一个扎着高马尾的女生正在做引体向上——是的，引体向上。她的运动背心已经被汗浸透了',choices:[{text:'好！我是新手，多关照',delta:5,next:'xiayang_2_friendly'},{text:'你力气好大！是怎么练的？',delta:8,next:'xiayang_2_strength'}]},xiayang_2_friendly:{scene:'夏阳从单杠上跳下来，走到你面前，近距离看，她比想象中更高',dialogue:'「新手好啊！我最喜欢带新人了！走，我带你认识一下器械！」',choices:[{text:'你每天都这么练？不觉累吗？',delta:3,next:'xiayang_3_daily'},{text:'你是教练吗？',delta:5,next:'xiayang_3_identity'}]},xiayang_2_strength:{scene:'夏阳的眼睛亮了。「你眼光不错啊！我是练体育的，现在在清华读研究生。」',dialogue:'「不过大家都觉得我就是四肢发达...」（她挠了挠头）',choices:[{text:'四肢发达怎么了？厉害啊',delta:8,next:'xiayang_3_support'},{text:'运动人体科学？听起来很专业啊',delta:6,next:'xiayang_3_academic'}]},xiayang_3_daily:{scene:'夏阳笑了，笑得很爽朗。「习惯了！一天不练就浑身难受！」',dialogue:'「清华那帮学霸太卷了，我只能靠这个找点存在感。」（她说完自己愣了一下）',choices:[{text:'清华学霸也会自卑啊？（轻松调侃）',delta:5,next:'xiayang_4_joke'},{text:'你不是说你练体育的吗？体育生也很厉害的',delta:8,next:'xiayang_4_support'}]},xiayang_3_identity:{scene:'夏阳摇摇头。「不是教练啦。清华的研究生，田径方向。体育生出身。」',dialogue:'「所以我除了运动什么都不会...」（她的动作变得更用力了）',choices:[{text:'会运动已经很厉害了。我连跑步都坚持不下来',delta:8,next:'xiayang_4_relatable'},{text:'那你学历已经比我高了，别凡尔赛了',delta:5,next:'xiayang_4_joke'}]},xiayang_3_support:{scene:'夏阳停下动作，看着你。「真的吗？大多数人听到我是体育生，第一反应都是...」',dialogue:'「'那你学习肯定不好'...」（她低下头，假装在整理哑铃）',choices:[{text:'他们不信是他们的事。你自己信就行了',delta:10,next:'xiayang_4_encourage'},{text:'能坚持走到清华已经很厉害了',delta:8,next:'xiayang_4_validate'}]},xiayang_3_academic:{scene:'夏阳的表情变得复杂了一点。「专业？那可太专业了...」',dialogue:'「运动生理学、运动生物化学、运动解剖学...」（她叹了口气）「不过也挺好的」',choices:[{text:'听起来很酷。能给我讲讲吗？',delta:8,next:'xiayang_4_passion'},{text:'那你以后想当教练还是老师？',delta:5,next:'xiayang_4_future'}]},xiayang_4_joke:{scene:'夏阳愣了一下，然后笑了。「哈哈哈，你还挺会说话的。」',dialogue:'「其实也不是自卑啦，就是...有时候会觉得自己不够好。跑步的时候就不用想那么多。」',choices:[{text:'那改天带我一起跑？',delta:8,next:'xiayang_5_track'},{text:'你有想过以后做什么吗？',delta:5,next:'xiayang_5_future'}]},xiayang_4_support:{scene:'夏阳的眼眶红了一下。「你...是第一个这么说的人。」',dialogue:'「明天早上六点，要不要一起去清华跑步？」（她的眼睛亮晶晶的）',choices:[{text:'好！几点见？',delta:10,next:'xiayang_5_track'},{text:'六点？太早了吧...但为了你我试试',delta:8,next:'xiayang_5_track'}]},xiayang_4_relatable:{scene:'夏阳看着你，突然大笑起来。「哈哈哈，你这也太谦虚了！」',dialogue:'「你是做什么工作的？」（她歪着头看你）',choices:[{text:'咨询顾问，每天和数据打交道',delta:3,next:'xiayang_5_work'},{text:'普通上班族，不厉害（自嘲）',delta:5,next:'xiayang_5_relate'}]},xiayang_4_encourage:{scene:'夏阳愣住了。她看着你，眼眶有点红',dialogue:'「你知道吗...我前男友也说过类似的话。」（她低下头）「但后来他说，'你就是四肢发达而已'」',choices:[{text:'那个人是瞎了眼。你值得更好的人',delta:10,next:'xiayang_5_protective'},{text:'时间会证明一切的（认真）',delta:5,next:'xiayang_5_prove'}]},xiayang_4_validate:{scene:'夏阳深吸了一口气。「嗯...我知道。」（她站起来，伸了个懒腰）',dialogue:'「谢谢你愿意听我说这些。其实平时我不太跟人说这些的...」',choices:[{text:'那是我的荣幸（微微笑）',delta:5,next:'xiayang_5_track'},{text:'那以后可以多说点（认真）',delta:8,next:'xiayang_5_trust'}]},xiayang_4_passion:{scene:'夏阳的眼睛亮了。她开始滔滔不绝地讲起来——运动时身体会分泌什么激素...',dialogue:'「不好意思，我说太多了...大家都说我话多，像个话痨。」',choices:[{text:'不，我觉得很厉害。能把喜欢的事情讲得这么清楚',delta:10,next:'xiayang_5_passion'},{text:'我喜欢听你说话（直接）',delta:12,next:'xiayang_ending_he'}]},xiayang_4_future:{scene:'夏阳沉默了一会儿。「说实话...我也不知道。当教练？当老师？」',dialogue:'「有时候觉得走一步看一步也挺好的。但有时候又很迷茫。」',choices:[{text:'不管做什么，你肯定会做得很好',delta:8,next:'xiayang_5_support'},{text:'迷茫是正常的。重要的是你在想这个问题',delta:5,next:'xiayang_5_support'}]},xiayang_5_track:{scene:'第二天早上六点，你准时到了操场。夏阳已经在跑了，马尾辫在身后甩来甩去',dialogue:'「你来啦！」（她冲你挥挥手，笑容灿烂得像是早晨的太阳）',choices:[{text:'（跟着她一起跑）',delta:8,next:'xiayang_ending_he'},{text:'你每天都这么早起来？',delta:5,next:'xiayang_ending_he'}]},xiayang_5_work:{scene:'夏阳若有所思地点点头。「咨询顾问...听起来很厉害的样子。」',dialogue:'「那你肯定很聪明。不像我，只会运动。」',choices:[{text:'运动也需要聪明的大脑好吗',delta:8,next:'xiayang_ending_he'},{text:'你也可以学啊，我教你',delta:10,next:'xiayang_ending_he'}]},xiayang_5_relate:{scene:'夏阳捶了你一拳。「普通上班族？我看你一点都不普通！」',dialogue:'「至少你愿意来健身房，愿意主动和人说话。这已经很厉害了。」',choices:[{text:'那都是因为你很热情',delta:8,next:'xiayang_ending_he'},{text:'你也很好，很真诚',delta:10,next:'xiayang_ending_he'}]},xiayang_5_protective:{scene:'夏阳愣住了。她看着你，眼眶红了',dialogue:'「你...是认真的吗？」（她的声音有点抖）',choices:[{text:'当然。我从不说假话',delta:10,next:'xiayang_ending_he'},{text:'而且跑步的时候你最好看',delta:12,next:'xiayang_ending_he'}]},xiayang_5_prove:{scene:'夏阳笑了，笑容里有一种释然',dialogue:'「嗯...谢谢你。我会证明给所有人看的。」',choices:[{text:'到时候我给你加油',delta:8,next:'xiayang_ending_he'},{text:'我相信你一定可以',delta:10,next:'xiayang_ending_he'}]},xiayang_5_trust:{scene:'夏阳看着你，眼神里有一种你没见过的认真',dialogue:'「那...我以后有烦恼就找你？」',choices:[{text:'随时都可以',delta:10,next:'xiayang_ending_he'},{text:'不过你要请我喝咖啡作为报酬',delta:8,next:'xiayang_ending_he'}]},xiayang_5_passion:{scene:'夏阳愣了一下，然后笑了——这是她最真实的笑容',dialogue:'「你这人...还挺会说话的。」（她的耳尖有点红）',choices:[{text:'那改天一起去看你比赛？',delta:10,next:'xiayang_ending_he'},{text:'我更想看你笑',delta:12,next:'xiayang_ending_he'}]},xiayang_5_support:{scene:'夏阳深吸一口气。「嗯...我会好好想的。」',dialogue:'「不过现在...」（她看着你）「有你陪我就好」',choices:[{text:'（握住她的手）我一直在',delta:12,next:'xiayang_ending_he'},{text:'那我们一起加油',delta:8,next:'xiayang_ending_he'}]},xiayang_ending_he:{scene:'夏阳站在你面前，阳光打在她身上，像是在发光',dialogue:'「你知道吗...你让我觉得，被人认真喜欢是什么感觉。」',choices:[{text:'夏阳，我喜欢你',delta:0,next:'xiayang_final',isEnding:true}]},xiayang_final:{scene:'一年后，夏阳站在领奖台上。观众席里，你举着为她加油的横幅',dialogue:'「谢谢你...让我相信，我值得被喜欢。」（她的眼睛红红的，但笑得很灿烂）',choices:[]},xiayang_ending_ne:{scene:'你们还是会一起去跑步，一起喝咖啡',dialogue:'「谢谢你...一直陪着我。」（她拍了拍你的肩膀）「但是...我还没准备好谈恋爱」',choices:[]}},sujingyi:{intro:{scene:'周日的下午，你在公园的长椅上坐着，享受难得的悠闲时光',dialogue:'一位穿着便装的女生从远处走来，在草坪边坐下看书，阳光洒在她侧脸上',choices:[{text:'走过去搭话',delta:5,next:'sujingyi_2_approach'},{text:'继续看自己的书',delta:0,next:'sujingyi_2_ignore'}]},sujingyi_2_approach:{scene:'你走近一看，发现她正在看一本厚厚的医学期刊',dialogue:'「你也喜欢在这种地方看书吗？」（她抬起头，眼神平静但不失礼貌）',choices:[{text:'「医院的工作不忙吗？」',delta:5,next:'sujingyi_3_work'},{text:'「看什么书呢？」（好奇地问）',delta:8,next:'sujingyi_3_curious'}]},sujingyi_2_ignore:{scene:'时间一分一秒过去。夕阳西下时，她合上书，起身准备离开',dialogue:'（经过你身边时，她礼貌地点了点头）「天气真好。」（她轻声说）',choices:[{text:'「嗯，周末难得的好天气」',delta:3,next:'sujingyi_3_weather'},{text:'（目送她离开）',delta:0,next:'sujingyi_3_leave'}]},sujingyi_3_work:{scene:'她轻轻叹了口气。「忙。特别是值夜班的时候。」',dialogue:'「不过周末会尽量抽时间来公园坐坐。」（她看着夕阳）「这已经成习惯了」',choices:[{text:'「那我们还挺像的，我也是每周末来」',delta:8,next:'sujingyi_4_share'},{text:'「医生很辛苦吧？要照顾好自己」',delta:5,next:'sujingyi_4_care'}]},sujingyi_3_curious:{scene:'她把杂志封面转过来给你看——《新英格兰医学期刊》',dialogue:'「是关于心脏移植的研究论文。」（她的语气很平淡）「很无聊吧？」',choices:[{text:'「听起来很专业，能给我讲讲吗？」',delta:8,next:'sujingyi_4_explain'},{text:'「不懂医学，但觉得你很厉害」',delta:10,next:'sujingyi_4_admire'}]},sujingyi_3_weather:{scene:'她微微一笑。「是啊。周日的傍晚，总是让人很放松。」',dialogue:'（她看了你一眼）「你也经常来这里吗？」',choices:[{text:'「嗯，每周末都来」',delta:5,next:'sujingyi_4_routine'},{text:'「今天第一次，感觉以后会常来」',delta:8,next:'sujingyi_4_new'}]},sujingyi_3_leave:{scene:'一周后，你又在公园看到了她。她还是坐在同一个位置，还是在看医学期刊',dialogue:'「你来了。」（她抬起头，表情依旧淡淡的）「坐吧」',choices:[{text:'（在她旁边坐下）',delta:8,next:'sujingyi_4_sit'},{text:'「你怎么知道我会来？」',delta:5,next:'sujingyi_4_know'}]},sujingyi_4_share:{scene:'她的嘴角微微上扬了一点。「是吗？那倒是巧了。」',dialogue:'「我叫苏静怡，在市中心医院工作。」（她伸出手）',choices:[{text:'（握手）我是做咨询顾问的',delta:5,next:'sujingyi_5_intro'},{text:'（握住她的手）叫我名字就好',delta:8,next:'sujingyi_5_close'}]},sujingyi_4_care:{scene:'她愣了一下，似乎没想到你会这么说',dialogue:'「谢谢...」（她的语气稍微柔和了一点）「你是第一个这么说的人」',choices:[{text:'「医生也需要被照顾」',delta:10,next:'sujingyi_ending_he'},{text:'「你看起来确实很累」',delta:5,next:'sujingyi_ending_he'}]},sujingyi_4_explain:{scene:'她微微挑眉，似乎没想到你会感兴趣',dialogue:'「好，我简单说说...」（她开始耐心地解释，专业但不枯燥）',choices:[{text:'（认真听，时不时点头）',delta:8,next:'sujingyi_ending_he'},{text:'「你能通俗点讲吗？」',delta:5,next:'sujingyi_ending_he'}]},sujingyi_4_admire:{scene:'她轻轻摇头。「没什么厉害的，只是工作而已。」',dialogue:'（但你注意到她的耳尖微微红了一点）',choices:[{text:'「不只是工作吧，你一定付出了很多」',delta:10,next:'sujingyi_ending_he'},{text:'（假装没看到）那以后能常来这里吗？',delta:8,next:'sujingyi_ending_he'}]},sujingyi_4_routine:{scene:'她点点头。「我也是。大概...有三年了吧。」',dialogue:'「每周日下午两点到五点。」（她的语气很平静）「如果不值班的话」',choices:[{text:'「那我记住了，如果我也在的话」',delta:5,next:'sujingyi_ending_he'},{text:'「三年来都是一个人吗？」',delta:8,next:'sujingyi_ending_he'}]},sujingyi_4_new:{scene:'她的嘴角微微上扬了一点。「那欢迎你成为常客。」',dialogue:'「这里的夕阳很美。」（她看向远方）',choices:[{text:'「和你一起看的话更美」',delta:10,next:'sujingyi_ending_he'},{text:'「你经常一个人看夕阳吗？」',delta:5,next:'sujingyi_ending_he'}]},sujingyi_4_sit:{scene:'你坐在她旁边。她继续看杂志，但坐姿稍微转向你一点',dialogue:'「今天想看什么？」（她把杂志递过来）',choices:[{text:'「你推荐什么我就看什么」',delta:8,next:'sujingyi_ending_he'},{text:'「不如你给我讲讲你的工作」',delta:5,next:'sujingyi_ending_he'}]},sujingyi_4_know:{scene:'她轻轻摇头。「不是知道。只是...」（她停顿了一下）「期待」',dialogue:'「期待每周日的下午，会有人在。」（她的眼神有一瞬间的柔软）',choices:[{text:'「那我以后每周都来」',delta:10,next:'sujingyi_ending_he'},{text:'「你也在期待我来吗？」',delta:8,next:'sujingyi_ending_he'}]},sujingyi_5_intro:{scene:'她点点头。「咨询顾问...听起来很忙的样子。」',dialogue:'「不过，能帮到别人就很好了。」（她看向远方）「不管是哪个行业」',choices:[{text:'「你呢？当医生是你的理想吗？」',delta:8,next:'sujingyi_ending_he'},{text:'「有空的话，能给我讲讲医院的事吗？」',delta:5,next:'sujingyi_ending_he'}]},sujingyi_5_close:{scene:'她愣了一下，然后轻轻笑了——你第一次看到她笑',dialogue:'「好。」（她把手放在膝盖上）「你叫什么名字？」',choices:[{text:'（告诉了她自己的名字）',delta:8,next:'sujingyi_ending_he'},{text:'「等我们更熟一点再告诉你」',delta:5,next:'sujingyi_ending_he'}]},sujingyi_ending_he:{scene:'夕阳西下，你们并肩坐在长椅上。她靠在你肩上，呼吸渐渐变得平稳',dialogue:'「...谢谢你。」（她的声音很轻）「让我觉得...不孤单」',choices:[{text:'静怡，我喜欢你',delta:0,next:'sujingyi_final',isEnding:true}]},sujingyi_final:{scene:'半年后，她值班的时候，你会带着夜宵来看她',dialogue:'「你知道吗...你是第一个让我愿意分享生活的人。」（她的眼眶微微泛红）',choices:[]},sujingyi_ending_ne:{scene:'你们还是会每周在公园见面。但始终保持着一定的距离',dialogue:'「谢谢你的陪伴。」（她微微笑了）「但我...还没准备好」',choices:[]}},luxiao:{intro:{scene:'你被朋友拉去一家高档法餐厅，说是有人要谈生意',dialogue:'包厢里，一个穿着黑色连衣裙的女人正在看红酒标签，气场强大得让人不敢靠近',choices:[{text:'「你好，我是...」',delta:5,next:'luxiao_2_intro'},{text:'（点头致意，没多说）',delta:0,next:'luxiao_2_silent'}]},luxiao_2_intro:{scene:'她抬起头，目光如刀。「知道了。坐吧。」',dialogue:'（朋友悄悄说：她就是这家健身房的老板，陆潇。别惹她）',choices:[{text:'「久仰大名」',delta:3,next:'luxiao_3_famous'},{text:'「看起来很忙的样子」',delta:5,next:'luxiao_3_busy'}]},luxiao_2_silent:{scene:'她看了你一眼，眼神里有一丝意外。「你倒是沉得住气。」',dialogue:'「大多数人见到我，都会迫不及待地自我介绍。」',choices:[{text:'「我觉得行动比说话重要」',delta:8,next:'luxiao_3_action'},{text:'「因为不知道说什么...」',delta:3,next:'luxiao_3_honest'}]},luxiao_3_famous:{scene:'她冷笑一声。「久仰？闻健身房倒闭的事迹吗？」',dialogue:'（她喝了口红酒）「还是连锁店扩张的光辉历史？」',choices:[{text:'「我听说的是，您把一家店做成了连锁」',delta:8,next:'luxiao_4_success'},{text:'「不管哪个，都很厉害」',delta:5,next:'luxiao_4_compliment'}]},luxiao_3_busy:{scene:'她放下酒杯。「忙？每天都在做决定，小到进货，大到战略。」',dialogue:'「累。但停不下来。」（她的语气里有一丝疲惫）',choices:[{text:'「有没有想过放一天假？」',delta:5,next:'luxiao_4_vacation'},{text:'「累的时候，有人陪你吗？」',delta:8,next:'luxiao_4_accompany'}]},luxiao_3_action:{scene:'她的眼睛闪了一下。「有意思。」（她重新打量你）',dialogue:'「那你倒是说说，你有什么行动？」',choices:[{text:'「比如...先给您倒杯酒？」',delta:8,next:'luxiao_4_pour'},{text:'「以后你就知道了」',delta:5,next:'luxiao_4_future'}]},luxiao_3_honest:{scene:'她笑了——不是客套的笑，是真的被逗乐了',dialogue:'「你这人还挺实在的。」（她给你倒了一杯酒）「来，陪我喝一杯」',choices:[{text:'（接过酒杯，一饮而尽）',delta:8,next:'luxiao_4_drink'},{text:'「谢谢，但我酒量不好」',delta:5,next:'luxiao_4_refuse'}]},luxiao_4_success:{scene:'她的表情微微缓和了一点。「你倒是会说话。」',dialogue:'「不过确实，那时候是我最意气风发的时候。」（她看向窗外）',choices:[{text:'「现在呢？」',delta:5,next:'luxiao_5_now'},{text:'「现在的你更迷人」',delta:10,next:'luxiao_ending_he'}]},luxiao_4_compliment:{scene:'她挑了挑眉。「你这人，夸人都夸不到点上。」',dialogue:'（但她的语气没有生气，反而有些好奇）「你到底是谁？」',choices:[{text:'「我只是一个普通人」',delta:5,next:'luxiao_5_normal'},{text:'「普通人，慕名而来」',delta:8,next:'luxiao_ending_he'}]},luxiao_4_vacation:{scene:'她冷笑。「放假？我要是放假，下面几百号人喝西北风？」',dialogue:'（她喝了口酒）「不过...你倒是第一个关心我休不休假的人」',choices:[{text:'「那我陪你吃饭，算休息吗？」',delta:10,next:'luxiao_ending_he'},{text:'「那换我来帮你分担一些」',delta:8,next:'luxiao_ending_he'}]},luxiao_4_accompany:{scene:'她的动作顿了一下。「...没有。」（她的声音很轻）',dialogue:'「身边的人，要么怕我，要么想利用我。」（她看着红酒杯）',choices:[{text:'「我不怕你」',delta:10,next:'luxiao_ending_he'},{text:'「那他们真傻」',delta:8,next:'luxiao_ending_he'}]},luxiao_4_pour:{scene:'她看着你给她倒酒，嘴角微微上扬',dialogue:'「不错。知道先行动。」（她举起酒杯）「敬你的识相」',choices:[{text:'（碰杯，一饮而尽）',delta:8,next:'luxiao_5_toast'},{text:'「应该敬您的魄力」',delta:10,next:'luxiao_ending_he'}]},luxiao_4_future:{scene:'她挑眉。「故弄玄虚？」',dialogue:'（但她的语气里有一丝好奇）「那我倒要看看」',choices:[{text:'「不会让您失望的」',delta:8,next:'luxiao_ending_he'},{text:'（认真地点头）',delta:10,next:'luxiao_ending_he'}]},luxiao_4_drink:{scene:'她看着你一饮而尽，眼睛里有一丝赞许',dialogue:'「好酒量。」（她亲自给你满上）「再来一杯」',choices:[{text:'（继续喝）',delta:5,next:'luxiao_ending_he'},{text:'「再来我就要醉了」',delta:8,next:'luxiao_ending_he'}]},luxiao_4_refuse:{scene:'她挑眉。「不能喝？」',dialogue:'「不过也好，免得待会儿还要我送你回去。」（她轻笑）',choices:[{text:'「下次我请您喝」',delta:8,next:'luxiao_ending_he'},{text:'「那您送我回去？」',delta:10,next:'luxiao_ending_he'}]},luxiao_5_now:{scene:'她沉默了一会儿。「现在？」（她苦笑）「现在是在还债」',dialogue:'「扩张太快，资金链差点断了。」（她看向窗外）「还好挺过来了」',choices:[{text:'「那段时间一定很难熬吧」',delta:10,next:'luxiao_ending_he'},{text:'「你一个人扛下来的？」',delta:8,next:'luxiao_ending_he'}]},luxiao_5_normal:{scene:'她轻笑。「普通人？普通人可进不了这个包厢。」',dialogue:'「说吧，你到底想干什么？」（她的目光很锐利）',choices:[{text:'「就是想认识你」',delta:10,next:'luxiao_ending_he'},{text:'「想看看传说中的陆潇是什么样」',delta:8,next:'luxiao_ending_he'}]},luxiao_5_toast:{scene:'碰杯声中，你们的距离似乎拉近了一点',dialogue:'「你这人，还挺有意思的。」（她的眼神柔和了一些）',choices:[{text:'「那我能再约您吗？」',delta:10,next:'luxiao_ending_he'},{text:'「谢谢您愿意给我机会」',delta:8,next:'luxiao_ending_he'}]},luxiao_ending_he:{scene:'餐厅的灯光很柔和，她的眼睛里倒映着烛火的光芒',dialogue:'「你...是第一个让我放下防备的人。」（她的声音很轻）',choices:[{text:'陆潇，我喜欢你',delta:0,next:'luxiao_final',isEnding:true}]},luxiao_final:{scene:'一年后，她的健身房开业了五周年庆典。你站在她身边',dialogue:'「谢谢你...让我相信，我可以不用那么强势。」（她的眼眶红了）「也可以被保护」',choices:[]},luxiao_ending_ne:{scene:'你们保持着联系，偶尔一起吃饭。但始终没有更进一步',dialogue:'「你是个好人...但我还没准备好。」（她摇了摇头）',choices:[]}},linwanqing:{intro:{scene:'周一晚上，你被临时叫回公司处理紧急项目',dialogue:'会议室里，一个穿着职业套装的女人正在翻看文件，金丝眼镜后的眼神很锐利',choices:[{text:'「您好，我是...」',delta:5,next:'linwanqing_2_intro'},{text:'（点头致意，坐下准备）',delta:3,next:'linwanqing_2_silent'}]},linwanqing_2_intro:{scene:'她抬起头，目光扫过你。「知道了。坐吧。」',dialogue:'（同事悄悄说：这是林总，合作方的客户。别惹她）',choices:[{text:'「林总好」',delta:3,next:'linwanqing_3_respect'},{text:'「希望这次合作愉快」',delta:5,next:'linwanqing_3_cooperate'}]},linwanqing_2_silent:{scene:'她看了你一眼，眼神里有一丝赞许',dialogue:'「不错，知道什么时候该说话，什么时候该闭嘴。」（她翻开文件）',choices:[{text:'「谢谢林总夸奖」',delta:5,next:'linwanqing_3_thanks'},{text:'「那我们开始？」',delta:8,next:'linwanqing_3_start'}]},linwanqing_3_respect:{scene:'她点点头。「不用这么客气，叫我婉清就行。」',dialogue:'（你注意到她揉了揉眉心，看起来很疲惫）',choices:[{text:'「林总...您看起来很累」',delta:5,next:'linwanqing_4_tired'},{text:'「工作很忙吧？」',delta:3,next:'linwanqing_4_busy'}]},linwanqing_3_cooperate:{scene:'她挑眉。「合作愉快？先把这个项目做好了再说吧。」',dialogue:'「不过...」（她停顿了一下）「你的态度，我挺喜欢的」',choices:[{text:'「我会尽全力的」',delta:5,next:'linwanqing_4_work'},{text:'「谢谢您的认可」',delta:8,next:'linwanqing_4_recognize'}]},linwanqing_3_thanks:{scene:'她轻笑。「不用谢。只是陈述事实。」',dialogue:'（她继续看文件，但偶尔会抬头看你一眼）',choices:[{text:'（安静地等待）',delta:5,next:'linwanqing_4_wait'},{text:'「有什么我能帮忙的吗？」',delta:8,next:'linwanqing_4_help'}]},linwanqing_3_start:{scene:'她点点头。「好，开始吧。」（她把文件推到你面前）',dialogue:'「这是我提的一些要求，有问题可以提出来。」',choices:[{text:'「这些都没问题」',delta:5,next:'linwanqing_4_ok'},{text:'「有几个地方想和您讨论一下」',delta:8,next:'linwanqing_4_discuss'}]},linwanqing_4_tired:{scene:'她愣了一下，摘下眼镜揉了揉眼睛',dialogue:'「...被你看出来了。」（她的语气里有一丝意外）「已经连续加班一周了」',choices:[{text:'「那也要注意身体」',delta:8,next:'linwanqing_ending_he'},{text:'「您一个人扛着吗？」',delta:10,next:'linwanqing_ending_he'}]},linwanqing_4_busy:{scene:'她冷笑。「忙？每天都在做决策，几十亿的合同要看。」',dialogue:'「累。但这就是我的工作。」（她摘下眼镜，揉了揉眉心）',choices:[{text:'「成功人士也有烦恼啊」',delta:8,next:'linwanqing_ending_he'},{text:'「再忙也要照顾好自己」',delta:10,next:'linwanqing_ending_he'}]},linwanqing_4_work:{scene:'她点点头。「好，那就看你的表现了。」',dialogue:'（会议结束后，她站起来整理文件）「谢谢你的配合」',choices:[{text:'「以后有机会再合作」',delta:5,next:'linwanqing_ending_ne'},{text:'「林总，能加个联系方式吗？」',delta:8,next:'linwanqing_ending_he'}]},linwanqing_4_recognize:{scene:'她挑眉看了你一眼。「谢谢。」（她的语气平淡，但没有之前那么冷漠）',dialogue:'「很久没人这么说了。大多数人只会恭维。」',choices:[{text:'「我是认真的」',delta:8,next:'linwanqing_ending_he'},{text:'「恭维的话没意义」',delta:5,next:'linwanqing_ending_he'}]},linwanqing_4_wait:{scene:'会议结束后，她开始收拾文件。你注意到她的咖啡已经凉了',dialogue:'「你还没走？」（她看了你一眼）「今天辛苦你了」',choices:[{text:'「您也是，这么晚还在加班」',delta:5,next:'linwanqing_ending_ne'},{text:'「我送您下楼吧」',delta:8,next:'linwanqing_ending_he'}]},linwanqing_4_help:{scene:'她抬起头，有些意外。「帮我？」（她轻笑）「大多数人都巴不得早点结束」',dialogue:'「不过...谢谢你。」（她的语气稍微柔和了一点）',choices:[{text:'「以后有什么需要帮忙的可以找我」',delta:8,next:'linwanqing_ending_he'},{text:'「能请您喝杯咖啡吗？」',delta:10,next:'linwanqing_ending_he'}]},linwanqing_4_ok:{scene:'她点点头。「好，那就按这个方案执行。」（她合上文件）',dialogue:'「今晚辛苦了。」（她站起身，伸了个懒腰）',choices:[{text:'「您也是，早点休息」',delta:5,next:'linwanqing_ending_ne'},{text:'「以后还能请教您吗？」',delta:8,next:'linwanqing_ending_he'}]},linwanqing_4_discuss:{scene:'她认真听完你的建议，眼睛里闪过一丝赞许',dialogue:'「说得不错。」（她记下你的意见）「你的想法很有建设性」',choices:[{text:'「谢谢林总的指导」',delta:5,next:'linwanqing_ending_ne'},{text:'「您愿意给我您的联系方式吗？」',delta:10,next:'linwanqing_ending_he'}]},linwanqing_ending_he:{scene:'深夜的办公室很安静，只剩下你们两个人。她摘下眼镜，揉了揉眼睛',dialogue:'「...谢谢你今晚的陪伴。很久没有人这样关心过我了。」（她的语气里有一丝脆弱）',choices:[{text:'婉清，我喜欢你',delta:0,next:'linwanqing_final',isEnding:true}]},linwanqing_final:{scene:'三个月后，你们的关系越来越近。她不再是那个高高在上的林总',dialogue:'「你知道吗...你是第一个让我愿意放下防备的人。」（她的眼眶微微泛红）「谢谢你愿意等我」',choices:[]},linwanqing_ending_ne:{scene:'会议结束后，你们的合作很顺利。但始终保持着职业的距离',dialogue:'「以后有机会再合作。」（她礼貌地点点头）「谢谢你今晚的配合」',choices:[]}}};
+class GameState{constructor(){this.day=1;this.energy=CONFIG.MAX_ENERGY;this.mbti='';this.selectedChar=null;this.charAttitudes={};this.charUnlocked={};this.charLastContact={};this.reset()}reset(){Object.keys(CHARACTERS).forEach(id=>{this.charAttitudes[id]=50;this.charUnlocked[id]=false;this.charLastContact[id]=0})}save(){localStorage.setItem('bloom_v4_save',JSON.stringify({day:this.day,energy:this.energy,mbti:this.mbti,selectedChar:this.selectedChar,charAttitudes:this.charAttitudes,charUnlocked:this.charUnlocked,charLastContact:this.charLastContact}))}load(){const data=localStorage.getItem('bloom_v4_save');if(!data)return false;Object.assign(this,JSON.parse(data));return true}hasSave(){return!!localStorage.getItem('bloom_v4_save')}}
+const HeartEffects={petalContainer:null,init(){this.petalContainer=document.getElementById('petal-container')},showPetals(count=15,duration=6000){if(!CONFIG.EFFECTS_ENABLED||!this.petalContainer)return;this.petalContainer.innerHTML='';this.petalContainer.style.display='block';const colors=['#ffb6c1','#ffc0cb','#fff0f5','#ffe4e1'];for(let i=0;i<count;i++){const petal=document.createElement('div');petal.className='petal';petal.style.left=Math.random()*100+'%';petal.style.animationDuration=(3+Math.random()*3)+'s';petal.style.animationDelay=Math.random()*2+'s';petal.style.background=`linear-gradient(135deg,${colors[Math.floor(Math.random()*colors.length)]} 0%,${colors[Math.floor(Math.random()*colors.length)]} 100%)`;petal.style.width=(10+Math.random()*10)+'px';petal.style.height=petal.style.width;this.petalContainer.appendChild(petal)}setTimeout(()=>{if(this.petalContainer){this.petalContainer.style.display='none';this.petalContainer.innerHTML=''}},duration)},triggerScreenShake(){if(!CONFIG.EFFECTS_ENABLED)return;const container=document.getElementById('game-container');container.classList.add('screen-shake');setTimeout(()=>container.classList.remove('screen-shake'),500)},triggerFlash(){if(!CONFIG.EFFECTS_ENABLED)return;const flash=document.createElement('div');flash.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:white;opacity:0;z-index:9999;pointer-events:none;animation:flash 0.4s ease-out;';document.body.appendChild(flash);setTimeout(()=>flash.remove(),400)},createFloatingHearts(targetEl,count=5){if(!CONFIG.EFFECTS_ENABLED)return;const rect=targetEl?targetEl.getBoundingClientRect():{left:window.innerWidth/2,top:window.innerHeight/2,width:0,height:0};const container=document.createElement('div');container.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1000;overflow:hidden;';document.body.appendChild(container);for(let i=0;i<count;i++){const heart=document.createElement('div');heart.innerHTML='❤';heart.style.cssText=`position:absolute;left:${rect.left+rect.width/2+(Math.random()-0.5)*50}px;top:${rect.top+rect.height/2}px;font-size:${16+Math.random()*12}px;color:hsl(${340+Math.random()*30},80%,65%);text-shadow:0 0 10px rgba(255,100,150,0.8);animation:heart-rise ${2+Math.random()}s ease-out forwards;animation-delay:${i*0.15}s;`;container.appendChild(heart)}setTimeout(()=>container.remove(),3500)},triggerConfessionSuccess(charEl){this.showPetals(30,8000);this.triggerFlash();setTimeout(()=>this.triggerFlash(),500);if(charEl)this.createFloatingHearts(charEl,15);this.triggerScreenShake();setTimeout(()=>this.triggerScreenShake(),300)}};
+class GameEngine{constructor(){this.state=new GameState();this.currentTestQuestion=0;this.testAnswers=[];this.selectedMbti='';this.selectedCharId=null;this.isTyping=false;this.currentChoices=[];this.currentScene=null;this.currentCharId=null;this.tutorialStep=0;this.init()}init(){this.renderMbtiGrid();this.renderCharGrid();this.renderActivityGrid();this.checkContinue();this.initStarCanvas();HeartEffects.init()}initStarCanvas(){const canvas=document.getElementById('star-canvas');if(!canvas)return;const ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;const stars=[];for(let i=0;i<100;i++){stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,size:Math.random()*2,speed:Math.random()*0.5+0.1})}const animate=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);stars.forEach(star=>{ctx.beginPath();ctx.arc(star.x,star.y,star.size,0,Math.PI*2);ctx.fillStyle=`rgba(255,255, 255, ${Math.sin(Date.now()/1000+star.x)*0.5+0.5})`;ctx.fill();star.y-=star.speed;if(star.y<0)star.y=canvas.height});requestAnimationFrame(animate)};animate()}showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id)?.classList.add('active')}checkContinue(){const btn=document.getElementById('btn-continue');if(btn)btn.disabled=!this.state.hasSave()}renderMbtiGrid(){const grid=document.getElementById('mbti-grid');if(!grid)return;const types=['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];grid.innerHTML=types.map(t=>`<button onclick="game.selectMbti('${t}')">${t}</button>`).join('')}goToMbtiSelect(){this.showPage('mbti-select-page')}goToMbtiTest(){this.showPage('mbti-test-page');this.currentTestQuestion=0;this.testAnswers=[];this.renderQuestion()}skipToCharSelect(){this.showPage('char-select-page')}selectMbti(type){this.selectedMbti=type;document.querySelectorAll('#mbti-grid button').forEach(b=>b.classList.remove('selected'));event.target.classList.add('selected');document.getElementById('mbti-confirm-btn').disabled=false}confirmMbti(){this.state.mbti=this.selectedMbti;document.getElementById('result-type').textContent=this.selectedMbti;this.showPage('mbti-result-page')}renderQuestion(){const q=MBTI_QUESTIONS[this.currentTestQuestion];document.getElementById('q-num').textContent=this.currentTestQuestion+1;document.getElementById('q-total').textContent=MBTI_QUESTIONS.length;document.getElementById('progress-fill').style.width=(this.currentTestQuestion/MBTI_QUESTIONS.length*100)+'%';document.getElementById('question-text').textContent=q.q;document.getElementById('options-list').innerHTML=q.options.map((o,i)=>`<button class="option-btn ${this.testAnswers[this.currentTestQuestion]===i?'selected':''}" onclick="game.answerQuestion(${i})">${o.text}</button>`).join('');document.getElementById('test-next-btn').disabled=this.testAnswers[this.currentTestQuestion]===undefined}answerQuestion(idx){this.testAnswers[this.currentTestQuestion]=idx;this.renderQuestion()}testBack(){if(this.currentTestQuestion>0){this.currentTestQuestion--;this.renderQuestion()}}testNext(){if(this.currentTestQuestion<MBTI_QUESTIONS.length-1){this.currentTestQuestion++;this.renderQuestion()}else{this.calculateMbti()}}calculateMbti(){const counts={E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};this.testAnswers.forEach((a,i)=>{counts[MBTI_QUESTIONS[i].options[a].type]++});let result=(counts['E']>counts['I']?'E':'I')+(counts['S']>counts['N']?'S':'N')+(counts['T']>counts['F']?'T':'F')+(counts['J']>counts['P']?'J':'P');this.selectedMbti=result;this.state.mbti=result;document.getElementById('result-type').textContent=result;this.showPage('mbti-result-page')}retryTest(){this.currentTestQuestion=0;this.testAnswers=[];this.showPage('mbti-test-page');this.renderQuestion()}confirmResult(){this.showPage('char-select-page')}renderCharGrid(){const grid=document.getElementById('char-grid');if(!grid)return;grid.innerHTML=Object.values(CHARACTERS).map(c=>`<div class="char-card ${this.state.charUnlocked[c.id]?'':'locked'}" style="--char-color:${c.color};--char-glow:${c.color}40;" onclick="game.selectChar('${c.id}')" id="char-${c.id}"><div class="char-avatar" style="border-color:${c.color};background:${c.color}20;"><img src="${c.avatar}" alt="${c.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><span style="display:none;color:${c.color};font-size:2rem;">${c.name[0]}</span></div><div class="char-name">${c.name}</div><div class="char-trait">${c.trait}</div><div class="char-affection-bar"><div class="char-affection-fill" style="width:${this.state.charAttitudes[c.id]||50}%;background:${c.color};"></div></div></div>`).join('')}selectChar(id){if(!this.state.charUnlocked[id]){this.showToast('🔒 需要先完成其他角色的故事线');return}this.selectedCharId=id;this.state.selectedChar=id;document.querySelectorAll('.char-card').forEach(c=>c.classList.remove('selected'));document.getElementById('char-'+id).classList.add('selected');document.getElementById('start-game-btn').disabled=false}startNewStory(){if(this.state.hasSave()&&confirm('继续已有存档还是开始新游戏？')){this.continueGame();return}this.state.reset();this.showPage('mbti-page')}startGame(){if(!this.selectedCharId)return;this.state.selectedChar=this.selectedCharId;this.state.charUnlocked[this.selectedCharId]=true;this.state.save();this.renderActivityGrid();this.showPage('game-main-page');this.updateUI();this.showToast('🎉 '+CHARACTERS[this.selectedCharId].name+' 的故事开始了！');HeartEffects.showPetals(20,5000);if(!localStorage.getItem('bloom_v4_guide_shown'))this.showGuide()}continueGame(){if(this.state.load()){this.selectedCharId=this.state.selectedChar;this.renderActivityGrid();this.showPage('game-main-page');this.updateUI();this.showToast('📖 继续游戏')}}renderActivityGrid(){const grid=document.getElementById('activity-grid');if(!grid)return;grid.innerHTML=Object.values(ACTIVITIES).map(a=>`<div class="activity-card ${this.state.energy<=0?'disabled':''}" onclick="game.doActivity('${a.id}')" id="activity-${a.id}"><div class="activity-icon">${a.icon}</div><div class="activity-name">${a.name}</div><div class="activity-desc">${a.desc}</div><div class="activity-energy">-${a.energy}</div></div>`).join('')}doActivity(activityId){const activity=ACTIVITIES[activityId];if(this.state.energy<=0){this.showToast('⚠️ 精力已用完！请休息');return}this.state.energy--;this.state.save();this.updateUI();if(activity.charId){this.state.charUnlocked[activity.charId]=true;this.state.charLastContact[activity.charId]=this.state.day;this.startDialogue(activity.charId,activity.sceneClass)}else{this.showToast('☕ 在咖啡厅度过悠闲时光...');this.state.energy++;this.state.save();this.updateUI()}}startDialogue(charId,sceneClass){const char=CHARACTERS[charId];const story=STORY_NODES[charId];const startNode=story.intro||Object.values(story)[0];if(!startNode)return;this.currentScene=startNode;this.state.currentNode='intro';this.currentCharId=charId;const sceneArea=document.getElementById('scene-area');sceneArea.className='scene-area '+(sceneClass||'scene-'+char.scene);const portrait=document.getElementById('char-portrait');portrait.src=char.fullImg;portrait.style.setProperty('--char-color',char.color);portrait.style.setProperty('--char-glow',char.color+'80');const avatar=document.getElementById('speaker-avatar');avatar.src=char.avatar;avatar.style.borderColor=char.color;const nameEl=document.getElementById('speaker-name');nameEl.textContent=char.name;nameEl.style.color=char.color;document.getElementById('dialogue-overlay').classList.add('active');document.getElementById('scene-desc').textContent=startNode.scene||'';this.typeText(startNode.dialogue,()=>{this.showChoices(startNode.choices,charId)})}typeText(text,callback){this.isTyping=true;const textEl=document.getElementById('dialogue-text');const cursorEl=document.getElementById('typing-cursor');let idx=0;textEl.textContent='';cursorEl.style.display='inline';document.getElementById('choices-area').innerHTML='';const type=()=>{if(idx<text.length){textEl.textContent+=text[idx];idx++;this.typingTimeout=setTimeout(type,CONFIG.TEXT_SPEED)}else{this.isTyping=false;cursorEl.style.display='none';if(callback)callback()}};type()}skipDialogue(){if(this.typingTimeout)clearTimeout(this.typingTimeout);this.isTyping=false;document.getElementById('typing-cursor').style.display='none';if(this.currentChoices.length>0){document.getElementById('dialogue-text').textContent=this.currentScene.dialogue;this.showChoices(this.currentChoices,this.currentCharId)}}showChoices(choices,charId){if(!choices||choices.length===0){this.showEnding(charId);return}this.currentChoices=choices;const choicesArea=document.getElementById('choices-area');choicesArea.innerHTML=choices.map((c,i)=>`<button class="choice-btn" onclick="game.makeChoice(${i})">${c.text}</button>`).join('')}makeChoice(idx){const choice=this.currentChoices[idx];if(!choice)return;const charId=this.currentCharId;if(choice.isEnding){this.showEnding(charId);return}if(choice.delta){const oldAtt=this.state.charAttitudes[charId];this.state.charAttitudes[charId]=Math.max(0,Math.min(100,this.state.charAttitudes[charId]+choice.delta));this.showToast(`💕 ${choice.delta>0?'+':''}${choice.delta}`);if(choice.delta>0&&this.state.charAttitudes[charId]>=CONFIG.ATTRACTION_THRESHOLD&&oldAtt<CONFIG.ATTRACTION_THRESHOLD){HeartEffects.triggerConfessionSuccess(document.getElementById('char-portrait'))}}this.state.currentNode=choice.next;this.state.save();const story=STORY_NODES[charId];const nextNode=story[choice.next];if(nextNode){this.currentScene=nextNode;document.getElementById('scene-desc').textContent=nextNode.scene||'';this.typeText(nextNode.dialogue,()=>{this.showChoices(nextNode.choices,charId)})}else{this.showEnding(charId)}}showEnding(charId){const char=CHARACTERS[charId];const attitude=this.state.charAttitudes[charId];let type,title,text;if(attitude>=90){type='he';title='Happy Ending';text=`经过${CONFIG.MAX_DAYS}天的相处，你和${char.name}终于走到了一起。`}else if(attitude>=60){type='ne';title='Normal Ending';text=`你们的关系停留在了好朋友的位置。`}else{type='be';title='Bad Ending';text=`你们渐渐失去了联系...`}const overlay=document.getElementById('ending-overlay');document.getElementById('ending-type').textContent=type==='he'?'💕':type==='ne'?'🌟':'💔';document.getElementById('ending-type').className='ending-type '+type;document.getElementById('ending-title').textContent=title;document.getElementById('ending-text').textContent=text;overlay.classList.add('active');if(type==='he')HeartEffects.showPetals(30,10000)}closeDialogue(){document.getElementById('dialogue-overlay').classList.remove('active');this.state.energy--;this.state.save();this.updateUI();this.renderActivityGrid();if(this.state.energy<=0)this.showToast('⚠️ 精力已用完，请休息')}updateUI(){document.getElementById('day-num').textContent=this.state.day;document.getElementById('action-remain').innerHTML=`剩余 <strong>${this.state.energy}</strong> 次行动机会`;const energyBar=document.getElementById('energy-bar');if(energyBar)energyBar.innerHTML=Array(CONFIG.MAX_ENERGY).fill(0).map((_,i)=>`<div class="energy-point ${i<this.state.energy?'available':''}"></div>`).join('');document.getElementById('energy-label').textContent=`${this.state.energy}/${CONFIG.MAX_ENERGY}`;this.renderActivityGrid()}sleep(){this.showDailyEnd()}showDailyEnd(){const overlay=document.getElementById('daily-end-overlay');const list=document.getElementById('change-list');let html=`<div class="change-item"><span>天数</span><span>Day ${this.state.day} → Day ${this.state.day+1}</span></div>`;Object.keys(CHARACTERS).forEach(id=>{if(this.state.charUnlocked[id]){const att=this.state.charAttitudes[id];const lastContact=this.state.day-(this.state.charLastContact[id]||0);if(att>=90&&lastContact>CONFIG.LOVE_MAINTENANCE_IGNORE_DAYS){this.state.charAttitudes[id]=Math.max(60,att-CONFIG.LOVE_MAINTENANCE_DROP);html+=`<div class="change-item"><span>${CHARACTERS[id].name}</span><span style="color:#ff6b6b;">💔 关系降温</span></div>`}html+=`<div class="change-item"><span>${CHARACTERS[id].name}</span><span>好感度: ${this.state.charAttitudes[id]}</span></div>`}});list.innerHTML=html;overlay.classList.add('active')}nextDay(){document.getElementById('daily-end-overlay').classList.remove('active');document.getElementById('dialogue-overlay').classList.remove('active');this.state.day++;this.state.energy=CONFIG.MAX_ENERGY;if(this.state.day>CONFIG.MAX_DAYS){this.showToast('🎊 游戏结束！');setTimeout(()=>this.showPage('landing-page'),2000);return}this.state.save();this.updateUI();HeartEffects.showPetals(10,3000)}restartGame(){document.getElementById('ending-overlay').classList.remove('active');this.state.reset();this.state.save();this.showPage('landing-page')}showExitWarning(){document.getElementById('exit-warning-overlay').classList.add('active')}closeExitWarning(){document.getElementById('exit-warning-overlay').classList.remove('active')}confirmQuit(){if(this.state.selectedChar)this.state.charAttitudes[this.state.selectedChar]=Math.max(0,this.state.charAttitudes[this.state.selectedChar]-CONFIG.EXIT_PENALTY);this.state.save();this.closeExitWarning();window.close()}showSettings(){document.getElementById('settings-overlay').classList.add('active')}closeSettings(){document.getElementById('settings-overlay').classList.remove('active')}toggleEffects(){CONFIG.EFFECTS_ENABLED=!CONFIG.EFFECTS_ENABLED;document.getElementById('toggle-effects').classList.toggle('active',CONFIG.EFFECTS_ENABLED)}setTextSpeed(){CONFIG.TEXT_SPEED=parseInt(document.getElementById('text-speed').value)}showGuide(){const steps=[{icon:'🎯',title:'欢迎来到Bloom',text:'在这款恋爱模拟游戏中，你将在60天内邂逅5位女孩。'},{icon:'⚡',title:'精力系统',text:'每天有3点精力，每次活动消耗1点。'},{icon:'💕',title:'好感度',text:'通过选择对话提升好感度。达到80以上就可以告白！'},{icon:'🎮',title:'开始游戏',text:'祝你好运！愿你找到属于自己的心动。'}];if(this.tutorialStep>=steps.length){localStorage.setItem('bloom_v4_guide_shown','true');document.getElementById('guide-overlay').classList.remove('active');return}const step=steps[this.tutorialStep];document.getElementById('guide-step').textContent=step.icon;document.getElementById('guide-title').textContent=step.title;document.getElementById('guide-text').textContent=step.text;document.getElementById('guide-overlay').classList.add('active')}nextGuide(){this.tutorialStep++;this.showGuide()}closeGuide(){localStorage.setItem('bloom_v4_guide_shown','true');document.getElementById('guide-overlay').classList.remove('active')}showToast(message){const toast=document.getElementById('toast');toast.textContent=message;toast.style.display='block';setTimeout(()=>{toast.style.display='none'},2000)}}
+let game;document.addEventListener('DOMContentLoaded',()=>{game=new GameEngine();window.addEventListener('beforeunload',(e)=>{if(game.state.day>1){game.showExitWarning();e.preventDefault();e.returnValue=''}})});document.addEventListener('keydown',(e)=>{if(e.key==='Escape'){game?.closeSettings();game?.closeExitWarning()}});
+    </script>
+</body>
+</html>

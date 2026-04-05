@@ -35,6 +35,9 @@
         <div id="mbti-page" class="page">
             <div class="mbti-entry-content">
                 <h2 class="page-title">让我们先了解一下你</h2>
+                <div class="intro-box" style="margin-bottom: 30px; padding: 20px; max-width: 350px;">
+                    <p style="color: rgba(255,255,255,0.8);">💡 了解自己的性格，选择最匹配的攻略对象</p>
+                </div>
                 <div class="mbti-entry-buttons">
                     <button class="entry-btn" onclick="game.goToMbtiSelect()">
                         <span class="entry-icon">💡</span>
@@ -106,12 +109,12 @@
                     <span class="day-badge">Day <span id="day-num">1</span></span>
                     <span class="day-theme" id="day-theme"></span>
                 </div>
-                <div class="action-points" id="action-points">
-                    <span class="action-point available"></span>
-                    <span class="action-point available"></span>
-                    <span class="action-point available"></span>
+                <div class="energy-display" id="energy-display" title="精力值">
+                    <span class="energy-point">⚡</span>
+                    <span class="energy-point">⚡</span>
+                    <span class="energy-point">⚡</span>
                 </div>
-                <div class="quick-hearts" id="quick-hearts"></div>
+                <button class="settings-btn-entry" onclick="game.openSettings()">⚙️</button>
             </div>
             <div class="game-main-content">
                 <div class="activity-section">
@@ -174,6 +177,99 @@
 
         <!-- Toast提示 -->
         <div class="toast" id="toast"></div>
+
+        <!-- 设置页面 -->
+        <div id="settings-page">
+            <div class="settings-content">
+                <div class="settings-header">
+                    <h2 class="settings-title">设置</h2>
+                    <button class="settings-close-btn" onclick="game.closeSettings()">×</button>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>🎵</span>
+                        <span>背景音乐</span>
+                    </div>
+                    <div class="toggle-switch active" id="bgm-toggle" onclick="game.toggleBGM()"></div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>🔊</span>
+                        <span>音效音量</span>
+                    </div>
+                    <input type="range" class="volume-slider" id="sfx-volume" min="0" max="100" value="80" oninput="game.setSFXVolume(this.value)">
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>📝</span>
+                        <span>打字音效</span>
+                    </div>
+                    <div class="toggle-switch active" id="typing-toggle" onclick="game.toggleTypingSound()"></div>
+                </div>
+                <div class="settings-footer">
+                    <button class="settings-btn primary" onclick="game.openSavePage()">存档管理</button>
+                    <button class="settings-btn secondary" onclick="game.returnToMain()">返回主菜单</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 存档管理页面 -->
+        <div id="save-page">
+            <div class="save-content">
+                <div class="settings-header">
+                    <h2 class="settings-title">存档管理</h2>
+                    <button class="settings-close-btn" onclick="game.closeSavePage()">×</button>
+                </div>
+                <div id="save-slots-container"></div>
+                <div class="settings-footer">
+                    <button class="settings-btn primary" onclick="game.autoSave()">快速存档</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 引导弹窗 -->
+        <div id="tutorial-modal">
+            <div class="tutorial-content">
+                <h2 class="tutorial-title">💡 游戏指南</h2>
+                <div class="tutorial-section">
+                    <div class="tutorial-label">
+                        <span>📝</span>
+                        <span>了解你的性格</span>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.8); padding-left: 30px;">选择最匹配的攻略对象</p>
+                </div>
+                <div class="tutorial-section">
+                    <div class="tutorial-label">
+                        <span>🎮</span>
+                        <span>如何游玩</span>
+                    </div>
+                    <ul class="tutorial-list">
+                        <li>每天有 3 点精力值</li>
+                        <li>选择活动提升好感度</li>
+                        <li>做出选择影响剧情走向</li>
+                        <li>目标：60天内攻略心仪对象</li>
+                    </ul>
+                </div>
+                <button class="tutorial-btn" onclick="game.closeTutorial()">开始游戏</button>
+            </div>
+        </div>
+
+        <!-- 退出确认弹窗 -->
+        <div id="exit-confirm-modal" class="exit-confirm-modal">
+            <div class="exit-confirm-content">
+                <div class="exit-confirm-title">⚠️ 确定要离开吗？</div>
+                <div class="exit-confirm-text" id="exit-confirm-text">对方可能会失望……</div>
+                <div class="exit-confirm-warning">如果现在离开，好感度将下降 10-20 点</div>
+                <div class="exit-confirm-buttons">
+                    <button class="exit-confirm-btn continue" onclick="game.cancelExit()">继续对话</button>
+                    <button class="exit-confirm-btn leave" onclick="game.confirmExit()">确认离开</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-<script>
+<script src="js/narrative_stories_v2.js"></script>
+<script src="js/heart_effects.js"></script>
+<script src="js/game_engine.js"></script>
+</body>
+</html>

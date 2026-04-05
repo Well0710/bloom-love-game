@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bloom - 60天恋爱模拟</title>
+    <link rel="stylesheet" href="css/game.css">
+    <style>
+        /* ===== 退出警告弹窗 ===== */
+        #exit-warning-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        #exit-warning-overlay.active { display: flex; }
+        .exit-warning-box {
+            background: linear-gradient(135deg, #1a0a2e 0%, #0d0d1a 100%);
+            border: 2px solid rgba(168,85,247,0.5);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 320px;
+            text-align: center;
+        }
+        .exit-warning-box h3 {
+            color: #f43f5e;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        .exit-warning-box p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .exit-warning-buttons { display: flex; gap: 10px; }
+        .exit-warning-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-stay {
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+            border: none;
+            color: #fff;
+        }
+        .btn-leave {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.7);
+        }
+        /* ===== 能量条 ===== */
+        .energy-bar {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .energy-point {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.4);
+            transition: all 0.3s;
+        }
+        .energy-point.available {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            border-color: #a855f7;
+            box-shadow: 0 0 8px rgba(168,85,247,0.5);
+        }
+        /* ===== 设置按钮 ===== */
+        .settings-btn {
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            z-index: 101;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        /* ===== 关系升级提示 ===== */
+        #relation-upgrade {
+            display: none;
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            z-index: 3000;
+            animation: relationPop 0.5s ease;
+        }
+        @keyframes relationPop {
+            0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+            50% { transform: translateX(-50%) scale(1.1); }
+            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+        /* ===== 心动特效样式 ===== */
+        .petal-container, .sparkle-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5000;
+            overflow: hidden;
+        }
+        .petal {
+            position: absolute;
+            border-radius: 50% 0 50% 0;
+            opacity: 0.7;
+            animation: petalFall linear forwards;
+        }
+        @keyframes petalFall {
+            0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        .sparkle {
+            position: absolute;
+            border-radius: 50%;
+            animation: sparkleAnim 1.5s ease-in-out forwards;
+        }
+        @keyframes sparkleAnim {
+            0%, 100% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes flash-effect {
+            0% { opacity: 0; }
+            20% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+        @keyframes heart-float {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(0.5); opacity: 0; }
+        }
+        .screen-shake {
+            animation: shake 0.5s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-5px); }
+            40% { transform: translateX(5px); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(3px); }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- 星空背景 -->
+        <div class="starry-bg">
+            <div class="stars-layer-1"></div>
+            <div class="stars-layer-2"></div>
+            <div class="stars-layer-3"></div>
+        </div>
+
+        <!-- 设置按钮 -->
+        <button class="settings-btn" onclick="game.toggleSettings()">⚙️ 设置</button>
+
+        <!-- 首页 -->
+        <div id="landing-page" class="page active">
+            <div class="landing-content">
+                <h1 class="game-title">Bloom</h1>
+                <p class="landing-subtitle">60天恋爱模拟</p>
+                <div class="intro-box">
+                    <p>在60天内，通过日常活动邂逅5位性格迥异的女孩。</p>
+                    <p>每天有 <strong>3点精力</strong>，合理分配才能遇见更多人。</p>
+                    <p>选择会影响剧情走向，不同的选择通向不同的结局。</p>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-btn primary" onclick="game.startNewStory()">✨ 开始新故事</button>
+                    <button class="menu-btn secondary" id="btn-continue" onclick="game.continueGame()" disabled>📖 继续游戏</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MBTI入口页 -->
+        <div id="mbti-page" class="page">
+            <div class="mbti-entry-content">
+                <h2 class="page-title">让我们先了解一下你</h2>
+                <div class="mbti-entry-buttons">
+                    <button class="entry-btn" onclick="game.goToMbtiSelect()">
+                        <span class="entry-icon">💡</span>
+                        <span class="entry-text">我知道我的MBTI</span>
+                        <span class="entry-hint">直接选择，跳过测试</span>
+                    </button>
+                    <button class="entry-btn" onclick="game.goToMbtiTest()">
+                        <span class="entry-icon">📝</span>
+                        <span class="entry-text">帮我测试</span>
+                        <span class="entry-hint">回答问题，找到你的MBTI</span>
+                    </button>
+                </div>
+                <button class="skip-btn" onclick="game.skipToCharSelect()">跳过，直接选择角色 →</button>
+            </div>
+        </div>
+
+        <!-- MBTI选择页 -->
+        <div id="mbti-select-page" class="page">
+            <div class="mbti-select-content">
+                <h2 class="page-title">选择你的MBTI</h2>
+                <div class="mbti-grid" id="mbti-grid"></div>
+                <button class="confirm-btn" onclick="game.confirmMbti()" id="mbti-confirm-btn" disabled>确认选择</button>
+            </div>
+        </div>
+
+        <!-- MBTI测试页 -->
+        <div id="mbti-test-page" class="page">
+            <div class="mbti-test-content">
+                <div class="test-progress">
+                    <span class="progress-text">第 <span id="q-num">1</span> / <span id="q-total">8</span> 题</span>
+                    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                </div>
+                <div class="question-box" id="question-box">
+                    <p class="question-text" id="question-text"></p>
+                    <div class="options-list" id="options-list"></div>
+                </div>
+                <div class="test-nav">
+                    <button class="nav-btn back" onclick="game.testBack()">← 上一步</button>
+                    <button class="nav-btn next" id="test-next-btn" onclick="game.testNext()" disabled>下一步 →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MBTI结果页 -->
+        <div id="mbti-result-page" class="page">
+            <div class="mbti-result-content">
+                <h2 class="result-title">你的MBTI是</h2>
+                <div class="result-type" id="result-type">ISTJ</div>
+                <div class="result-actions">
+                    <button class="confirm-btn" onclick="game.confirmResult()">✓ 确认并继续</button>
+                    <button class="retry-btn" onclick="game.retryTest()">重新测试</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 角色选择页 -->
+        <div id="char-select-page" class="page">
+            <div class="char-select-content">
+                <h2 class="page-title">选择你想遇见的她</h2>
+                <div class="char-grid" id="char-grid"></div>
+                <button class="start-btn" onclick="game.startGame()" id="start-game-btn" disabled>开始冒险</button>
+            </div>
+        </div>
+
+        <!-- 游戏主页 -->
+        <div id="game-main-page" class="page">
+            <div class="top-bar">
+                <div class="day-info">
+                    <span class="day-badge">Day <span id="day-num">1</span></span>
+                    <span class="day-theme" id="day-theme"></span>
+                </div>
+                <div class="energy-bar" id="energy-bar">
+                    <span class="energy-point available" id="ep0"></span>
+                    <span class="energy-point available" id="ep1"></span>
+                    <span class="energy-point available" id="ep2"></span>
+                </div>
+                <div class="quick-hearts" id="quick-hearts"></div>
+            </div>
+            <div class="game-main-content">
+                <div class="activity-section">
+                    <h3 class="section-title">今天做什么？<span class="action-remain" id="action-remain">剩余精力: <strong>3</strong></span></h3>
+                    <div class="activity-grid" id="activity-grid"></div>
+                </div>
+                <div class="chars-section" id="chars-section" style="display:none;">
+                    <h3 class="section-title">认识的人</h3>
+                    <div class="chars-row" id="chars-row"></div>
+                </div>
+            </div>
+            <div class="bottom-actions">
+                <button class="sleep-btn" onclick="game.sleep()">🌙 结束今天</button>
+            </div>
+        </div>
+
+        <!-- 每日结算页 -->
+        <div id="daily-end-page" class="page">
+            <div class="daily-end-content">
+                <h2 class="end-title">Day <span id="end-day">1</span> 结束</h2>
+                <div class="affection-changes">
+                    <h3 class="change-title">今日好感度变化</h3>
+                    <div class="change-list" id="change-list"></div>
+                </div>
+                <div class="unlock-hint" id="unlock-hint" style="display:none;">
+                    <div class="unlock-icon">🔓</div>
+                    <p class="unlock-text" id="unlock-text"></p>
+                </div>
+                <div class="tomorrow-hint" id="tomorrow-hint"><p>明天会发生什么呢...</p></div>
+                <button class="next-day-btn" onclick="game.nextDay()">🌙 休息一晚，进入明天</button>
+                <button class="save-btn" onclick="game.saveGame()">💾 保存进度</button>
+            </div>
+        </div>
+
+        <!-- 对话框遮罩 -->
+        <div class="dialogue-overlay" id="dialogue-overlay">
+            <div class="scene-area" id="scene-area">
+                <div class="scene-image" id="scene-image"></div>
+                <div class="scene-overlay"></div>
+            </div>
+            <div class="dialogue-content">
+                <div class="scene-desc" id="scene-desc"></div>
+                <div class="dialogue-area">
+                    <div class="speaker-section">
+                        <div class="speaker-avatar" id="speaker-avatar">🌸</div>
+                        <div class="speaker-info"><span class="speaker-name" id="speaker-name"></span></div>
+                    </div>
+                    <div class="dialogue-bubble" id="dialogue-bubble">
+                        <p class="dialogue-text" id="dialogue-text"></p>
+                        <span class="typing-cursor" id="typing-cursor">|</span>
+                    </div>
+                </div>
+                <div class="choices-area" id="choices-area"></div>
+            </div>
+            <div class="dialogue-controls">
+                <button class="control-btn skip-btn" onclick="game.skipDialogue()">跳过</button>
+                <button class="control-btn music-btn" onclick="game.toggleMusic()">🎵</button>
+            </div>
+        </div>
+
+        <!-- 退出警告弹窗 -->
+        <div id="exit-warning-overlay">
+            <div class="exit-warning-box">
+                <h3>⚠️ 确认离开？</h3>
+                <p>今天还有剩余精力未使用，离开将扣除当前角色 <strong style="color:#f43f5e;">-15好感度</strong> 作为惩罚。</p>
+                <div class="exit-warning-buttons">
+                    <button class="btn-stay" onclick="game.stayInGame()">继续游戏</button>
+                    <button class="btn-leave" onclick="game.confirmLeave()">确认离开</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 关系升级提示 -->
+        <div id="relation-upgrade"></div>
+
+        <!-- Toast提示 -->
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <!-- 心动特效容器 -->
+    <div class="petal-container" id="petal-container"></div>
+
+    <script>
+// ========== 《Bloom》游戏引擎 V8 - 完整版 ==========
+// 整合：精力系统 + 退出惩罚 + 心动特效 + 分支叙事
+
+// ===== 配置 =====
+const CONFIG = {
+    MAX_DAYS: 60,
+    MAX_ENERGY: 3,
+    ENERGY_PER_ACTIVITY: 1,
+    ATTRACTION_THRESHOLD: 80,
+    LOVE_MAINTENANCE_IGNORE_DAYS: 3,
+    LOVE_MAINTENANCE_DROP: 20,
+    EXIT_PENALTY: 15,
+    TEXT_SPEED: 50
+};
+
+// ===== 角色数据 =====
+const CHARACTERS = {
+    wenya: {
+        id: 'wenya', name: '温雅', mbti: 'INFP', emoji: '🌸',
+        color: '#c084fc', desc: '画家 · 文艺内敛', portrait: 'assets/characters/wenya_portrait.png',
+        trait: '温柔、敏感、缺乏安全感', setting: '邻居'
+    },
+    xiayang: {
+        id: 'xiayang', name: '夏阳', mbti: 'ESFP', emoji: '☀️',
+        color: '#fb923c', desc: '健身教练 · 阳光活力', portrait: 'assets/characters/xiayang_portrait.png',
+        trait: '开朗、直爽、内心有自卑感', setting: '健身房'
+    },
+    sujingyi: {
+        id: 'sujingyi', name: '苏静怡', mbti: 'ISTJ', emoji: '🩺',
+        color: '#34d399', desc: '医生 · 冷淡专业', portrait: 'assets/characters/sujingyi_portrait.png',
+        trait: '冷静、理性、外冷内热', setting: '公园'
+    },
+    luxiao: {
+        id: 'luxiao', name: '陆潇', mbti: 'ENTJ', emoji: '🔥',
+        color: '#f43f5e', desc: '健身房老板 · 霸气自信', portrait: 'assets/characters/luxiao_portrait.png',
+        trait: '强势、有主见、渴望被理解', setting: '高档餐厅'
+    },
+    linwanqing: {
+        id: 'linwanqing', name: '林婉清', mbti: 'ESTJ', emoji: '💼',
+        color: '#60a5fa', desc: '公司高管 · 干练优雅', portrait: 'assets/characters/linwanqing_portrait.png',
+        trait: '干练、优雅、成功人士', setting: '客户'
+    }
+};
+
+// ===== 活动配置 =====
+const ACTIVITIES = {
+    stay_home: { id: 'stay_home', name: '宅家', emoji: '🏠', scene: 'home', desc: '安静的公寓', energy: 1, charId: 'wenya' },
+    gym: { id: 'gym', name: '健身房', emoji: '💪', scene: 'gym', desc: '汗水与活力', energy: 1, charId: 'xiayang' },
+    park: { id: 'park', name: '公园', emoji: '🌳', scene: 'park', desc: '自然与宁静', energy: 1, charId: 'sujingyi' },
+    dinner: { id: 'dinner', name: '餐厅', emoji: '🍽️', scene: 'restaurant', desc: '精致的晚餐', energy: 1, charId: 'luxiao' },
+    overtime: { id: 'overtime', name: '加班', emoji: '💼', scene: 'office', desc: '深夜的办公室', energy: 1, charId: 'linwanqing' },
+    cafe: { id: 'cafe', name: '咖啡厅', emoji: '☕', scene: 'cafe', desc: '咖啡与爵士', energy: 1, charId: null }
+};
+
+// ===== MBTI测试题目 =====
+const MBTI_QUESTIONS = [
+    { text: '周末你更想做什么？', options: [{ text: '约朋友出去玩', scores: {E:2} }, { text: '一个人在家看书', scores: {I:2} }] },
+    { text: '你更在意细节还是整体？', options: [{ text: '整体感觉', scores: {N:2} }, { text: '具体细节', scores: {S:2} }] },
+    { text: '做决定时，你更看重？', options: [{ text: '逻辑和客观分析', scores: {T:2} }, { text: '他人感受和价值观', scores: {F:2} }] },
+    { text: '你更喜欢怎样的生活方式？', options: [{ text: '有计划、有组织', scores: {J:2} }, { text: '灵活随性', scores: {P:2} }] },
+    { text: '社交场合中，你通常是？', options: [{ text: '主动和别人搭话', scores: {E:2} }, { text: '等待别人来接近', scores: {I:2} }] },
+    { text: '面对问题时，你习惯？', options: [{ text: '寻找创新的解决方案', scores: {N:2} }, { text: '用已知的方法解决', scores: {S:2} }] },
+    { text: '你更愿意被形容为？', options: [{ text: '理性、逻辑性强', scores: {T:2} }, { text: '富有同理心', scores: {F:2} }] },
+    { text: '工作中，你更喜欢？', options: [{ text: '按计划执行', scores: {J:2} }, { text: '随时调整', scores: {P:2} }] }
+];
+
+// ===== 简单叙事数据 =====
+const ACTIVITY_STORIES = {
+    stay_home: [
+        { text: '你正在看窗外的梧桐树，隔壁传来轻轻的钢琴声...', charId: 'wenya', choices: [
+            { text: '出去打个招呼', affection: 5, next: 'end' },
+            { text: '继续听一会儿', affection: 3, next: 'end' }
+        ]}
+    ],
+    gym: [
+        { text: '健身房里阳光正好，一个笑容灿烂的女孩向你挥手...', charId: 'xiayang', choices: [
+            { text: '走过去聊天', affection: 5, next: 'end' },
+            { text: '点头回应，继续练', affection: 2, next: 'end' }
+        ]}
+    ],
+    park: [
+        { text: '傍晚的公园很安静，长椅上坐着一个看书的女孩...', charId: 'sujingyi', choices: [
+            { text: '在旁边坐下', affection: 4, next: 'end' },
+            { text: '绕道走开', affection: 0, next: 'end' }
+        ]}
+    ],
+    dinner: [
+        { text: '高档餐厅里，一个气场强大的女人独自坐着品酒...', charId: 'luxiao', choices: [
+            { text: '搭话攀谈', affection: 6, next: 'end' },
+            { text: '安静用餐', affection: 1, next: 'end' }
+        ]}
+    ],
+    overtime: [
+        { text: '深夜的办公室，你注意到隔壁公司的灯还亮着...', charId: 'linwanqing', choices: [
+            { text: '端杯咖啡过去打招呼', affection: 5, next: 'end' },
+            { text: '专注自己的工作', affection: 1, next: 'end' }
+        ]}
+    ],
+    cafe: [
+        { text: '咖啡厅里爵士乐流淌，你随意找了个位置坐下...', charId: null, choices: [
+            { text: '享受独处时光', affection: 0, next: 'end' },
+            { text: '观察周围的人', affection: 0, next: 'end' }
+        ]}
+    ]
+};
+
+// ===== 心动特效系统 =====
+const HeartEffects = {
+    petalContainer: null,
+    init() {
+        this.petalContainer = document.getElementById('petal-container') || document.body;
+        console.log('HeartEffects initialized');
+    },
+    showPetals(count = 15, duration = 6000) {
+        if (!this.petalContainer) this.init();
+        this.petalContainer.innerHTML = '';
+        this.petalContainer.style.display = 'block';
+        const colors = ['#ffb6c1', '#ffc0cb', '#fff0f5', '#ffe4e1', '#ffd1dc'];
+        for (let i = 0; i < count; i++) {
+            const petal = document.createElement('div');
+            petal.className = 'petal';
+            petal.style.left = Math.random() * 100 + '%';
+            petal.style.animationDuration = (3 + Math.random() * 3) + 's';
+            petal.style.animationDelay = Math.random() * 2 + 's';
+            petal.style.background = colors[Math.floor(Math.random() * colors.length)];
+            petal.style.width = (10 + Math.random() * 10) + 'px';
+            petal.style.height = petal.style.width;
+            this.petalContainer.appendChild(petal);
+        }
+        setTimeout(() => this.hidePetals(), duration);
+    },
+    hidePetals() {
+        if (this.petalContainer) {
+            this.petalContainer.style.display = 'none';
+            this.petalContainer.innerHTML = '';
+        }
+    },
+    triggerFlash() {
+        const flash = document.createElement('div');
+        flash.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:white;opacity:0;z-index:9999;pointer-events:none;animation:flash 0.4s ease-out;';
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 400);
+    },
+    createFloatingHearts(targetEl, count = 5) {
+        if (!targetEl) return;
+        const rect = targetEl.getBoundingClientRect();
+        const container = document.createElement('div');
+        container.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5000;overflow:hidden;';
+        document.body.appendChild(container);
+        for (let i = 0; i < count; i++) {
+            const heart = document.createElement('div');
+            heart.innerHTML = '❤';
+            heart.style.cssText = `position:absolute;left:${rect.left + rect.width/2 + (Math.random()-0.5)*50}px;top:${rect.top + rect.height/2}px;font-size:${16+Math.random()*12}px;color:hsl(${340+Math.random()*30},80%,65%);text-shadow:0 0 10px rgba(255,100,150,0.8);animation:heart-float ${2+Math.random()}s ease-out forwards;animation-delay:${i*0.15}s;`;
+            container.appendChild(heart);
+        }
+        setTimeout(() => container.remove(), 3500);
+    },
+    triggerConfessionSuccess(charEl) {
+        this.showPetals(30, 8000);
+        this.triggerFlash();
+        setTimeout(() => this.triggerFlash(), 500);
+        if (charEl) this.createFloatingHearts(charEl, 15);
+    }
+};
+
+// ===== 游戏状态 =====
+class GameState {
+    constructor() {
+        this.day = 1;
+        this.energy = CONFIG.MAX_ENERGY;
+        this.mbti = null;
+        this.selectedChar = null;
+        this.charAttitudes = {};
+        this.charUnlocked = {};
+        this.activityCount = {};
+        this.ignoredDays = {};
+        this.init();
+    }
+    init() {
+        this.day = 1;
+        this.energy = CONFIG.MAX_ENERGY;
+        this.mbti = null;
+        this.selectedChar = null;
+        Object.keys(CHARACTERS).forEach(id => {
+            this.charAttitudes[id] = 50;
+            this.charUnlocked[id] = false;
+            this.ignoredDays[id] = 0;
+        });
+        Object.keys(ACTIVITIES).forEach(id => this.activityCount[id] = 0);
+    }
+    hasSave() { return !!localStorage.getItem('bloom_v8_save'); }
+    save() {
+        localStorage.setItem('bloom_v8_save', JSON.stringify({
+            day: this.day, energy: this.energy, mbti: this.mbti,
+            selectedChar: this.selectedChar, charAttitudes: this.charAttitudes,
+            charUnlocked: this.charUnlocked, activityCount: this.activityCount
+        }));
+    }
+    load() {
+        const data = localStorage.getItem('bloom_v8_save');
+        if (data) {
+            const parsed = JSON.parse(data);
+            Object.assign(this, parsed);
+            return true;
+        }
+        return false;
+    }
+}
+
+// ===== 游戏引擎 =====
+class Game {
+    constructor() {
+        this.state = new GameState();
+        this.currentActId = null;
+        this.currentCharId = null;
+        this.isTyping = false;
+        this.typingTimeout = null;
+        this.currentChoices = [];
+        this.currentStoryNode = null;
+        this.init();
+    }
+    init() {
+        this.renderMbtiGrid();
+        this.renderCharGrid();
+        this.renderActivityGrid();
+        this.checkContinue();
+        HeartEffects.init();
+        this.setupExitWarning();
+    }
+    setupExitWarning() {
+        window.addEventListener('beforeunload', (e) => {
+            if (this.state.day > 1 && this.state.energy > 0 && this.state.selectedChar) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    }
+    showPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id)?.classList.add('active');
+    }
+    checkContinue() {
+        const btn = document.getElementById('btn-continue');
+        if (btn) btn.disabled = !this.state.hasSave();
+    }
+
+    // MBTI
+    goToMbtiSelect() { this.showPage('mbti-select-page'); }
+    goToMbtiTest() { this.showPage('mbti-test-page'); this.currentQuestion = 0; this.testAnswers = []; this.mbtiScores = {E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0}; this.renderQuestion(); }
+    skipToCharSelect() { this.showPage('char-select-page'); }
+    selectMbti(type) {
+        this.selectedMbti = type;
+        document.querySelectorAll('#mbti-grid button').forEach(b => b.classList.remove('selected'));
+        event.target.classList.add('selected');
+        document.getElementById('mbti-confirm-btn').disabled = false;
+    }
+    confirmMbti() {
+        this.state.mbti = this.selectedMbti;
+        document.getElementById('result-type').textContent = this.selectedMbti;
+        this.showPage('mbti-result-page');
+    }
+    renderQuestion() {
+        const q = MBTI_QUESTIONS[this.currentQuestion];
+        document.getElementById('q-num').textContent = this.currentQuestion + 1;
+        document.getElementById('q-total').textContent = MBTI_QUESTIONS.length;
+        document.getElementById('progress-fill').style.width = (this.currentQuestion / MBTI_QUESTIONS.length * 100) + '%';
+        document.getElementById('question-text').textContent = q.text;
+        document.getElementById('options-list').innerHTML = q.options.map((o, i) =>
+            `<button class="option-btn ${this.testAnswers[this.currentQuestion] === i ? 'selected' : ''}" onclick="game.answerQuestion(${i})">${o.text}</button>`
+        ).join('');
+        document.getElementById('test-next-btn').disabled = this.testAnswers[this.currentQuestion] === undefined;
+    }
+    answerQuestion(idx) { this.testAnswers[this.currentQuestion] = idx; this.renderQuestion(); }
+    testBack() { if (this.currentQuestion > 0) { this.currentQuestion--; this.renderQuestion(); } }
+    testNext() {
+        const q = MBTI_QUESTIONS[this.currentQuestion];
+        const a = q.options[this.testAnswers[this.currentQuestion]].scores;
+        Object.entries(a).forEach(([k,v]) => this.mbtiScores[k] += v);
+        if (this.currentQuestion < MBTI_QUESTIONS.length - 1) {
+            this.currentQuestion++;
+            this.renderQuestion();
+        } else {
+            let result = '';
+            result += this.mbtiScores['E'] > this.mbtiScores['I'] ? 'E' : 'I';
+            result += this.mbtiScores['S'] > this.mbtiScores['N'] ? 'S' : 'N';
+            result += this.mbtiScores['T'] > this.mbtiScores['F'] ? 'T' : 'F';
+            result += this.mbtiScores['J'] > this.mbtiScores['P'] ? 'J' : 'P';
+            this.selectedMbti = result;
+            this.state.mbti = result;
+            document.getElementById('result-type').textContent = result;
+            this.showPage('mbti-result-page');
+        }
+    }
+    retryTest() { this.currentQuestion = 0; this.testAnswers = []; this.mbtiScores = {E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0}; this.showPage('mbti-test-page'); this.renderQuestion(); }
+    confirmResult() { this.showPage('char-select-page'); }
+
+    // 角色选择
+    renderCharGrid() {
+        const grid = document.getElementById('char-grid');
+        if (!grid) return;
+        grid.innerHTML = Object.values(CHARACTERS).map(c => `
+            <div class="char-card ${c.id}" onclick="game.selectChar('${c.id}')">
+                <div class="char-avatar">
+                    <img src="${c.portrait}" alt="${c.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\\'font-size:2rem\\'>${c.emoji}</span>'">
+                </div>
+                <div class="char-info">
+                    <span class="char-name">${c.name}</span>
+                    <span class="char-mbti">${c.mbti}</span>
+                </div>
+            </div>`
+        ).join('');
+    }
+    selectChar(charId) {
+        this.state.selectedChar = charId;
+        document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+        document.querySelector(`.char-card.${charId}`)?.classList.add('selected');
+        document.getElementById('start-game-btn').disabled = false;
+    }
+    startGame() {
+        if (this.state.selectedChar) {
+            this.state.charUnlocked[this.state.selectedChar] = true;
+            this.showPage('game-main-page');
+            this.updateUI();
+        }
+    }
+    startNewStory() {
+        this.state = new GameState();
+        this.showPage('mbti-page');
+    }
+    continueGame() {
+        if (this.state.load()) {
+            this.showPage('game-main-page');
+            this.updateUI();
+        }
+    }
+
+    // 游戏主页
+    renderActivityGrid() {
+        const grid = document.getElementById('activity-grid');
+        if (!grid) return;
+        grid.innerHTML = Object.entries(ACTIVITIES).map(([id, act]) => {
+            const char = act.charId ? CHARACTERS[act.charId] : null;
+            const isUnlocked = !act.charId || this.state.charUnlocked[act.charId];
+            const emoji = char ? char.emoji : act.emoji;
+            const name = char ? char.name.split('')[0] + '的' + act.name : act.name;
+            return `<button class="activity-card ${!isUnlocked ? 'used' : ''}" ${isUnlocked ? `onclick="game.selectActivity('${id}')"` : 'disabled'}>
+                <span class="activity-icon">${emoji}</span>
+                <span class="activity-name">${name}</span>
+                <span class="activity-hint">${isUnlocked ? '探索' : '未解锁'}</span>
+            </button>`;
+        }).join('');
+    }
+    updateUI() {
+        document.getElementById('day-num').textContent = this.state.day;
+        document.getElementById('action-remain').innerHTML = `剩余精力: <strong>${this.state.energy}</strong>`;
+        // 更新精力点
+        for (let i = 0; i < 3; i++) {
+            const ep = document.getElementById('ep' + i);
+            if (ep) ep.className = 'energy-point ' + (i < this.state.energy ? 'available' : '');
+        }
+        this.renderActivityGrid();
+        this.renderQuickHearts();
+        this.renderKnownChars();
+    }
+    renderQuickHearts() {
+        const container = document.getElementById('quick-hearts');
+        if (!container) return;
+        const known = Object.entries(this.state.charAttitudes).filter(([id, _]) => this.state.charUnlocked[id]);
+        container.innerHTML = known.map(([id, att]) => {
+            const c = CHARACTERS[id];
+            return `<div class="heart-mini"><span class="heart-icon" style="color:${c.color}">${c.emoji}</span><span>${att}</span></div>`;
+        }).join('');
+    }
+    renderKnownChars() {
+        const section = document.getElementById('chars-section');
+        const row = document.getElementById('chars-row');
+        if (!section || !row) return;
+        const known = Object.entries(this.state.charUnlocked).filter(([_, u]) => u);
+        if (known.length === 0) { section.style.display = 'none'; return; }
+        section.style.display = 'block';
+        row.innerHTML = known.map(([id, _]) => {
+            const c = CHARACTERS[id];
+            return `<div class="char-mini" onclick="game.showCharDetail('${id}')">
+                <div class="char-mini-icon">${c.emoji}</div>
+                <div class="char-mini-name">${c.name}</div>
+                <div class="char-mini-bar"><div class="char-mini-fill" style="width:${this.state.charAttitudes[id]}%;background:${c.color}"></div></div>
+            </div>`;
+        }).join('');
+    }
+    showCharDetail(id) {
+        const c = CHARACTERS[id];
+        const att = this.state.charAttitudes[id];
+        let stage = att >= 90 ? '恋人' : att >= 70 ? '暧昧' : att >= 50 ? '好朋友' : '普通朋友';
+        alert(`${c.name}\nMBTI: ${c.mbti}\n设定: ${c.setting}\n好感度: ${att}\n关系: ${stage}`);
+    }
+
+    // 活动选择
+    selectActivity(actId) {
+        if (this.state.energy <= 0) { this.showToast('精力已耗尽！'); return; }
+        const act = ACTIVITIES[actId];
+        this.currentActId = actId;
+        this.currentCharId = act.charId;
+        
+        // 消耗精力
+        this.state.energy--;
+        
+        // 显示对话框
+        this.startDialogue(act);
+    }
+    startDialogue(act) {
+        const overlay = document.getElementById('dialogue-overlay');
+        overlay.classList.add('active');
+        document.getElementById('scene-desc').textContent = act.desc;
+        
+        const char = this.currentCharId ? CHARACTERS[this.currentCharId] : null;
+        const avatar = document.getElementById('speaker-avatar');
+        const nameEl = document.getElementById('speaker-name');
+        avatar.innerHTML = char ? char.emoji : '🌸';
+        avatar.className = 'speaker-avatar ' + (char ? char.id : '');
+        nameEl.textContent = char ? char.name : '';
+        nameEl.style.color = char ? char.color : '#fff';
+        
+        // 获取故事
+        const stories = ACTIVITY_STORIES[act.id] || [];
+        const count = this.state.activityCount[act.id] || 0;
+        this.currentStoryNode = stories[Math.min(count, stories.length - 1)] || stories[0];
+        
+        this.typeText(this.currentStoryNode.text, () => {
+            this.showChoices(this.currentStoryNode.choices, this.currentCharId);
+        });
+    }
+    typeText(text, callback) {
+        const el = document.getElementById('dialogue-text');
+        const cursor = document.getElementById('typing-cursor');
+        if (this.typingTimeout) clearInterval(this.typingTimeout);
+        this.isTyping = true;
+        el.textContent = '';
+        cursor.style.display = 'inline';
+        let i = 0;
+        this.typingTimeout = setInterval(() => {
+            if (i < text.length) { el.textContent += text[i]; i++; }
+            else { clearInterval(this.typingTimeout); this.isTyping = false; cursor.style.display = 'none'; callback?.(); }
+        }, CONFIG.TEXT_SPEED);
+    }
+    skipDialogue() {
+        if (this.typingTimeout) clearInterval(this.typingTimeout);
+        this.isTyping = false;
+        if (this.currentStoryNode) {
+            document.getElementById('dialogue-text').textContent = this.currentStoryNode.text;
+        }
+        document.getElementById('typing-cursor').style.display = 'none';
+        this.showChoices(this.currentStoryNode?.choices, this.currentCharId);
+    }
+    showChoices(choices, charId) {
+        if (!choices || choices.length === 0) { this.closeDialogue(); return; }
+        this.currentChoices = choices;
+        const area = document.getElementById('choices-area');
+        area.innerHTML = choices.map((c, i) =>
+            `<button class="choice-btn ${charId || ''}" onclick="game.makeChoice(${i})">${c.text}</button>`
+        ).join('');
+    }
+    makeChoice(idx) {
+        const choice = this.currentChoices[idx];
+        if (!choice) return;
+        const charId = this.currentCharId;
+        
+        if (choice.affection && charId) {
+            const oldAtt = this.state.charAttitudes[charId];
+            this.state.charAttitudes[charId] = Math.max(0, Math.min(100, this.state.charAttitudes[charId] + choice.affection));
+            
+            if (choice.affection > 0) {
+                this.showToast(`💕 +${choice.affection}`);
+                // 心动特效
+                HeartEffects.showPetals(20, 5000);
+                if (this.state.charAttitudes[charId] >= CONFIG.ATTRACTION_THRESHOLD && oldAtt < CONFIG.ATTRACTION_THRESHOLD) {
+                    HeartEffects.triggerConfessionSuccess(document.getElementById('speaker-avatar'));
+                }
+            } else {
+                this.showToast(`💔 ${choice.affection}`);
+            }
+            
+            this.checkRelationUpgrade(charId, oldAtt, this.state.charAttitudes[charId]);
+        }
+        
+        this.state.activityCount[this.currentActId]++;
+        this.closeDialogue();
+        this.updateUI();
+        
+        if (this.state.energy <= 0) {
+            setTimeout(() => this.showDailyEnd(), 500);
+        }
+    }
+    checkRelationUpgrade(charId, oldAtt, newAtt) {
+        const stages = [
+            { min: 90, name: '恋人', icon: '💕' },
+            { min: 70, name: '暧昧', icon: '✨' },
+            { min: 50, name: '好朋友', icon: '🤝' },
+            { min: 30, name: '普通朋友', icon: '👋' }
+        ];
+        const oldStage = stages.find(s => oldAtt >= s.min);
+        const newStage = stages.find(s => newAtt >= s.min);
+        if (oldStage?.name !== newStage?.name) {
+            const el = document.getElementById('relation-upgrade');
+            el.textContent = `${newStage.icon} 关系升级：${newStage.name}`;
+            el.style.display = 'block';
+            HeartEffects.triggerFlash();
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+    }
+    closeDialogue() {
+        document.getElementById('dialogue-overlay').classList.remove('active');
+        if (this.typingTimeout) clearInterval(this.typingTimeout);
+    }
+
+    // 退出警告
+    stayInGame() { document.getElementById('exit-warning-overlay').classList.remove('active'); }
+    confirmLeave() {
+        document.getElementById('exit-warning-overlay').classList.remove('active');
+        if (this.state.selectedChar) {
+            this.state.charAttitudes[this.state.selectedChar] = Math.max(0, this.state.charAttitudes[this.state.selectedChar] - CONFIG.EXIT_PENALTY);
+            this.showToast(`💔 离开惩罚：-${CONFIG.EXIT_PENALTY}好感度`);
+        }
+        this.state.save();
+    }
+
+    // 每日结算
+    sleep() {
+        if (this.state.energy > 0 && !confirm('还有剩余精力，确定要结束今天吗？')) return;
+        this.showDailyEnd();
+    }
+    showDailyEnd() {
+        this.showPage('daily-end-page');
+        document.getElementById('end-day').textContent = this.state.day;
+        
+        // 计算关系维护
+        let changes = [];
+        Object.keys(this.state.charUnlocked).forEach(id => {
+            if (this.state.charUnlocked[id] && this.state.activityCount[id === 'stay_home' ? 'stay_home' : id] === 0) {
+                this.state.ignoredDays[id] = (this.state.ignoredDays[id] || 0) + 1;
+                if (this.state.ignoredDays[id] >= CONFIG.LOVE_MAINTENANCE_IGNORE_DAYS) {
+                    const drop = CONFIG.LOVE_MAINTENANCE_DROP;
+                    this.state.charAttitudes[id] = Math.max(0, this.state.charAttitudes[id] - drop);
+                    changes.push({ id, delta: -drop, name: CHARACTERS[id].name, emoji: CHARACTERS[id].emoji });
+                }
+            }
+        });
+        
+        const list = document.getElementById('change-list');
+        if (changes.length === 0) {
+            list.innerHTML = '<p style="color:rgba(255,255,255,0.5)">今天没有关系变化</p>';
+        } else {
+            list.innerHTML = changes.map(c => `
+                <div class="change-item">
+                    <span class="char-icon">${c.emoji}</span>
+                    <span class="char-name">${c.name}</span>
+                    <span class="change-value negative">${c.delta}</span>
+                </div>`
+            ).join('');
+        }
+        
+        // 检查解锁
+        const hint = document.getElementById('unlock-hint');
+        const hintText = document.getElementById('unlock-text');
+        const newUnlock = Object.entries(this.state.charUnlocked).find(([id, u]) => u && this.state.activityCount[id === 'stay_home' ? 'stay_home' : id] >= 1);
+        if (newUnlock) {
+            hint.style.display = 'block';
+            hintText.textContent = `与 ${CHARACTERS[newUnlock[0]].name} 有了新的交集...`;
+        } else {
+            hint.style.display = 'none';
+        }
+    }
+    nextDay() {
+        this.state.day++;
+        this.state.energy = CONFIG.MAX_ENERGY;
+        Object.keys(this.state.activityCount).forEach(k => this.state.activityCount[k] = 0);
+        this.state.save();
+        
+        if (this.state.day > CONFIG.MAX_DAYS) {
+            this.showEnding();
+            return;
+        }
+        this.showPage('game-main-page');
+        this.updateUI();
+    }
+    saveGame() {
+        this.state.save();
+        this.showToast('游戏已保存');
+    }
+    showEnding() {
+        const mainChar = this.state.selectedChar;
+        const att = this.state.charAttitudes[mainChar];
+        let ending = att >= 80 ? '💕 完美结局：你们在一起了' : att >= 50 ? '✨ 好结局：你们成为了好朋友' : '🌸 普通结局：你们只是过客';
+        alert(`游戏结束！\n\n${ending}\n\n最终好感度：${att}`);
+        this.state = new GameState();
+        this.showPage('landing-page');
+    }
+
+    // 工具
+    showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+    toggleSettings() { alert('设置功能开发中...'); }
+    toggleMusic() { this.showToast('音乐功能开发中...'); }
+}
+
+const game = new Game();
+document.addEventListener('DOMContentLoaded', () => game.init());
+    </script>
+</body>
+</html>

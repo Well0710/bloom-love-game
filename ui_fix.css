@@ -1,0 +1,759 @@
+/* ============================================
+   Bloom V3 - UI整改补丁样式
+   ============================================ */
+
+/* ===== 1. 手机端按钮遮挡修复 ===== */
+
+/* 对话框选项区域上移 */
+.choices-area {
+    padding-bottom: 30px;
+}
+
+/* 手机端特殊适配 */
+@media (max-width: 640px) {
+    .choices-area {
+        padding-bottom: 40px;
+        margin-bottom: 10px;
+    }
+    
+    /* 对话框内容区域限制高度，启用滚动 */
+    .dialogue-content {
+        max-height: 70vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* 按钮最小高度 */
+    .choice-btn,
+    .menu-btn,
+    .activity-card {
+        min-height: 48px;
+    }
+}
+
+/* ===== 2. 设置页面样式 ===== */
+
+/* 设置页面容器 */
+#settings-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(13, 13, 26, 0.95);
+    backdrop-filter: blur(20px);
+    z-index: 500;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+#settings-page.active {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.settings-content {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.settings-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.settings-close-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+/* 设置项样式 */
+.setting-item {
+    margin-bottom: 25px;
+}
+
+.setting-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.9);
+}
+
+.setting-icon {
+    font-size: 1.2rem;
+}
+
+/* 开关按钮 */
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 26px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 13px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.toggle-switch.active {
+    background: #a855f7;
+}
+
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.toggle-switch.active::after {
+    transform: translateX(24px);
+}
+
+/* 滑块 */
+.volume-slider {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 6px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+    outline: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #a855f7;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.volume-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #a855f7;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+/* 设置页面按钮 */
+.settings-footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.settings-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.settings-btn.primary {
+    background: var(--gradient-primary);
+    color: #fff;
+}
+
+.settings-btn.secondary {
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.8);
+}
+
+.settings-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* ===== 3. 存档管理页面 ===== */
+
+#save-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(13, 13, 26, 0.95);
+    backdrop-filter: blur(20px);
+    z-index: 500;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+#save-page.active {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.save-content {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 450px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* 存档槽位 */
+.save-slot {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.2s ease;
+}
+
+.save-slot:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(168, 85, 247, 0.5);
+}
+
+.save-slot.empty {
+    border-style: dashed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+    cursor: pointer;
+}
+
+.save-slot.empty:hover {
+    background: rgba(168, 85, 247, 0.2);
+}
+
+.save-slot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.save-slot-title {
+    font-weight: 600;
+    color: #a855f7;
+}
+
+.save-slot-info {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 10px;
+}
+
+.save-slot-details {
+    display: flex;
+    gap: 15px;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.8);
+}
+
+.save-slot-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.slot-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.slot-btn.primary {
+    background: #a855f7;
+    color: #fff;
+}
+
+.slot-btn.secondary {
+    background: rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.8);
+}
+
+.slot-btn.danger {
+    background: rgba(239, 68, 68, 0.3);
+    color: #f87171;
+}
+
+.slot-btn:hover {
+    transform: scale(1.05);
+}
+
+/* ===== 4. 引导弹窗 ===== */
+
+#tutorial-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 600;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+#tutorial-modal.active {
+    display: flex;
+    animation: scaleIn 0.3s ease;
+}
+
+.tutorial-content {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.tutorial-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #a855f7;
+}
+
+.tutorial-section {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.tutorial-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: rgba(255,255,255,0.9);
+}
+
+.tutorial-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.8);
+    padding-left: 30px;
+}
+
+.tutorial-list {
+    list-style: none;
+    padding-left: 30px;
+}
+
+.tutorial-list li {
+    margin-bottom: 8px;
+    position: relative;
+    padding-left: 20px;
+}
+
+.tutorial-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #a855f7;
+}
+
+.tutorial-btn {
+    margin-top: 30px;
+    padding: 15px 40px;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: 25px;
+    color: #fff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tutorial-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
+}
+
+/* ===== 5. 页面过渡动画 ===== */
+
+/* 页面切换过渡 */
+.page {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.page.fade-in {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.page.fade-out {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+.page.slide-in {
+    animation: slideInRight 0.25s ease forwards;
+}
+
+.page.slide-out {
+    animation: slideOutLeft 0.25s ease forwards;
+}
+
+/* 对话框过渡 */
+.dialogue-overlay {
+    transition: opacity 0.25s ease;
+}
+
+.dialogue-overlay.active {
+    animation: slideUp 0.25s ease;
+}
+
+/* 弹窗过渡 */
+#settings-page,
+#save-page,
+#tutorial-modal {
+    transition: opacity 0.3s ease;
+}
+
+/* 动画关键帧 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutLeft {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ===== 6. 好感度进度条优化 ===== */
+
+.char-affection-bar {
+    height: 8px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.char-affection-fill {
+    height: 100%;
+    transition: width 0.5s ease, background 0.5s ease;
+}
+
+/* 好感度等级颜色 */
+.char-affection-fill.level-0 {
+    background: #9ca3af; /* 灰色 - 陌生 */
+}
+
+.char-affection-fill.level-1 {
+    background: #60a5fa; /* 蓝色 - 朋友 */
+}
+
+.char-affection-fill.level-2 {
+    background: #a855f7; /* 紫色 - 暧昧 */
+}
+
+.char-affection-fill.level-3 {
+    background: #ec4899; /* 粉色 - 恋人 */
+}
+
+/* ===== 7. 角色解锁动画 ===== */
+
+.char-unlock-animation {
+    animation: charUnlock 0.5s ease forwards;
+}
+
+@keyframes charUnlock {
+    0% {
+        opacity: 0;
+        transform: translateY(50px) scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(-10px) scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ===== 8. 探索地点视觉优化 ===== */
+
+.activity-card {
+    position: relative;
+    overflow: hidden;
+}
+
+/* 未探索地点 */
+.activity-card.unexplored {
+    opacity: 0.6;
+}
+
+.activity-card.unexplored::before {
+    content: '?';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    color: rgba(255,255,255,0.3);
+    z-index: 1;
+}
+
+/* 当前可选地点高亮 */
+.activity-card.available {
+    border-color: #a855f7;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+}
+
+/* ===== 9. 对话框优化 ===== */
+
+/* 头像说话动画 */
+.speaker-avatar.speaking {
+    animation: speak 0.5s ease infinite;
+}
+
+@keyframes speak {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* 打字光标优化 */
+.typing-cursor {
+    animation: blink 0.8s infinite;
+    color: #a855f7;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* ===== 10. 按钮交互反馈 ===== */
+
+/* 按钮点击效果 */
+button:active {
+    transform: scale(0.95);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 按钮悬停效果 */
+button:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* ===== 11. 设置按钮入口 ===== */
+
+/* 游戏主页设置按钮 */
+.top-bar .settings-btn-entry {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.top-bar .settings-btn-entry:hover {
+    background: rgba(168, 85, 247, 0.3);
+    transform: rotate(90deg);
+}
+
+/* 对话框控制按钮扩展 */
+.dialogue-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.dialogue-controls .control-btn {
+    padding: 8px 15px;
+    background: rgba(0,0,0,0.5);
+    border: none;
+    border-radius: 15px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.dialogue-controls .control-btn:hover {
+    background: rgba(168, 85, 247, 0.5);
+}
+
+/* ===== 12. 响应式优化 ===== */
+
+/* 平板适配 */
+@media (min-width: 640px) and (max-width: 1024px) {
+    .settings-content,
+    .save-content,
+    .tutorial-content {
+        max-width: 500px;
+    }
+}
+
+/* 手机端特殊优化 */
+@media (max-width: 640px) {
+    .settings-content,
+    .save-content,
+    .tutorial-content {
+        padding: 20px;
+        border-radius: 15px;
+    }
+    
+    .save-slot {
+        padding: 15px;
+    }
+    
+    .save-slot-actions {
+        flex-wrap: wrap;
+    }
+    
+    .slot-btn {
+        min-width: calc(50% - 5px);
+    }
+}
+
+/* ===== 13. 加载动画 ===== */
+
+.loading-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: #a855f7;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ===== 14. 工具类 ===== */
+
+.text-center {
+    text-align: center;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
