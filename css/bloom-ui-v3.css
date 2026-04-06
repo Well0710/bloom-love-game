@@ -339,10 +339,14 @@
     width: 100%;
     height: 100%;
     z-index: 1106;
-    display: flex;
+    display: none;
     flex-direction: column;
     padding: 20px;
     justify-content: space-between;
+}
+
+.dialogue-container.active {
+    display: flex;
 }
 
 .dialogue-bg-blur {
