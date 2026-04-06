@@ -1058,11 +1058,11 @@ class Game {
     closeDayReport() {
         document.getElementById('day-report-popup').classList.remove('active');
 
-        // Day 1 引导
+        // Day 1 引导 - 使用气泡提示
         if (this.state.day === 1 && !this.state.guidanceShown.day1) {
             this.state.guidanceShown.day1 = true;
             setTimeout(() => {
-                this.showToast('💡 选择你今天想做的事，今天我们来走一遍完整流程');
+                this.showAffinityTip('💡 选择你今天想做的事，今天我们来走一遍完整流程');
             }, 300);
         }
 
