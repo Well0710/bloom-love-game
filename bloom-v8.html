@@ -252,6 +252,7 @@
                 <h2 class="page-title">选择你想遇见的她</h2>
                 <div class="char-grid" id="char-grid"></div>
                 <button class="start-btn" onclick="game.startGame()" id="start-game-btn" disabled>开始冒险</button>
+                <button class="skip-btn" onclick="game.skipCharSelect()">💫 不选择，直接开始探索</button>
             </div>
         </div>
 
@@ -390,7 +391,7 @@ const CHARACTERS = {
     },
     linwanqing: {
         id: 'linwanqing', name: '林婉清', mbti: 'ESTJ', emoji: '💼',
-        color: '#60a5fa', desc: '公司高管 · 干练优雅', portrait: 'assets/characters/linwanqing_portrait.png',
+        color: '#60a5fa', desc: '客户 · 干练优雅', portrait: 'assets/characters/linwanqing_portrait.png',
         trait: '干练、优雅、成功人士', setting: '客户'
     }
 };
@@ -582,7 +583,9 @@ class Game {
     }
     setupExitWarning() {
         window.addEventListener('beforeunload', (e) => {
-            if (this.state.day > 1 && this.state.energy > 0 && this.state.selectedChar) {
+            // P2修复：检查对话框是否激活 && 有角色在进行对话
+            const dialogueActive = document.getElementById('dialogue-overlay')?.classList.contains('active');
+            if (dialogueActive && this.currentCharId && this.state.energy > 0) {
                 e.preventDefault();
                 e.returnValue = '';
             }
@@ -645,7 +648,30 @@ class Game {
         }
     }
     retryTest() { this.currentQuestion = 0; this.testAnswers = []; this.mbtiScores = {E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0}; this.showPage('mbti-test-page'); this.renderQuestion(); }
-    confirmResult() { this.showPage('char-select-page'); }
+    // MBTI确认后直接进入游戏，通过探索邂逅角色
+    confirmResult() { 
+        this.showPage('game-main-page'); 
+        this.updateUI();
+        this.showToast('🌸 新的故事开始了，今天你想去哪里探索？');
+    }
+    
+    // 跳过选角色，直接开始游戏探索
+    skipCharSelect() {
+        this.showPage('game-main-page');
+        this.updateUI();
+        this.showToast('🌸 新的故事开始了，今天你想去哪里探索？');
+    }
+
+    // MBTI选择
+    renderMbtiGrid() {
+        const grid = document.getElementById('mbti-grid');
+        if (!grid) return;
+        const types = ['INTJ', 'INTP', 'ENTJ', 'ENTP', 'INFJ', 'INFP', 'ENFJ', 'ENFP', 'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ', 'ISTP', 'ISFP', 'ESFP', 'ESTP'];
+        const icons = ['🎯', '🔬', '👑', '💡', '🧘', '🌸', '🤝', '✨', '📋', '🛡️', '💼', '🎪', '🔧', '🎨', '🎭', '⚡'];
+        grid.innerHTML = types.map((t, i) =>
+            `<button class="mbti-btn" onclick="game.selectMbti('${t}')">${icons[i]} ${t}</button>`
+        ).join('');
+    }
 
     // 角色选择
     renderCharGrid() {
@@ -687,19 +713,19 @@ class Game {
         }
     }
 
-    // 游戏主页
+    // 游戏主页 - 所有活动一开始都可探索
     renderActivityGrid() {
         const grid = document.getElementById('activity-grid');
         if (!grid) return;
         grid.innerHTML = Object.entries(ACTIVITIES).map(([id, act]) => {
             const char = act.charId ? CHARACTERS[act.charId] : null;
-            const isUnlocked = !act.charId || this.state.charUnlocked[act.charId];
             const emoji = char ? char.emoji : act.emoji;
             const name = char ? char.name.split('')[0] + '的' + act.name : act.name;
-            return `<button class="activity-card ${!isUnlocked ? 'used' : ''}" ${isUnlocked ? `onclick="game.selectActivity('${id}')"` : 'disabled'}>
+            const hint = char && !this.state.charUnlocked[char.id] ? '???的神秘地点' : act.name;
+            return `<button class="activity-card" onclick="game.selectActivity('${id}')">
                 <span class="activity-icon">${emoji}</span>
-                <span class="activity-name">${name}</span>
-                <span class="activity-hint">${isUnlocked ? '探索' : '未解锁'}</span>
+                <span class="activity-name">${hint}</span>
+                <span class="activity-hint">探索</span>
             </button>`;
         }).join('');
     }
@@ -747,12 +773,19 @@ class Game {
         alert(`${c.name}\nMBTI: ${c.mbti}\n设定: ${c.setting}\n好感度: ${att}\n关系: ${stage}`);
     }
 
-    // 活动选择
+    // 活动选择 - 探索时解锁角色
     selectActivity(actId) {
         if (this.state.energy <= 0) { this.showToast('精力已耗尽！'); return; }
         const act = ACTIVITIES[actId];
         this.currentActId = actId;
         this.currentCharId = act.charId;
+        
+        // 探索时解锁角色
+        if (act.charId && !this.state.charUnlocked[act.charId]) {
+            this.state.charUnlocked[act.charId] = true;
+            const char = CHARACTERS[act.charId];
+            this.showToast(`🌸 邂逅：${char.name}`);
+        }
         
         // 消耗精力
         this.state.energy--;
@@ -869,9 +902,11 @@ class Game {
     stayInGame() { document.getElementById('exit-warning-overlay').classList.remove('active'); }
     confirmLeave() {
         document.getElementById('exit-warning-overlay').classList.remove('active');
-        if (this.state.selectedChar) {
-            this.state.charAttitudes[this.state.selectedChar] = Math.max(0, this.state.charAttitudes[this.state.selectedChar] - CONFIG.EXIT_PENALTY);
-            this.showToast(`💔 离开惩罚：-${CONFIG.EXIT_PENALTY}好感度`);
+        // P1修复：使用 currentCharId 而不是 selectedChar
+        if (this.currentCharId) {
+            this.state.charAttitudes[this.currentCharId] = Math.max(0, this.state.charAttitudes[this.currentCharId] - CONFIG.EXIT_PENALTY);
+            const char = CHARACTERS[this.currentCharId];
+            this.showToast(`💔 离开惩罚：-${CONFIG.EXIT_PENALTY}好感度（${char.name}）`);
         }
         this.state.save();
     }
